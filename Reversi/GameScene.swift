@@ -233,15 +233,6 @@ class GameScene: SKScene {
             view.presentScene(scene, transition: transition)
         }
     }
-    /*func undo(){
-        let stateIndicatorColorLeft = stateIndicator.childNode(withName: "stateIndicatorColorLeft") as! SKSpriteNode
-        let stateIndicatorColorRight = stateIndicator.childNode(withName: "stateIndicatorColorRight") as! SKSpriteNode
-        let chessBoardScaledWidth = chessBoard!.mapSize.width * chessBoard.xScale
-        let chessBoardScaledHeight = chessBoard!.mapSize.height * chessBoard.yScale
-        nowAt = nowAt > 0 ? nowAt - 1 : nowAt
-        Game[nowAt].showBoard(labels: labels, whiteScoreLabel: whiteScore_label, blackScoreLabel: blackScore_label, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight, chessBoardScaledWidth: chessBoardScaledWidth, chessBoardScaledHeight: chessBoardScaledHeight, isWhite: Game[nowAt].isColorWhiteNow)
-        isColorWhiteNow = Game[nowAt].isColorWhiteNow
-    }*/
     func showReview(){
         for i in 0...reviews.count - 1{
             reviews[i].setScale(UIScreen.main.scale)
@@ -289,9 +280,6 @@ class GameScene: SKScene {
                 reviews[i].zPosition = 4.0 + cos(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
             }
         }
-        
-        
-
     }
     
     func touchUp(atPoint pos : CGPoint) {
@@ -315,6 +303,7 @@ class GameScene: SKScene {
             let pos = touch.location(in: self)
             touchOrigin = pos
             let node = self.atPoint(pos)
+            print(node)
             switch node{
             case childNode(withName: "toTitle")! :
                 if let view = view {
@@ -326,36 +315,31 @@ class GameScene: SKScene {
             case childNode(withName: "retry")! :
                 retry()
             case childNode(withName: "undo")! :
-                
-                /*if !isAIMode || isComputerWhite != false || nowAt != 1{
-                    undo()
-                }
-                if isAIMode && nowAt > 0{
-                    while isColorWhiteNow == isComputerWhite{
-                        undo()
-                    }
-                }*/
                 undo()
-            case let review where reviews.contains(review as! SKSpriteNode):
+            case let review where (reviews as [SKNode]).contains(review):
                 var turnString = review.name
                 turnString?.removeFirst(7)
                 let turn = Int(turnString!)
                 
                 isUserInteractionEnabled = false
                 review.run(SKAction.scale(to: UIScreen.main.scale, duration: 1)){
+                    print("nowAt:", self.nowAt)
                     self.nowAt = turn!
+                    print("turn:", turn!)
                     self.isColorWhiteNow = self.Game[self.nowAt].isColorWhiteNow
+                    print("Colo:\(self.isColorWhiteNow ? "white" : "black")")
                     self.removeChildren(in: [self.childNode(withName: "reviewBackground")!])
                     self.removeChildren(in: self.reviews)
                     self.reviews.removeLast(self.reviews.count - self.nowAt)
                     
-                    self.isUserInteractionEnabled = true}
+                    self.isUserInteractionEnabled = true
+                    
+                }
                 //TODO: 1,check nowAt = 0  2,reviews.count = 1  3,when black  4, review wipe speed not good  5, reviews have wierd screenshot  6,highCPU, 7,indexOutOfRange 8,clickoutside bad sigabat
             
             case childNode(withName: "grid")! :
                 let touchPosOnGrid = (node as! Grid).positionToGridPosition(position: pos)
                 if let row = touchPosOnGrid?.row, let col = touchPosOnGrid?.col{
-                    
                     ///take a screenshot
                     /*
                     if let review = childNode(withName: "review") {removeChildren(in: [review])}

@@ -40,8 +40,10 @@ class MenuScene: SKScene {
             let scene:SKScene = GameScene(fileNamed: "GameScene")!
             let transition:SKTransition = SKTransition.fade(withDuration: 1)
             scene.scaleMode = .aspectFill
-            
+            self.isUserInteractionEnabled = false
             self.view?.presentScene(scene, transition: transition)
+            
+            //TODO: avoid multiple touch such that present many scnenes
         }
     }
   /*
