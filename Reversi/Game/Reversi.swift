@@ -101,51 +101,82 @@ struct Reversi{
         return getScore(isWhite: isWhite) - getScore(isWhite: !isWhite)
     }
     //show the game board
-    func showBoard(labels: [[SKLabelNode]], whiteScoreLabel: SKLabelNode, blackScoreLabel: SKLabelNode, stateIndicator: SKCropNode, stateIndicatorColorLeft: SKSpriteNode, stateIndicatorColorRight: SKSpriteNode, chessBoardScaledWidth width: CGFloat ,chessBoardScaledHeight height: CGFloat, isWhite: Bool)
+    func showBoard(labels: [[SKLabelNode]], whiteScoreLabel: SKLabelNode, blackScoreLabel: SKLabelNode, stateIndicator: SKCropNode, stateIndicatorColorLeft: SKSpriteNode, stateIndicatorColorRight: SKSpriteNode, chessBoardScaledWidth width: CGFloat ,chessBoardScaledHeight height: CGFloat, isWhite: Bool, withAnimation: Bool = true)
     {
         if labels.count != 6 {fatalError("wrong rows of labels")}
-        if let gameScene = labels[0][0].parent{
-            gameScene.isUserInteractionEnabled = false
-            let originScaleX = labels[0][0].xScale
-            let flipFirstHalfPart = SKAction.scaleX(to: 0, duration: 0.3)
-            let flipLastHalfPart = SKAction.scaleX(to: originScaleX, duration: 0.3)
-            let flipWait = SKAction.wait(forDuration: 0.6)
+            if withAnimation{
+                if let gameScene = labels[0][0].parent{
+                gameScene.isUserInteractionEnabled = false
+                let originScaleX = labels[0][0].xScale
+                let flipFirstHalfPart = SKAction.scaleX(to: 0, duration: 0.29)
+                let flipLastHalfPart = SKAction.scaleX(to: originScaleX, duration: 0.29)
+                let flipWait = SKAction.wait(forDuration: 0.59)
+                for row in 0...5{
+                    if labels[row].count != 6 {fatalError("wrong columns of labels")}
+                    for col in 0...5{
+                        let label = labels[row][col]
+                        var labelText = String()
+                        var labelColor = (red: CGFloat(1), green: CGFloat(1), blue: CGFloat(1), alpha: CGFloat(1))
+                        if let number = self.getNumber(Row: row, Col: col){
+                            if "\(number)" != label.text{
+                                labelText = "\(number)"
+                                labelColor = (self.getColor(Row: row, Col: col)! ? (1, 1, 1, 1) : (0, 0, 0, 1))
+                                label.run(flipFirstHalfPart){
+                                    label.text = labelText
+                                    label.fontColor = SKColor.init(red:labelColor.red, green: labelColor.green, blue: labelColor.blue, alpha: labelColor.alpha)
+                                    label.run(flipLastHalfPart)
+                                }
+                            }
+                        }
+                        else if self.isAvailable(Row: row, Col: col, isWhite: isWhite){
+                            let date = Date()
+                            let calendar = Calendar.current
+                            let seconds = calendar.component(.second, from: date)
+                            let nanoseconds = calendar.component(.nanosecond, from: date)
+                            print("seconds before flip:", Double(nanoseconds) / 1000000000.0 + Double(seconds))
+                            label.text = ""
+                            labelColor = isWhite ? (1, 1, 1, 1) : (0, 0, 0, 1)
+                            label.run(flipWait){
+                                let date = Date()
+                                let calendar = Calendar.current
+                                let seconds = calendar.component(.second, from: date)
+                                let nanoseconds = calendar.component(.nanosecond, from: date)
+                                print("seconds after flip:", Double(nanoseconds) / 1000000000.0 + Double(seconds))
+                                label.text = "+"
+                                label.fontColor = SKColor.init(red:labelColor.red, green: labelColor.green, blue: labelColor.blue, alpha: labelColor.alpha)
+                            }
+                        }
+                        else {
+                            label.text = ""
+                        }
+                    }
+                }
+                    gameScene.run(SKAction.wait(forDuration: 0.6)){gameScene.isUserInteractionEnabled = true}
+            }
+        }
+        else{
             for row in 0...5{
                 if labels[row].count != 6 {fatalError("wrong columns of labels")}
                 for col in 0...5{
                     let label = labels[row][col]
-                    var labelText = String()
-                    var labelColor = (red: CGFloat(1), green: CGFloat(1), blue: CGFloat(1), alpha: CGFloat(1))
                     if let number = self.getNumber(Row: row, Col: col){
                         if "\(number)" != label.text{
-                            labelText = "\(number)"
-                            labelColor = (self.getColor(Row: row, Col: col)! ? (1, 1, 1, 1) : (0, 0, 0, 1))
-                            label.run(flipFirstHalfPart){
-                                label.text = labelText
-                                label.fontColor = SKColor.init(red:labelColor.red, green: labelColor.green, blue: labelColor.blue, alpha: labelColor.alpha)
-                                label.run(flipLastHalfPart){
-                                        gameScene.isUserInteractionEnabled = true
-                                }
-                            }
+                            label.text = "\(number)"
+                            label.fontColor = self.getColor(Row: row, Col: col)! ? UIColor(red: 1, green: 1, blue: 1, alpha: 1) : UIColor(red: 0, green: 0, blue: 0, alpha: 1)
                         }
                     }
                     else if self.isAvailable(Row: row, Col: col, isWhite: isWhite){
-                        labelText = "+"
-                        labelColor = isWhite ? (1, 1, 1, 1) : (0, 0, 0, 1)
-                        label.run(flipWait){
-                            label.text = labelText
-                            label.fontColor = SKColor.init(red:labelColor.red, green: labelColor.green, blue: labelColor.blue, alpha: labelColor.alpha)
-                                gameScene.isUserInteractionEnabled = true
-                        }
+                        label.text = "+"
+                        label.fontColor = isWhite ? UIColor(red: 1, green: 1, blue: 1, alpha: 1) : UIColor(red: 0, green: 0, blue: 0, alpha: 1)
+                        
                     }
                     else {
-                        labelText = ""
-                        label.text = labelText
+                        label.text = ""
                     }
                 }
             }
         }
-        
+    
 //ScoreLabel
         whiteScoreLabel.text = "\(self.whiteScore)"
         blackScoreLabel.text = "\(self.blackScore)"
@@ -532,7 +563,11 @@ struct Reversi{
         return score
     }
     func bestSolution(isWhite: Bool, searchDepth: UInt = 1) -> chessBoardPos?{
-       
+        let date = Date()
+        let calendar = Calendar.current
+        let seconds = calendar.component(.second, from: date)
+        let nanoseconds = calendar.component(.nanosecond, from: date)
+        print("seconds before find:", Double(nanoseconds) / 1000000000.0 + Double(seconds))
         var firstStepGames: [Reversi] = []
         var firstSteps: [chessBoardPos] = []
         //add all first steps to nodesToVist
@@ -575,6 +610,11 @@ struct Reversi{
 ///for fixed fistStepGame
         }
         let max = firstStepMinLastScore.values.max()
+        let date1 = Date()
+        let calendar1 = Calendar.current
+        let seconds1 = calendar1.component(.second, from: date1)
+        let nanoseconds1 = calendar1.component(.nanosecond, from: date1)
+        print("seconds after find:", Double(nanoseconds1) / 1000000000.0 + Double(seconds1))
         return firstStepMinLastScore.filter({$0.value == max}).keys.randomElement()
     }
 }
