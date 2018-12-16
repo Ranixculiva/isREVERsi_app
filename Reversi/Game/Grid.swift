@@ -43,14 +43,14 @@ class Grid:SKSpriteNode {
     }*/
     class func gridTexture(blockSize:CGFloat,rows:Int,cols:Int,color: SKColor) -> SKTexture? {
         // Add 1 to the height and width to ensure the borders are within the sprite
-        let size = CGSize(width: CGFloat(cols)*blockSize+1.0, height: CGFloat(rows)*blockSize+1.0)
+        let size = CGSize(width: CGFloat(cols)*blockSize+6.0, height: CGFloat(rows)*blockSize+6.0)
         UIGraphicsBeginImageContext(size)
         
         guard let context = UIGraphicsGetCurrentContext() else {
             return nil
         }
         let bezierPath = UIBezierPath()
-        let offset:CGFloat = 0.5
+        let offset:CGFloat = 3
         // Draw vertical lines
         for i in 0...cols {
             let x = CGFloat(i)*blockSize + offset

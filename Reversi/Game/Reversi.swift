@@ -10,22 +10,16 @@ import Foundation
 import SpriteKit
 struct Reversi{
     
-    //direction
-    let right       = 0
-    let rightUp     = 1
-    let up          = 2
-    let leftUp      = 3
-    let left        = 4
-    let leftDown    = 5
-    let down        = 6
-    let rightDown   = 7
+    enum direction: Int, CaseIterable{
+        case right = 0, rightUp, up, leftUp, left, leftDown, down, rightDown, allDirctions
+    }
     private var gameBoard = [[Int?]](repeating: [Int?](repeating: nil, count: 6), count: 6)
     private var isColorWhite = [[Bool?]](repeating: [Bool?](repeating: nil, count: 6), count: 6)
     private var whiteScore: Int = 0
     private var blackScore: Int = 0
     var isColorWhiteNow: Bool = false
     var turn: Int = 0
-    var CSquares: [chessBoardPos] =
+    static let CSquares: [chessBoardPos] =
         [chessBoardPos(row: 0,col: 1),
          chessBoardPos(row: 0,col: 4),
          chessBoardPos(row: 1,col: 0),
@@ -34,17 +28,34 @@ struct Reversi{
          chessBoardPos(row: 4,col: 5),
          chessBoardPos(row: 5,col: 1),
          chessBoardPos(row: 5,col: 4)]
-    var XSquares: [chessBoardPos] =
+    static let XSquares: [chessBoardPos] =
         [chessBoardPos(row: 1,col: 1),
          chessBoardPos(row: 1,col: 4),
          chessBoardPos(row: 4,col: 1),
          chessBoardPos(row: 4,col: 4)]
-    var cornerSquares: [chessBoardPos] =
+    static let cornerSquares: [chessBoardPos] =
         [chessBoardPos(row: 0,col: 0),
          chessBoardPos(row: 0,col: 5),
          chessBoardPos(row: 5,col: 0),
          chessBoardPos(row: 5,col: 5)]
-    var sideSquares: [chessBoardPos] = []
+    static func getSideSquares() -> [chessBoardPos]{
+        var sideSquares: [chessBoardPos] = []
+        for i in 0...5
+        {
+            for j in 0...5
+            {
+                if i == 0 || i == 5 || j == 0 || j == 5{
+                    if !Reversi.CSquares.contains(chessBoardPos(row: i,col: j))
+                        && !Reversi.XSquares.contains(chessBoardPos(row: i,col: j))
+                        && !Reversi.cornerSquares.contains(chessBoardPos(row: i,col: j)){
+                        sideSquares.append(chessBoardPos(row: i, col: j))
+                    }
+                }
+            }
+        }
+        return sideSquares
+    }
+    static let sideSquares = Reversi.getSideSquares()
     
     init() {
         for i in 0...5
@@ -62,13 +73,6 @@ struct Reversi{
                     (i == 2 && j == 2) ||
                         (i == 3 && j == 3)
                 {isColorWhite[i][j] = true}
-                if i == 0 || i == 5 || j == 0 || j == 5{
-                    if !CSquares.contains(chessBoardPos(row: i,col: j))
-                    && !XSquares.contains(chessBoardPos(row: i,col: j))
-                    && !cornerSquares.contains(chessBoardPos(row: i,col: j)){
-                        sideSquares.append(chessBoardPos(row: i, col: j))
-                    }
-                }
             }
         }
         
@@ -236,13 +240,13 @@ struct Reversi{
             print("")
         }
     }
-    func isAvailable(toward Direction: Int = 8, Row: Int, Col: Int, isWhite: Bool) -> Bool
+    func isAvailable(toward Direction: direction = .allDirctions, Row: Int, Col: Int, isWhite: Bool) -> Bool
     {
         if Row < 0 || Row > 5 || Col < 0 || Col > 5 {return false}
         //if there's already something at (Row, Col), then you cannot put anything on it.
         if let _ = gameBoard[Row][Col] {return false}
         switch Direction {
-        case right:
+        case .right:
             if Col < 4 {
                 if isColorWhite[Row][Col + 1] == !isWhite {
                     for j in 2...5 - Col {
@@ -251,7 +255,7 @@ struct Reversi{
                     }
                 }
             }
-        case rightUp:
+        case .rightUp:
             if Row > 1 && Col < 4 {
                 if isColorWhite[Row - 1][Col + 1] == !isWhite {
                     for j in 2...min(Row, 5 - Col) {
@@ -260,7 +264,7 @@ struct Reversi{
                     }
                 }
             }
-        case up:
+        case .up:
             if Row > 1 {
                 //able to be toward up
                 if isColorWhite[Row - 1][Col] == !isWhite {
@@ -271,7 +275,7 @@ struct Reversi{
                     }
                 }
             }
-        case leftUp:
+        case .leftUp:
             if Row > 1 && Col > 1 {
                 if isColorWhite[Row - 1][Col - 1] == !isWhite {
                     for j in 2...min(Row, Col) {
@@ -280,7 +284,7 @@ struct Reversi{
                     }
                 }
             }
-        case left:
+        case .left:
             if Col > 1 {
                 if isColorWhite[Row][Col - 1] == !isWhite {
                     for j in 2...Col {
@@ -289,7 +293,7 @@ struct Reversi{
                     }
                 }
             }
-        case leftDown:
+        case .leftDown:
             if Row < 4 && Col > 1 {
                 if isColorWhite[Row + 1][Col - 1] == !isWhite {
                     for j in 2...min(5 - Row, Col){
@@ -298,7 +302,7 @@ struct Reversi{
                     }
                 }
             }
-        case down:
+        case .down:
             if Row < 4 {
                 if isColorWhite[Row + 1][Col] == !isWhite {
                     for i in 2...5 - Row {
@@ -307,7 +311,7 @@ struct Reversi{
                     }
                 }
             }
-        case rightDown:
+        case .rightDown:
             if Row < 4 && Col < 4 {
                 if isColorWhite[Row + 1][Col + 1] == !isWhite {
                     for j in 2...min(5 - Row, 5 - Col) {
@@ -318,7 +322,7 @@ struct Reversi{
             }
         default:
             for direction in 0...7{
-                if(isAvailable(toward: direction, Row: Row, Col: Col, isWhite: isWhite))
+                if(isAvailable(toward: Reversi.direction(rawValue: direction)!, Row: Row, Col: Col, isWhite: isWhite))
                 {return true}
             }
         }
@@ -331,7 +335,7 @@ struct Reversi{
         isColorWhite[Row][Col] = isWhite
         //flip the known numbers
         //check all eight directions
-        if isAvailable(toward: right, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .right, Row: Row, Col: Col, isWhite: isWhite){
             for j in 1...5 - Col {
                 if isColorWhite[Row][Col + j] == isWhite {break}
                 if isColorWhite[Row][Col + j] == !isWhite {
@@ -340,7 +344,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: rightUp, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .rightUp, Row: Row, Col: Col, isWhite: isWhite){
             for j in 1...min(Row, 5 - Col) {
                 if isColorWhite[Row - j][Col + j] == isWhite {break}
                 if isColorWhite[Row - j][Col + j] == !isWhite {
@@ -349,7 +353,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: up, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .up, Row: Row, Col: Col, isWhite: isWhite){
             for i in 1...Row {
                 if isColorWhite[Row - i][Col] == isWhite {break}
                 if isColorWhite[Row - i][Col] == !isWhite {
@@ -358,7 +362,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: leftUp, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .leftUp, Row: Row, Col: Col, isWhite: isWhite){
             for j in 1...min(Row, Col) {
                 if isColorWhite[Row - j][Col - j] == isWhite {break}
                 if isColorWhite[Row - j][Col - j] == !isWhite {
@@ -367,7 +371,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: left, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .left, Row: Row, Col: Col, isWhite: isWhite){
             for j in 1...Col {
                 if isColorWhite[Row][Col - j] == isWhite {break}
                 if isColorWhite[Row][Col - j] == !isWhite {
@@ -376,7 +380,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: leftDown, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .leftDown, Row: Row, Col: Col, isWhite: isWhite){
             for j in 1...min(5 - Row, Col){
                 if isColorWhite[Row + j][Col - j] == isWhite {break}
                 if isColorWhite[Row + j][Col - j] == !isWhite {
@@ -385,7 +389,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: down, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .down, Row: Row, Col: Col, isWhite: isWhite){
             for i in 1...5 - Row {
                 if isColorWhite[Row + i][Col] == isWhite {break}
                 if isColorWhite[Row + i][Col] == !isWhite {
@@ -394,7 +398,7 @@ struct Reversi{
                 }
             }
         }
-        if isAvailable(toward: rightDown, Row: Row, Col: Col, isWhite: isWhite){
+        if isAvailable(toward: .rightDown, Row: Row, Col: Col, isWhite: isWhite){
             for j in 1...min(5 - Row, 5 - Col) {
                 if isColorWhite[Row + j][Col + j] == isWhite {break}
                 if isColorWhite[Row + j][Col + j] == !isWhite {
@@ -524,9 +528,10 @@ struct Reversi{
     func evaluation() -> Double{
         
         let scoreDifference = getScoreDifference(isWhite: isColorWhiteNow)
-        let chessBoardPositions = Set(getChessBoardPositions(isWhite: isColorWhiteNow))
+        let chessBoardPositionsForMyself = Set(getChessBoardPositions(isWhite: isColorWhiteNow))
+        let chessBoardPositionsForEnemy = Set(getChessBoardPositions(isWhite: !isColorWhiteNow))
         
-        let turnWeight = 1.0 + Double(turn) / 32.0
+        let turnWeight = 1.0// + Double(turn) / 32.0
         /*switch turn {
         case 0...10:
             turnWeight = 1
@@ -548,10 +553,10 @@ struct Reversi{
         let weightedScoreDifference: Double = Double(scoreDifferenceWeight * scoreDifference)
         
         
-        let weightedCSquaresScore = CWeight * Double(Set(CSquares).intersection(chessBoardPositions).count)
-        let weightedXSquaresScore = XWeight * Double(Set(XSquares).intersection(chessBoardPositions).count)
-        let weightedCornerSquaresScore = cornerWeight * Double(Set(cornerSquares).intersection(chessBoardPositions).count)
-        let weightedSideSquaresScore = sideWeight * Double(Set(sideSquares).intersection(chessBoardPositions).count)
+        let weightedCSquaresScore = CWeight * Double(Set(Reversi.CSquares).intersection(chessBoardPositionsForMyself).count - Set(Reversi.CSquares).intersection(chessBoardPositionsForEnemy).count)
+        let weightedXSquaresScore = XWeight * Double(Set(Reversi.XSquares).intersection(chessBoardPositionsForMyself).count - Set(Reversi.XSquares).intersection(chessBoardPositionsForEnemy).count)
+        let weightedCornerSquaresScore = cornerWeight * Double(Set(Reversi.cornerSquares).intersection(chessBoardPositionsForMyself).count - Set(Reversi.cornerSquares).intersection(chessBoardPositionsForEnemy).count)
+        let weightedSideSquaresScore = sideWeight * Double(Set(Reversi.sideSquares).intersection(chessBoardPositionsForMyself).count - Set(Reversi.sideSquares).intersection(chessBoardPositionsForEnemy).count)
         let weightedPositionScore = weightedCSquaresScore +
                                     weightedXSquaresScore +
                                     weightedCornerSquaresScore +
@@ -559,7 +564,7 @@ struct Reversi{
         let score = weightedScoreDifference + weightedPositionScore
         return score
     }
-    func bestSolution(isWhite: Bool, searchDepth: UInt = 1) -> chessBoardPos?{
+    func bestSolution(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool) -> chessBoardPos?{
         let date = Date()
         let calendar = Calendar.current
         let seconds = calendar.component(.second, from: date)
@@ -578,7 +583,7 @@ struct Reversi{
         var firstStepMinLastScore = Dictionary<chessBoardPos, Double>()
 
         for i in 0...firstStepGames.count - 1 {
-///for fixed fistStepGame
+///for fixed firstStepGame
             var minLastScore = Double(Int.max)
             var nodesToVist: [Reversi] = []
             for availableStep in firstStepGames[i].availableSteps(isWhite: firstStepGames[i].isColorWhiteNow){
@@ -587,9 +592,16 @@ struct Reversi{
                 nodesToVist.append(testGame)
             }
             while !nodesToVist.isEmpty{
+                if stopFinding {return nil}
                 let currentNode = nodesToVist.removeFirst()
+                let space = String.init(repeating: ".", count: currentNode.turn)
+                print(space)
+                
+                
                 if currentNode.turn - self.turn < searchDepth{
-                    for availableStep in currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow){
+                    let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).choose(3)
+                    for availableStep in samepleOfAvailableSteps{
+                        
                         var testGame = currentNode
                         testGame.play(Row: availableStep.row, Col: availableStep.col, isColorWhiteNow: testGame.isColorWhiteNow)
                             nodesToVist.insert(testGame, at: 0)
@@ -597,6 +609,9 @@ struct Reversi{
                 }
                 else{
                     let currentEvaluation = currentNode.evaluation()
+                    print(currentEvaluation)
+                    currentNode.showBoard(isWhite: currentNode.isColorWhiteNow)
+                    
                     if currentEvaluation < Double(minLastScore){
                         minLastScore = currentEvaluation
                     }

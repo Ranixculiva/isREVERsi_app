@@ -8,6 +8,7 @@
 import SpriteKit
 import GameplayKit
 ///TODO: win grid color
+///TODO: touch on unavailable place when computer thinks will shake later
 class GameScene: SKScene {
     var moveTimes = 0
     var isReviewMode = false
@@ -15,6 +16,7 @@ class GameScene: SKScene {
     let isComputerWhite = true
     var borderWidth: CGFloat = 0
     var borderHeight: CGFloat = 0
+    
     var labels: [[SKLabelNode]] = []
     var blackScore_label: SKLabelNode!
     var whiteScore_label: SKLabelNode!
@@ -22,18 +24,23 @@ class GameScene: SKScene {
     var chessBoard: SKTileMapNode!
     var stateIndicatorColorLeft : SKSpriteNode!
     var stateIndicatorColorRight: SKSpriteNode!
-    var chessBoardScaledWidth: CGFloat!
-    var chessBoardScaledHeight: CGFloat!
-    var grid : Grid!
     var retryNode:SKSpriteNode!
     var toTitle: SKSpriteNode!
     var undoNode: SKSpriteNode!
+    var grid : Grid!
+    
+    var chessBoardScaledWidth: CGFloat!
+    var chessBoardScaledHeight: CGFloat!
+    
     var isColorWhiteNow = false
     var nowAt = 0
     var Game = [Reversi()]
     var reviews:[SKSpriteNode] = []
     var touchOrigin = CGPoint()
-    var indexWithMaxZPositionInReviews = 0
+    var indexOfTheToppestReview = 0
+    
+    //variables for findBestSolution
+    var stopFinding: Bool = false
 //    var reviewLight: SKLightNode!
 
     override func didMove(to view: SKView) {
@@ -161,118 +168,10 @@ class GameScene: SKScene {
         addChild(reviewLight)
  */
     }
-    
-    func touchDownOnGrid(row: Int, col: Int){
-        /*//AIblack vs AIwhite
-        if !self.Game[self.nowAt].isEnd(){
-            //black 5 white 3
-            let searchDepth = isColorWhiteNow ? 5 : 1
-            if let bestStep = self.Game[self.nowAt].bestSolution(isWhite: self.isColorWhiteNow, searchDepth: UInt(searchDepth)){
-                //save game state
-                saveGameState()
-                run(SKAction.wait(forDuration: 0.7)){
-                    self.play(row: bestStep.row, col: bestStep.col){
-                    //keep playing
-                        self.touchDownOnGrid(row: 0, col: 0)
-                    }
-                }
-            }
-        }*/
-        let serialQueue = DispatchQueue(label: "com.beAwesome.Reversi", qos: DispatchQoS.userInteractive)
-        if !isAIMode || isColorWhiteNow != isComputerWhite{
-            if self.Game[nowAt].isAvailable(Row: row, Col: col, isWhite: isColorWhiteNow){
-                //take a screenshot before play
-                takeScreenShot(isWhite: self.isColorWhiteNow)
-                //save game state
-                saveGameState()
-            }
-            play(row: row, col: col){
-                //if it is computer's turn
-                if self.isAIMode && self.isColorWhiteNow == self.isComputerWhite{
-                    //self.run(SKAction.wait(forDuration: 0.5)){
-                        self.touchDownOnGrid(row: 0, col: 0)
-                    //}
-                }
-            }
-        }
-        else if !self.Game[self.nowAt].isEnd(){
-            let angleVeclocity = 8.0 * CGFloat.pi / 3.0
-            undoNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: angleVeclocity, duration: 1)))
-            serialQueue.async {
-                if let bestStep = self.Game[self.nowAt].bestSolution(isWhite: self.isColorWhiteNow, searchDepth: 3){
-                    DispatchQueue.main.async {
-                        self.undoNode.removeAllActions()
-                        self.undoNode.zRotation = 0
-                        //save game state
-                        self.saveGameState()
-                        self.play(row: bestStep.row, col: bestStep.col){
-                            //if player needs to pass, then computer will keep playing.
-                            if self.isColorWhiteNow == self.isComputerWhite{
-                                //self.run(SKAction.wait(forDuration: 0.65)){
-                                self.touchDownOnGrid(row: 0, col: 0)
-                                //}
-                                
-                            }
-                        }
-                    }
-                    
-                    
-                    
-                }
-            }
-            
-            
-            
-        }
-        
-        
-        
-        /*
-        if !isAIMode || isColorWhiteNow != isComputerWhite{
-            if Game[nowAt].isAvailable(Row: row, Col: col, isWhite: isColorWhiteNow){
-                takeScreenShot(isWhite: self.isColorWhiteNow)
-                
-                if nowAt == Game.count - 1{
-                    Game.append(Game[nowAt])
-                }
-                else {
-                    Game[nowAt + 1] = Game[nowAt]
-                    
-                }
-                nowAt = nowAt + 1
-                
-                if grid.color != (isColorWhiteNow ? .white : .black){
-                    grid.run(SKAction.wait(forDuration: 0.6)){
-                        self.grid.setGridColor(color: self.isColorWhiteNow ? .white : .black)
-                    }
-                }
-                
-            }
-            touchDownOnGrid(row: row, col: col)
-        }
-        
-        ///AI
-        //TODO: messy screenshot, needToPass, clickfast will make turn messy
-        if self.isColorWhiteNow == isComputerWhite && isAIMode && !self.Game[nowAt].isEnd(){
-            takeScreenShot(isWhite: self.isColorWhiteNow)
-            self.run(SKAction.wait(forDuration: 0.7)){
-                if let bestStep = self.Game[self.nowAt].bestSolution(isWhite: self.isColorWhiteNow, searchDepth: 3){
-                    if self.nowAt == self.Game.count - 1{
-                        self.Game.append(self.Game[self.nowAt])
-                    }
-                    else {
-                        self.Game[self.nowAt + 1] = self.Game[self.nowAt]
-                        
-                    }
-                    self.nowAt = self.nowAt + 1
-                    self.touchDownOnGrid(row: bestStep.row, col: bestStep.col)
-                }
-            }
-            
-        }
-        */
-        ///AI
+    override func willMove(from view: SKView) {
+        stopFinding = true
     }
+    
     func play(row: Int, col: Int, action: @escaping () -> Void = {}) {
 
         
@@ -372,15 +271,48 @@ class GameScene: SKScene {
         Game[nowAt].isColorWhiteNow = isColorWhiteNow
     }
     func retry(){
-        if let view = view {
-            let transition:SKTransition = SKTransition.fade(withDuration: 1)
-            let scene:SKScene = GameScene(fileNamed: "GameScene")!
-            scene.scaleMode = .aspectFill
-            view.presentScene(scene, transition: transition)
-        }
+        let handler: (UIAlertAction) -> Void  = { action in
+            switch action.style{
+            case .default:
+                print("default")
+                if let view = self.view {
+                    let transition:SKTransition = SKTransition.fade(withDuration: 1)
+                    let scene:SKScene = GameScene(fileNamed: "GameScene")!
+                    scene.scaleMode = .aspectFill
+                    view.presentScene(scene, transition: transition)
+                }
+            case .cancel:
+                print("cancel")
+                
+            case .destructive:
+                print("destructive")
+            }}
+        let alert = UIAlertController(title: "Alert", message: "You will lose your progress now. Are you sure to start a new game?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Cool, sweet!", style: .default, handler: handler))
+        alert.addAction(UIAlertAction(title: "No. Let me think", style: .destructive, handler: handler))
+        UIApplication.getPresentedViewController()!.present(alert, animated: true){}
+        
+        
+        
+       
     }
     func yOfReview(_ x: CGFloat) -> CGFloat{
         return 1 - abs(2 * x / CGFloat.pi)
+    }
+    //this is based on the position of indexWithMaxZPositionInReviews
+    func xOfReview(_ i: Int) -> CGFloat{
+        return CGFloat(i - indexOfTheToppestReview) * scene!.size.width / CGFloat(5)
+    }
+    func xOfReview(_ i: Int, base: Int) -> CGFloat{
+        return CGFloat(i - base) * scene!.size.width / CGFloat(5)
+    }
+    func setIndexOfTheToppestReview(){
+        for i in 0...reviews.count - 1{
+            if reviews[i].zPosition > reviews[indexOfTheToppestReview].zPosition{
+                indexOfTheToppestReview = i
+            }
+        }
+        print("indexOfTheToppestReview = ", indexOfTheToppestReview)
     }
     func takeScreenShot(isWhite: Bool){
         ///take the first screenshot
@@ -407,7 +339,7 @@ class GameScene: SKScene {
     func showReview(){
         for i in 0...reviews.count - 1{
             reviews[i].setScale(UIScreen.main.scale)
-            reviews[i].position = CGPoint(x:  -CGFloat(reviews.count - 1 - i) * scene!.size.width / CGFloat(5/*reviews.count*/), y: 0.0)
+            reviews[i].position = CGPoint(x:  xOfReview(i), y: 0.0)
             reviews[i].zPosition = 4.0 + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
             addChild(reviews[i])
             let scaleAnimation = SKAction.scale(to: UIScreen.main.scale * 3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width), duration: 0.1)
@@ -417,29 +349,170 @@ class GameScene: SKScene {
             }
         }
     }
-   
+    func addAllChildrenBeforePreview(){
+        for labelRow in labels{
+            for label in labelRow{
+                addChild(label)
+            }
+        }
+        addChild(blackScore_label)
+        addChild(whiteScore_label)
+        addChild(stateIndicator)
+        addChild(chessBoard)
+        addChild(retryNode)
+        addChild(toTitle)
+        addChild(undoNode)
+        addChild(grid)
+    }
     func undo(){
+        self.stopFinding = true
         
         takeScreenShot(isWhite: self.isColorWhiteNow)
-       
+        indexOfTheToppestReview = reviews.count - 1
+        
+        removeAllChildren()
         
         let reviewBackground = SKSpriteNode(color: .black, size: scene!.size)
         print(scene!.size)
         reviewBackground.name = "reviewBackground"
         reviewBackground.zPosition = 2
         addChild(reviewBackground)
+        
         showReview()
         
     }
+    func touchDownOnGrid(row: Int, col: Int){
+        /*//AIblack vs AIwhite
+         if !self.Game[self.nowAt].isEnd(){
+         //black 5 white 3
+         let searchDepth = isColorWhiteNow ? 5 : 1
+         if let bestStep = self.Game[self.nowAt].bestSolution(isWhite: self.isColorWhiteNow, searchDepth: UInt(searchDepth)){
+         //save game state
+         saveGameState()
+         run(SKAction.wait(forDuration: 0.7)){
+         self.play(row: bestStep.row, col: bestStep.col){
+         //keep playing
+         self.touchDownOnGrid(row: 0, col: 0)
+         }
+         }
+         }
+         }*/
+        let serialQueue = DispatchQueue(label: "com.beAwesome.Reversi", qos: DispatchQoS.userInteractive)
+        if !isAIMode || isColorWhiteNow != isComputerWhite{
+            if self.Game[nowAt].isAvailable(Row: row, Col: col, isWhite: isColorWhiteNow){
+                //take a screenshot before play
+                takeScreenShot(isWhite: self.isColorWhiteNow)
+                //save game state
+                saveGameState()
+            }
+            play(row: row, col: col){
+                //if it is computer's turn
+                if self.isAIMode && self.isColorWhiteNow == self.isComputerWhite{
+                    //self.run(SKAction.wait(forDuration: 0.5)){
+                    self.touchDownOnGrid(row: 0, col: 0)
+                    //}
+                }
+            }
+        }
+        else if !self.Game[self.nowAt].isEnd(){
+            let angleVeclocity = 8.0 * CGFloat.pi / 3.0
+            undoNode.run(SKAction.repeatForever(SKAction.rotate(byAngle: angleVeclocity, duration: 1)))
+            serialQueue.async {
+                if let bestStep = self.Game[self.nowAt].bestSolution(isWhite: self.isColorWhiteNow, searchDepth: 8, stopFinding: &self.stopFinding){
+                    DispatchQueue.main.async {
+                        self.undoNode.removeAllActions()
+                        self.undoNode.zRotation = 0
+                        //save game state
+                        self.saveGameState()
+                        self.play(row: bestStep.row, col: bestStep.col){
+                            //if player needs to pass, then computer will keep playing.
+                            if self.isColorWhiteNow == self.isComputerWhite{
+                                //self.run(SKAction.wait(forDuration: 0.65)){
+                                self.touchDownOnGrid(row: 0, col: 0)
+                                //}
+                                
+                            }
+                        }
+                        
+                    }
+                }
+                //when stop finding
+                else{
+                    self.undoNode.removeAllActions()
+                    self.undoNode.zRotation = 0
+                }
+            }
+        }
+        
+        
+        
+        /*
+         if !isAIMode || isColorWhiteNow != isComputerWhite{
+         if Game[nowAt].isAvailable(Row: row, Col: col, isWhite: isColorWhiteNow){
+         takeScreenShot(isWhite: self.isColorWhiteNow)
+         
+         if nowAt == Game.count - 1{
+         Game.append(Game[nowAt])
+         }
+         else {
+         Game[nowAt + 1] = Game[nowAt]
+         
+         }
+         nowAt = nowAt + 1
+         
+         if grid.color != (isColorWhiteNow ? .white : .black){
+         grid.run(SKAction.wait(forDuration: 0.6)){
+         self.grid.setGridColor(color: self.isColorWhiteNow ? .white : .black)
+         }
+         }
+         
+         }
+         touchDownOnGrid(row: row, col: col)
+         }
+         
+         ///AI
+         //TODO: messy screenshot, needToPass, clickfast will make turn messy
+         if self.isColorWhiteNow == isComputerWhite && isAIMode && !self.Game[nowAt].isEnd(){
+         takeScreenShot(isWhite: self.isColorWhiteNow)
+         self.run(SKAction.wait(forDuration: 0.7)){
+         if let bestStep = self.Game[self.nowAt].bestSolution(isWhite: self.isColorWhiteNow, searchDepth: 3){
+         if self.nowAt == self.Game.count - 1{
+         self.Game.append(self.Game[self.nowAt])
+         }
+         else {
+         self.Game[self.nowAt + 1] = self.Game[self.nowAt]
+         
+         }
+         self.nowAt = self.nowAt + 1
+         self.touchDownOnGrid(row: bestStep.row, col: bestStep.col)
+         }
+         }
+         
+         }
+         */
+        ///AI
+    }
     func touchMovedDuringReviewMode(toPoint pos : CGPoint) {
-        if reviews.first!.position.x > 0 || reviews.last!.position.x < 0{
+        let offset = touchOrigin.x - pos.x
+        let distanceBetweenToppestAndFirst = reviews[indexOfTheToppestReview].position.x - reviews.first!.position.x
+        let distanceBetweenToppestAndLast = reviews.last!.position.x -  reviews[indexOfTheToppestReview].position.x
+
+        print("indexWithMaxZPositionInReviews = ", indexOfTheToppestReview)
+        print("offset = ", offset)
+        if reviews.first!.position.x > 0 {
             for i in 0...reviews.count - 1{
-                reviews[i].position.x += (touchOrigin.x - pos.x) / 20
+                reviews[i].position.x = xOfReview(i, base: 0) + offset - distanceBetweenToppestAndFirst
+                
+            }
+        }
+        else if reviews.last!.position.x < 0{
+            for i in 0...reviews.count - 1{
+                reviews[i].position.x = xOfReview(i, base: reviews.count - 1) + offset + distanceBetweenToppestAndLast
             }
         }
         else{
             for i in 0...reviews.count - 1{
-                reviews[i].position.x += (touchOrigin.x - pos.x) / 5
+                reviews[i].position.x = xOfReview(i) + offset
                 reviews[i].setScale(3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width) * UIScreen.main.scale)
                 reviews[i].zPosition = 4.0 + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
             }
@@ -462,14 +535,15 @@ class GameScene: SKScene {
                 reviews[i].run(SKAction.moveTo(x: -CGFloat(reviews.count - 1 - i) * scene!.size.width / CGFloat(reviews.count), duration: 0.5)){self.isUserInteractionEnabled = true}
             }
         }*/
-        var offset: CGFloat = 0.0
-        let maxZPosition = reviews.map{$0.zPosition}.max()
+        /*let maxZPosition = reviews[indexWithMaxZPositionInReviews].zPosition
         for i in 0...reviews.count - 1{
-            if reviews[i].zPosition == maxZPosition{
+            if reviews[i].zPosition > maxZPosition{
                 offset = -reviews[i].position.x
                 indexWithMaxZPositionInReviews = i
             }
-        }
+        }*/
+        setIndexOfTheToppestReview()
+        let offset = -reviews[indexOfTheToppestReview].position.x
         self.isUserInteractionEnabled = false
         for i in 0...reviews.count - 1{
             let moveToBestPosition = SKAction.sequence([
@@ -478,8 +552,6 @@ class GameScene: SKScene {
                 ])
             reviews[i].run(moveToBestPosition){
                 self.isUserInteractionEnabled = true
-                
-                
             }
         }
         
@@ -491,18 +563,19 @@ class GameScene: SKScene {
             print("touchesBegan count = ", touches.count)
             let pos = touch.location(in: self)
             touchOrigin = pos
+            if isReviewMode {setIndexOfTheToppestReview()}
             let node = self.atPoint(pos)
-            switch node{
-            case childNode(withName: "toTitle")! :
+            switch node {
+            case childNode(withName: "toTitle") :
                 if let view = view {
                     let transition:SKTransition = SKTransition.fade(withDuration: 1)
                     let scene:SKScene = MenuScene(fileNamed: "MenuScene")!
                     scene.scaleMode = .aspectFill
                     view.presentScene(scene, transition: transition)
                 }
-            case childNode(withName: "retry")! :
+            case childNode(withName: "retry") :
                 retry()
-            case childNode(withName: "undo")! :
+            case childNode(withName: "undo") :
                 undo()
             
             /*case let review where (reviews as [SKNode]).contains(review):
@@ -518,7 +591,7 @@ class GameScene: SKScene {
                         self.isUserInteractionEnabled = true}
                     
                 }*/
-            case childNode(withName: "grid")! :
+            case childNode(withName: "grid") :
                 self.isUserInteractionEnabled = false
                 let touchPosOnGrid = (node as! Grid).positionToGridPosition(position: pos)
                 if let row = touchPosOnGrid?.row, let col = touchPosOnGrid?.col{
@@ -550,13 +623,14 @@ class GameScene: SKScene {
             let node = atPoint(pos)
             //in review mode
             if isReviewMode{
+                
                 self.touchUpDuringReviewMode(atPoint: pos)
                 let distance = (pos.x - touchOrigin.x) * (pos.x - touchOrigin.x) + (pos.y - touchOrigin.y) * (pos.y - touchOrigin.y)
                 if distance < 1{
+                    self.stopFinding = false
                     //touch on the toppest review
-                    
-                    if (reviews[indexWithMaxZPositionInReviews] as SKNode) == node{
-                        if indexWithMaxZPositionInReviews == reviews.count - 1{
+                    if (reviews[indexOfTheToppestReview] as SKNode) == node{
+                        if indexOfTheToppestReview == reviews.count - 1{
                             self.touchOnTheToppestReview(node)
                             return
                         }
@@ -566,7 +640,6 @@ class GameScene: SKScene {
                             switch action.style{
                             case .default:
                                 print("default")
-                                
                                 self.touchOnTheToppestReview(node)
                             case .cancel:
                                 print("cancel")
@@ -592,15 +665,16 @@ class GameScene: SKScene {
                         
                         
                     }
-                    // touch is not on the toppest review
+                    // touch is not on the toppest review but in others
                     else if (reviews as [SKNode]).contains(node){
                         let offset: CGFloat = -node.position.x
+                        let index = reviews.firstIndex(of: node as! SKSpriteNode)!
                         self.isUserInteractionEnabled = false
                         for i in 0...reviews.count - 1{
                             reviews[i].zPosition = 4.0 + yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width)
-                            let moveToBestPosition = SKAction.sequence([
-                                SKAction.moveBy(x: offset, y: 0, duration: 0.1),
-                                SKAction.scale(to:UIScreen.main.scale * 3/5 * yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width), duration: 0.1)
+                            let moveToBestPosition = SKAction.group([
+                                SKAction.moveTo(x: xOfReview(i, base: index), duration: 0.2),
+                                SKAction.scale(to:UIScreen.main.scale * 3/5 * yOfReview(xOfReview(i, base: index) * CGFloat.pi / 2 / scene!.size.width), duration: 0.2)
                                 ])
                             reviews[i].run(moveToBestPosition){
                                 self.isUserInteractionEnabled = true
@@ -637,6 +711,8 @@ class GameScene: SKScene {
         nowAt = nowAt + 1
     }
     func touchOnTheToppestReview(_ node: SKNode){
+        addAllChildrenBeforePreview()
+        
         var turnString = node.name
         turnString?.removeFirst(7)
         let turn = Int(turnString!)
@@ -665,6 +741,9 @@ class GameScene: SKScene {
             
             if self.grid.color != (self.isColorWhiteNow ? .white : .black){
                 self.grid.setGridColor(color: self.isColorWhiteNow ? .white : .black)
+            }
+            if self.isAIMode && self.isColorWhiteNow == self.isComputerWhite{
+                self.touchDownOnGrid(row: -1, col: -1)
             }
         }
         //TODO: 4, review wipe speed not good for iphone X  6,highCPU,
