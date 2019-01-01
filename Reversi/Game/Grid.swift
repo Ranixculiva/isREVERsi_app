@@ -11,8 +11,8 @@ class Grid:SKSpriteNode {
     var rows:Int!
     var cols:Int!
     var blockSize:CGFloat!
-    convenience init?(blockSize:CGFloat,rows:Int,cols:Int) {
-        guard let texture = Grid.gridTexture(blockSize: blockSize,rows: rows, cols:cols,color: .black) else {
+    convenience init?(color: SKColor,blockSize:CGFloat,rows:Int,cols:Int) {
+        guard let texture = Grid.gridTexture(blockSize: blockSize,rows: rows, cols:cols,color: color) else {
             return nil
         }
         self.init(texture: texture, color:SKColor.clear, size: texture.size())
@@ -85,13 +85,20 @@ class Grid:SKSpriteNode {
         var gridPos: chessBoardPos?
         let node = atPoint(position)
         if node == self{
+            
             let x = size.width / 2 + position.x
             let y = size.height / 2 - position.y
-            let col = Int(floor(x / blockSize))
-            let row = Int(floor(y / blockSize))
-            gridPos = chessBoardPos(row: row, col: col)
+            if let cols = self.cols , let rows = self.rows{
+                var col = Int(floor( CGFloat(cols) * x / size.width))
+                var row = Int(floor( CGFloat(rows) * y / size.height))
+                //if it's just on the boundary, it will cause some problem.
+                col = (col == cols) ? cols - 1 : col
+                row = (row == rows) ? rows - 1 : row
+                gridPos = chessBoardPos(row: row, col: col)
+               return gridPos
+            }
         }
-        return gridPos
+        return nil
     }
     func setGridColor(color: SKColor){
         if let texture = Grid.gridTexture(blockSize: blockSize,rows: rows, cols:cols,color: color) {

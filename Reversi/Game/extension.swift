@@ -66,3 +66,35 @@ extension Array {
     var chooseOne: Element { return self[Int(arc4random_uniform(UInt32(count)))] }
     func choose(_ n: Int) -> Array { return Array(shuffled.prefix(n)) }
 }
+extension Unicode{
+//    static func circledNumber(_ number: Int) -> String{
+//        switch number{
+//        case 0:
+//            return "\(UnicodeScalar(0x24EA)!)"
+//        case 1...20:
+//            return "\(UnicodeScalar(0x2460 - 1 + number)!)"
+//        case 21...35:
+//            return "\(UnicodeScalar(0x3251 - 21 + number)!)"
+//        case 36...50:
+//            return "\(UnicodeScalar(0x32b1 - 36 + number)!)"
+//        default:
+//            return ""
+//        }
+//    }
+    static func circledNumber(_ number: Int) -> String{
+        switch number{
+        case 0:
+            return "\(UnicodeScalar(0x24FF)!)"
+        case 1...10:
+            return "\(UnicodeScalar(0x2776 - 1 + number)!)"
+        case 11...20:
+            return "\(UnicodeScalar(0x24eb - 11 + number)!)"
+        case 21...35:
+            return "\(UnicodeScalar(0x3251 - 21 + number)!)"
+        case 36...50:
+            return "\(UnicodeScalar(0x32b1 - 36 + number)!)"
+        default:
+            return ""
+        }
+    }
+}
