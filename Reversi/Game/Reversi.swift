@@ -59,7 +59,14 @@ struct Reversi: Codable, CustomStringConvertible{
     var isColorWhiteNow: Bool = false
     var turn: Int = 0
     static let CSquares: [[chessBoardPos]] =
-        [[],
+        [[chessBoardPos(row: 0,col: 1),
+          chessBoardPos(row: 0,col: 2),
+          chessBoardPos(row: 1,col: 0),
+          chessBoardPos(row: 1,col: 3),
+          chessBoardPos(row: 2,col: 0),
+          chessBoardPos(row: 2,col: 3),
+          chessBoardPos(row: 3,col: 1),
+          chessBoardPos(row: 3,col: 2)],
         [chessBoardPos(row: 0,col: 1),
          chessBoardPos(row: 0,col: 4),
          chessBoardPos(row: 1,col: 0),
@@ -775,7 +782,7 @@ struct Reversi: Codable, CustomStringConvertible{
         
         if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}.randomElement()}
         //if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}[2]}
-        print("\n\nnew search \n\n")
+//        print("\n\nnew search \n\n")
         ///description
         ///var space = ""
         ///description
@@ -793,7 +800,7 @@ struct Reversi: Codable, CustomStringConvertible{
         //if game is already end, then load game, will cause a problem
         if firstStepGames.count == 0{return nil}
         for i in 0...firstStepGames.count - 1 {
-            print("branch #\(i)")
+//            print("branch #\(i)")
             ///for a fixed firstStepGame
             var lastDepth = 0
             var scoreStack: [Int] = []
@@ -817,7 +824,7 @@ struct Reversi: Codable, CustomStringConvertible{
                 if stopFinding {return nil}
                 let currentNode = nodesToVisit.removeFirst()
                 
-                print(String(Array(repeating: "●", count: currentNode.turn)), currentNode)
+//                print(String(Array(repeating: "●", count: currentNode.turn)), currentNode)
                 
                 ///discription
                 //                space = ""
@@ -842,10 +849,10 @@ struct Reversi: Codable, CustomStringConvertible{
                         scoreStack.insert(isMaxOperator ? scoreToCalculate.max()! : scoreToCalculate.min()!, at: 0)
                         alphaStack.removeFirst()
                         betaStack.removeFirst()
-                        print("currentDepth < lastDepth  i: ", i)
-                        print("currentDepth < lastDepth use operator: ", isMaxOperator ? "max" : "min")
-                        print("currentDepth < lastDepth numberOfScoresToCalculate: ", numberOfScoresToCalculate)
-                        print("currentDepth < lastDepth scoreStack: ", scoreStack)
+//                        print("currentDepth < lastDepth  i: ", i)
+//                        print("currentDepth < lastDepth use operator: ", isMaxOperator ? "max" : "min")
+//                        print("currentDepth < lastDepth numberOfScoresToCalculate: ", numberOfScoresToCalculate)
+//                        print("currentDepth < lastDepth scoreStack: ", scoreStack)
                     }
                     //BUG
                     if isMaxOperatorStack.first!{
@@ -859,15 +866,15 @@ struct Reversi: Codable, CustomStringConvertible{
                         else {betaStack[0] = scoreStack[0]}
                         
                     }
-                    print("currentDepth < lastDepth alphaStack ",alphaStack)
-                    print("currentDepth < lastDepth betaStack ",betaStack)
+//                    print("currentDepth < lastDepth alphaStack ",alphaStack)
+//                    print("currentDepth < lastDepth betaStack ",betaStack)
                     if let alpha = alphaStack[0], let beta = betaStack[0] {
                         if alpha > beta{
-                            print("currentDepth < lastDepth α > β, address ", nodeNumberStack)
-                            print("currentDepth < lastDepth nodesToVisit = \n", nodesToVisit)
-                            print("currentDepth < lastDepth numberOfScoresToCalculateStack ", numberOfScoresToCalculateStack)
-                            print("currentDepth < lastDepth nodeNumberStack ",nodeNumberStack)
-                            print("")
+//                            print("currentDepth < lastDepth α > β, address ", nodeNumberStack)
+//                            print("currentDepth < lastDepth nodesToVisit = \n", nodesToVisit)
+//                            print("currentDepth < lastDepth numberOfScoresToCalculateStack ", numberOfScoresToCalculateStack)
+//                            print("currentDepth < lastDepth nodeNumberStack ",nodeNumberStack)
+//                            print("")
                             nodesToVisit.removeFirst(numberOfScoresToCalculateStack[0] - nodeNumberStack[0] - 1)
                             let score = scoreStack[0]
                             scoreStack.removeFirst(nodeNumberStack[0])
@@ -896,25 +903,25 @@ struct Reversi: Codable, CustomStringConvertible{
                     alphaStack.insert(alphaStack.first!, at: 0)
                     betaStack.insert(betaStack.first!,at: 0)
                 }
-                print("init isMaxOperatorStack ", isMaxOperatorStack)
-                print("init alhpaStack ", alphaStack)
-                print("init betaStack ", betaStack)
+//                print("init isMaxOperatorStack ", isMaxOperatorStack)
+//                print("init alhpaStack ", alphaStack)
+//                print("init betaStack ", betaStack)
                 
                 if currentDepth < searchDepth - 1 && !currentNode.isEnd(){
                     
                     
                     ///expand the current node
-                    let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(2)
+                    let sampleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(3)
                     //let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
-                    numberOfScoresToCalculateStack.insert(samepleOfAvailableSteps.count, at: 0)
+                    numberOfScoresToCalculateStack.insert(sampleOfAvailableSteps.count, at: 0)
                         nodeNumberStack.insert(0, at: 0)
-                    print("currentDepth < searchDepth - 1  numberOfScoresToCalculateStack: ", numberOfScoresToCalculateStack)
-                    for availableStep in samepleOfAvailableSteps{
+//                    print("currentDepth < searchDepth - 1  numberOfScoresToCalculateStack: ", numberOfScoresToCalculateStack)
+                    for availableStep in sampleOfAvailableSteps{
                         var testGame = currentNode
                         testGame.play(Row: availableStep.row, Col: availableStep.col)
                         nodesToVisit.insert(testGame, at: 0)
                     }
-                    print("currentDepth < searchDepth - 1  nodesToVisit: ", nodesToVisit)
+//                    print("currentDepth < searchDepth - 1  nodesToVisit: ", nodesToVisit)
                     ///expand the current node
                     
                     //print("if isMaxOperatorStack", isMaxOperatorStack)
@@ -930,8 +937,8 @@ struct Reversi: Codable, CustomStringConvertible{
                     scoreStack.insert(currentEvaluation, at: 0)
                     
                     
-                    print("current Node end scoreStack ", scoreStack)
-                    print("current Node end isMaxOperatorStack ", isMaxOperatorStack)
+//                    print("current Node end scoreStack ", scoreStack)
+//                    print("current Node end isMaxOperatorStack ", isMaxOperatorStack)
                 }
                 else{
                     ///expand the current node according to alpha, beta
@@ -950,7 +957,7 @@ struct Reversi: Codable, CustomStringConvertible{
                         //nodesToVist.insert(testGame, at: 0)
                         currentDepth = testGame.turn - self.turn
                         let currentEvaluation = testGame.evaluation(weight: weight)
-                        print("endpoint: ", currentEvaluation)
+//                        print("endpoint: ", currentEvaluation)
                         scoreStack.insert(currentEvaluation, at: 0)
                         
                         ///alpha-beta cut
@@ -999,14 +1006,14 @@ struct Reversi: Codable, CustomStringConvertible{
                 let scoreToCalculate = Array(scoreStack.prefix(numberOfScoresToCalculate))
                 scoreStack.removeFirst(numberOfScoresToCalculate)
                 scoreStack.insert(isMaxOperator ? scoreToCalculate.max()! : scoreToCalculate.min()!, at: 0)
-                print("end use operator: ", isMaxOperator ? "max" : "min")
-                print("end numberOfScoresToCalculateStack: ", numberOfScoresToCalculate)
-                print("end scoreStack: ", scoreStack)
-                print("")
+//                print("end use operator: ", isMaxOperator ? "max" : "min")
+//                print("end numberOfScoresToCalculateStack: ", numberOfScoresToCalculate)
+//                print("end scoreStack: ", scoreStack)
+                //print("")
             }
             firstStepMinLastScore[firstSteps[i]] = scoreStack.first!
-            print("end one branch, and score is ", scoreStack.first!)
-            print("")
+//            print("end one branch, and score is ", scoreStack.first!)
+//            print("")
             
             
             

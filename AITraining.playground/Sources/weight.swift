@@ -18,8 +18,8 @@ public struct Weight: CustomStringConvertible{
     public var cornerWeight: Int
     public init(scoreDifferenceWeight: Int = 1,
         sideWeight: Int = 2,
-        CWeight: Int = 5,
-        XWeight: Int = 20,
+        CWeight: Int = -5,
+        XWeight: Int = -20,
         cornerWeight: Int = 50){
         self.scoreDifferenceWeight = scoreDifferenceWeight
         self.sideWeight = sideWeight
@@ -35,9 +35,9 @@ public struct Weight: CustomStringConvertible{
 //        let cornerWeight = Array(30...60).randomElement()!
         //let scoreDifferenceWeight = Array(1...60).randomElement()!
         let sideWeight = Array(1...60).randomElement()!
-        let CWeight = Array(1...60).randomElement()!
-        let XWeight = Array(1...60).randomElement()!
-        let cornerWeight = Array(1...60).randomElement()!
+        let CWeight = Array(-30 ... -1).randomElement()!
+        let XWeight = Array(-60 ... -1).randomElement()!
+        let cornerWeight = Array(30...60).randomElement()!
         return Weight(
             scoreDifferenceWeight: 1,
             sideWeight: sideWeight,

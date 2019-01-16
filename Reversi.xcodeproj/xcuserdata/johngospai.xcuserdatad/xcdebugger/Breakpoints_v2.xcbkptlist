@@ -6,32 +6,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Reversi/Game/Reversi.swift"
-            timestampString = "567938722.549011"
+            filePath = "Reversi/Game/CustomSlider.swift"
+            timestampString = "569356419.5842479"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "877"
-            endingLineNumber = "877"
-            landmarkName = "bestSolution(isWhite:searchDepth:stopFinding:weight:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Reversi/Game/Reversi.swift"
-            timestampString = "567938722.549574"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "876"
-            endingLineNumber = "876"
-            landmarkName = "bestSolution(isWhite:searchDepth:stopFinding:weight:)"
+            startingLineNumber = "107"
+            endingLineNumber = "107"
+            landmarkName = "touchesBegan(_:with:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -41,13 +25,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Reversi/Game/Reversi.swift"
-            timestampString = "567938722.549942"
+            filePath = "Reversi/Game/CustomSlider.swift"
+            timestampString = "569356419.5843329"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "925"
-            endingLineNumber = "925"
-            landmarkName = "bestSolution(isWhite:searchDepth:stopFinding:weight:)"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
+            landmarkName = "touchesEnded(_:with:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -57,29 +41,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Reversi/Game/Reversi.swift"
-            timestampString = "567938722.550294"
+            filePath = "Reversi/GameScene.swift"
+            timestampString = "569356419.584402"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "997"
-            endingLineNumber = "997"
-            landmarkName = "bestSolution(isWhite:searchDepth:stopFinding:weight:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Reversi/Game/Reversi.swift"
-            timestampString = "567938722.550643"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1007"
-            endingLineNumber = "1007"
-            landmarkName = "bestSolution(isWhite:searchDepth:stopFinding:weight:)"
+            startingLineNumber = "145"
+            endingLineNumber = "145"
+            landmarkName = "reviewSliderTouched()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

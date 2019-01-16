@@ -4,7 +4,7 @@ import AITraining_Sources
 
 
 var stopFinding = false
-var testNumber = 25
+var testNumber = 10
 var draws = 0.0
 var wins = [0.0, 0.0]
 let gameSize = 6
@@ -105,30 +105,30 @@ func whoWins(players: [Player], testNumber: Int = 500) -> Int {
 //initialize two players p0 and p1
 var initialStartWeight = Weight(scoreDifferenceWeight: 1,
                       sideWeight: 11,
-                      CWeight: 49,
-                      XWeight: 56,
+                      CWeight: -30,
+                      XWeight: -50,
                       cornerWeight: 60
 )
 var initialMiddleWeight = Weight(scoreDifferenceWeight: 1,
                           sideWeight: 22,
-                          CWeight: 41,
-                          XWeight: 58,
+                          CWeight: -30,
+                          XWeight: -50,
                           cornerWeight: 40
 )
 var initialFinalWeight = Weight(scoreDifferenceWeight: 1,
                          sideWeight: 20,
-                         CWeight: 35,
-                         XWeight: 30,
+                         CWeight: -30,
+                         XWeight: -50,
                          cornerWeight: 19
 )
 let initialWeights = [initialStartWeight, initialMiddleWeight, initialFinalWeight]
 var p0 = Player(
     name: "player0",
-    searchDepth: 6, weights: initialWeights
+    searchDepth: 5, weights: initialWeights
     )
 var p1 = Player(
     name: "player1",
-    searchDepth: 6,
+    searchDepth: 5,
     weights: initialWeights)
 var players = [p0,p1]
 var bestWeightChoice = p0.weights

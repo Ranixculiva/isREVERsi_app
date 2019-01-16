@@ -7,14 +7,18 @@
 //
 import SpriteKit
 import GameplayKit
-///TODO: win grid color
+///TODO: draw grid color
 ///TODO: add sound
 ///TODO: touch on unavailable place when computer thinks will shake later
 ///TODO: the effect when touch on button
 ///TODO: when game finish, and then touch will crash if I win
 ///TODO: label becomes bigger before taking a screenshot. It's good but wrong position.
 ///TODO: sometimes disappear, maybe computer too fast
+///TODO: resign
+///TODO: label when touch on the button
 class GameScene: SKScene {
+    
+    
     
     var gameSize = 6
     var needToLoad = false
@@ -26,10 +30,12 @@ class GameScene: SKScene {
     var chessBoard: SKTileMapNode!
     var stateIndicatorColorLeft : SKSpriteNode!
     var stateIndicatorColorRight: SKSpriteNode!
+    var stateLabel = SKLabelNode()
     var retryNode:SKSpriteNode!
     var toTitle: SKSpriteNode!
     var undoNode: SKSpriteNode!
     var grid : Grid!
+    var reviewSlider: CustomSlider!
     var chessBoardBackground: SKSpriteNode!
     
     var reviews:[SKSpriteNode] = []
@@ -43,7 +49,7 @@ class GameScene: SKScene {
     var moveTimes = 0
     var scaledLabelAt = (row: 0, col: 0)
     //save with JSONEncoder or propertyList
-    var AIlevel = UInt(6)
+    var AIlevel = UInt(3)
     var isReviewMode = false
     var isAIMode = true
     var isComputerWhite = true
@@ -62,7 +68,9 @@ class GameScene: SKScene {
         case isColorWhiteNow = "isColorWhiteNow"
         case nowAt = "nowAt"
     }
-    
+    enum notificationCenterName: String{
+        case reviewSlider =  "reviewSlider"
+    }
     /**
      use cleanUpSavedFile() before any save() to ensure the not too much data creates.
      */
@@ -128,7 +136,28 @@ class GameScene: SKScene {
         save()
         print("app IN background")
     }
-    
+    var originalReviewSliderValue: CGFloat = 0.0
+    @objc func reviewSliderTouched(){
+        let valueToLength = xOfReview(1) - xOfReview(0)
+        switch reviewSlider.state! {
+        case .begin:
+            touchOrigin.x = 0
+            originalReviewSliderValue = reviewSlider.value
+            setIndexOfTheToppestReview()
+            
+            touchMovedDuringReviewMode(toPoint: CGPoint(x: xOfReview(originalReviewSliderValue), y: 0),changeReviewSliderValue: false)
+            setIndexOfTheToppestReview()
+            touchOrigin.x = -xOfReview(reviewSlider.value)
+        case .move:
+            let valueOffset = reviewSlider.value - originalReviewSliderValue
+            touchMovedDuringReviewMode(toPoint: CGPoint(x: valueOffset * valueToLength, y: 0), changeReviewSliderValue: false)
+            
+        case .end, .cancel:
+            
+            let valueOffset = reviewSlider.value - originalReviewSliderValue
+            touchUpDuringReviewMode(atPoint: CGPoint(x: valueOffset * valueToLength, y: 0), changeReviewSliderValue: false)
+        }
+    }
     override func didMove(to view: SKView) {
         Game = [Reversi(n: gameSize)]
         
@@ -157,24 +186,24 @@ class GameScene: SKScene {
 
         let firstPartWeight = Weight(
             scoreDifferenceWeight: 1,
-            sideWeight: 13,
-            CWeight: 32,
-            XWeight: 13,
-            cornerWeight: 50)
+            sideWeight: 54,
+            CWeight: -2,
+            XWeight: -60,
+            cornerWeight: 38)
         let secondPartWeight = Weight(
             scoreDifferenceWeight: 1,
-            sideWeight: 55,
-            CWeight: 51,
-            XWeight: 8,
-            cornerWeight: 52)
+            sideWeight: 54,
+            CWeight: -26,
+            XWeight: -53,
+            cornerWeight: 59)
         let thirdPartWeight = Weight(
             scoreDifferenceWeight: 1,
-            sideWeight: 56,
-            CWeight: 14,
-            XWeight: 51,
-            cornerWeight: 55)
+            sideWeight: 10,
+            CWeight: -7,
+            XWeight: -27,
+            cornerWeight: 31)
         //computer.weights = [firstPartWeight, secondPartWeight, thirdPartWeight]
-        computer.weights = [Weight()]
+        computer.weights = [firstPartWeight, secondPartWeight, thirdPartWeight]
         computer.name = "computer"
         computer.searchDepth = 4
 ///set up computer
@@ -182,6 +211,7 @@ class GameScene: SKScene {
         
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(appMovedToBackground(notification:)), name: UIApplication.willResignActiveNotification, object: nil)
+        notificationCenter.addObserver(self, selector: #selector(reviewSliderTouched), name: NSNotification.Name(notificationCenterName.reviewSlider.rawValue), object: nil)
         
         view.isMultipleTouchEnabled = false
         
@@ -280,7 +310,13 @@ class GameScene: SKScene {
         grid.zPosition = 1
         addChild(grid)
         
-        
+        //initialize a review slider
+        let barColor = SKColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.2)
+        let sliderColor = SKColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.4)
+        let activeSliderColor = sliderColor.withAlphaComponent(1.0)
+        reviewSlider = CustomSlider(notificationName: notificationCenterName.reviewSlider.rawValue, count: 1, barColor: barColor, sliderColor: sliderColor, activeSliderColor: activeSliderColor, barLength: 0.75 * size.width, barWidth: 20)
+        reviewSlider.position = CGPoint(x: 0, y: -4/10 * size.height)
+        reviewSlider.zPosition = 3
         
         
         //initialize stateIndicator with mask and show upArrow
@@ -305,7 +341,12 @@ class GameScene: SKScene {
         stateIndicator.position = CGPoint(x:0,y: (-8.0 / 12.0) * chessBoard!.mapSize.height * chessBoard!.yScale)
         stateIndicator.zPosition = -1
         addChild(stateIndicator)
-        
+        //initialize state label
+        stateLabel = labels[0][0].copy() as! SKLabelNode
+        stateLabel.name = "stateLabel"
+        stateLabel.isHidden = true
+        stateLabel.fontSize = stateIndicatorSize.height
+        addChild(stateLabel)
         self.showBoard(self.nowAt)
         
         if isAIMode && isColorWhiteNow == isComputerWhite && !Game[nowAt].isEnd(){
@@ -382,19 +423,18 @@ class GameScene: SKScene {
         }
         
         if Game[nowAt].isEnd(){
-            
             //show crown
             var isWinnerWhite: Bool? = Game[nowAt].getWhiteScore() > Game[nowAt].getBlackScore()  ? true : false
             if Game[nowAt].getWhiteScore() == Game[nowAt].getBlackScore(){
                 isWinnerWhite = nil
             }
-           
+        
             
             
             
             
             if let isWinnerWhite = isWinnerWhite{
-                
+                isColorWhiteNow = isWinnerWhite
                 let stateIndicatorSize =
                     CGSize(width: chessBoard!.mapSize.width * chessBoard!.xScale / 2.5, height: chessBoard!.mapSize.height * chessBoard!.yScale / 4)
                 
@@ -493,6 +533,13 @@ class GameScene: SKScene {
         return 1 - abs(2 * x / CGFloat.pi)
     }
     //this is based on the position of indexWithMaxZPositionInReviews
+    func xOfReview(_ i: CGFloat) -> CGFloat{
+        return CGFloat(i - CGFloat(indexOfTheToppestReview)) * scene!.size.width / CGFloat(5)
+    }
+    func xOfReview(_ i: CGFloat, base: Int) -> CGFloat{
+        return CGFloat(i - CGFloat(base)) * scene!.size.width / CGFloat(5)
+    }
+    //this is based on the position of indexWithMaxZPositionInReviews
     func xOfReview(_ i: Int) -> CGFloat{
         return CGFloat(i - indexOfTheToppestReview) * scene!.size.width / CGFloat(5)
     }
@@ -557,6 +604,7 @@ class GameScene: SKScene {
         addChild(blackScore_label)
         addChild(whiteScore_label)
         addChild(stateIndicator)
+        addChild(stateLabel)
         addChild(chessBoard)
         addChild(retryNode)
         addChild(toTitle)
@@ -577,6 +625,10 @@ class GameScene: SKScene {
         reviewBackground.name = "reviewBackground"
         reviewBackground.zPosition = 2
         addChild(reviewBackground)
+        
+        reviewSlider.count = reviews.count
+        reviewSlider.value = CGFloat(reviewSlider.count - 1)
+        addChild(reviewSlider)
         
         showReview()
         
@@ -698,7 +750,7 @@ class GameScene: SKScene {
          */
         ///AI
     }
-    func touchMovedDuringReviewMode(toPoint pos : CGPoint) {
+    func touchMovedDuringReviewMode(toPoint pos : CGPoint, changeReviewSliderValue: Bool = true) {
         let offset = touchOrigin.x - pos.x
         let distanceBetweenToppestAndFirst = reviews[indexOfTheToppestReview].position.x - reviews.first!.position.x
         let distanceBetweenToppestAndLast = reviews.last!.position.x -  reviews[indexOfTheToppestReview].position.x
@@ -711,6 +763,7 @@ class GameScene: SKScene {
                 reviews[i].setScale(scaleOfReview(i, base: 0))
                 reviews[i].zPosition = zPositionOfReview(i)
             }
+            if changeReviewSliderValue {reviewSlider.value = 0}
         }
         else if reviews.last!.position.x < 0{
             for i in 0...reviews.count - 1{
@@ -718,6 +771,7 @@ class GameScene: SKScene {
                 reviews[i].setScale(scaleOfReview(i, base: reviews.count - 1))
                 reviews[i].zPosition = zPositionOfReview(i)
             }
+            if changeReviewSliderValue {reviewSlider.value = CGFloat(reviews.count - 1)}
         }
         else{
             for i in 0...reviews.count - 1{
@@ -725,12 +779,17 @@ class GameScene: SKScene {
                 reviews[i].setScale(3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width) * UIScreen.main.scale)
                 reviews[i].zPosition = 4.0 + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
             }
+            
+            if changeReviewSliderValue {
+                let lengthBetweenTwoReviews = xOfReview(1, base: 0) - xOfReview(0,base: 0)
+                print("lengthBetw tWEodfkjl : ", lengthBetweenTwoReviews)
+                reviewSlider.value = CGFloat(indexOfTheToppestReview) - offset / lengthBetweenTwoReviews}
         }
     }
     func touchUp(atPoint pos : CGPoint){
         
     }
-    func touchUpDuringReviewMode(atPoint pos : CGPoint) {
+    func touchUpDuringReviewMode(atPoint pos : CGPoint, changeReviewSliderValue: Bool = true) {
         
        /* if reviews.first!.position.x > 0 {
             isUserInteractionEnabled = false
@@ -756,8 +815,8 @@ class GameScene: SKScene {
         for i in 0...reviews.count - 1{
             reviews[i].position.x = xOfReview(i, base: indexOfTheToppestReview)
             reviews[i].setScale(UIScreen.main.scale * 3/5 * yOfReview(xOfReview(i, base: indexOfTheToppestReview) * CGFloat.pi / 2 / scene!.size.width))
-            
         }
+        if changeReviewSliderValue {reviewSlider.value = CGFloat(indexOfTheToppestReview)}
 //        self.isUserInteractionEnabled = false
 //        for i in 0...reviews.count - 1{
 //            let moveToBestPosition = SKAction.group([
@@ -771,7 +830,24 @@ class GameScene: SKScene {
         
         
     }
-    
+    func showState(row: Int, col: Int){
+        stateLabel.isHidden = false
+        stateLabel.text = labels[row][col].text
+        stateLabel.fontColor = labels[row][col].fontColor
+        stateLabel.position = stateIndicator.position
+        stateIndicator.isHidden = true
+        
+        
+//        stateLabel.position = CGPoint(x: 200, y: 200)
+//        stateLabel.name = "stateLabel"
+//        stateLabel.fontColor = labels[row][col].fontColor
+//        stateLabel.fontSize = labels[row][col].fontSize
+//        stateLabel.fontName = labels[row][col].fontName
+    }
+    func endShowingState(){
+        stateLabel.isHidden = true
+        stateIndicator.isHidden = false
+    }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             touchOrigin = touch.location(in: self)
@@ -782,10 +858,11 @@ class GameScene: SKScene {
                 guard let row = touchPosOnGrid?.row else {return}
                 guard let col = touchPosOnGrid?.col else {return}
                 
-                    labels[row][col].fontSize = chessBoard.mapSize.width * chessBoard.xScale / CGFloat(gameSize)
-                    scaledLabelAt.row = row
-                    scaledLabelAt.col = col
+                labels[row][col].fontSize = chessBoard.mapSize.width * chessBoard.xScale / CGFloat(gameSize)
+                scaledLabelAt.row = row
+                scaledLabelAt.col = col
                 
+                showState(row: row, col: col)
                 
             default:
                 break
@@ -797,7 +874,7 @@ class GameScene: SKScene {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let t = touches.first
         {
-            
+            endShowingState()
             if isReviewMode{
                 self.touchMovedDuringReviewMode(toPoint: t.location(in: self))
                 moveTimes += 1
@@ -820,6 +897,7 @@ class GameScene: SKScene {
                         scaledLabelAt.row = row
                         scaledLabelAt.col = col
                     }
+                    showState(row: row, col: col)
                     
                 default:
                     break
@@ -832,6 +910,7 @@ class GameScene: SKScene {
         print(moveTimes)
         
         if let t = touches.first {
+            endShowingState()
             let pos = t.location(in: self)
             let node = atPoint(pos)
             //in review mode
@@ -873,14 +952,19 @@ class GameScene: SKScene {
                         let index = reviews.firstIndex(of: node as! SKSpriteNode)!
                         self.isUserInteractionEnabled = false
                         for i in 0...reviews.count - 1{
-                            reviews[i].zPosition = 4.0 + yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width)
+                            //reviews[i].zPosition = 4.0 + yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width)
                             let moveToBestPosition = SKAction.group([
                                 SKAction.moveTo(x: xOfReview(i, base: index), duration: 0.2),
-                                SKAction.scale(to:UIScreen.main.scale * 3/5 * yOfReview(xOfReview(i, base: index) * CGFloat.pi / 2 / scene!.size.width), duration: 0.2)
+                                SKAction.scale(to:UIScreen.main.scale * 3/5 * yOfReview(xOfReview(i, base: index) * CGFloat.pi / 2 / scene!.size.width), duration: 0.2),
+                                SKAction.moveZPositionTo(to: 4.0 + yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width), withDuration: 0.2),
                                 ])
                             reviews[i].run(moveToBestPosition){
+                                //self.reviewSlider.value = CGFloat(index)
                                 self.isUserInteractionEnabled = true
                             }
+                        }
+                        reviewSlider.run(SKAction.moveValueTo(to: CGFloat(index), withDuration: 0.2)){
+                            self.isUserInteractionEnabled = false
                         }
                     }
                 }
@@ -924,6 +1008,7 @@ class GameScene: SKScene {
                         if !Game[nowAt].isEnd() {touchDownOnGrid(row: row, col: col)}
                         labels[row][col].fontSize = chessBoard.mapSize.width * chessBoard.xScale / CGFloat(gameSize) * 3/5
                         
+                        
                         //if scaledLabelAt.row != row || scaledLabelAt.col != col{
                         
 
@@ -937,12 +1022,9 @@ class GameScene: SKScene {
             }
         }
     }
-    /*
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for t in touches { self.touchUp(atPoint: t.location(in: self)) }
+        touchesEnded(touches, with: event)
     }
-   
- */
     func showBoard(_ nowAt: Int, withAnimation: Bool = false){
         self.Game[self.nowAt].showBoard(labels: self.labels, whiteScoreLabel: self.whiteScore_label, blackScoreLabel: self.blackScore_label, stateIndicator: self.stateIndicator, stateIndicatorColorLeft: self.stateIndicatorColorLeft, stateIndicatorColorRight: self.stateIndicatorColorRight, chessBoardScaledWidth: self.chessBoardScaledWidth, chessBoardScaledHeight: self.chessBoardScaledHeight, isWhite: self.isColorWhiteNow, withAnimation: withAnimation)
     }
@@ -958,6 +1040,7 @@ class GameScene: SKScene {
         Game[nowAt].turn = nowAt
     }
     func touchOnTheToppestReview(_ node: SKNode){
+        removeChildren(in: [reviewSlider])
         addAllChildrenBeforePreview()
         
         var turnString = node.name

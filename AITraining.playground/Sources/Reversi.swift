@@ -673,8 +673,8 @@ public struct Reversi{
                     
                     
                     ///expand the current node
-                    //let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).choose(2)
-                    let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
+                    let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(2)
+                    //let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
                     numberOfScoresToCalculateStack.insert(samepleOfAvailableSteps.count, at: 0)
                     nodeNumberStack.insert(0, at: 0)
 //                    print("currentDepth < searchDepth - 1  numberOfScoresToCalculateStack: ", numberOfScoresToCalculateStack)
@@ -704,8 +704,8 @@ public struct Reversi{
                 }
                 else{
                     ///expand the current node according to alpha, beta
-                    //let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(2)
-                    let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
+                    let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(2)
+                    //let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
                     let isMaxOperator = isMaxOperatorStack.first!
                     
                     var alpha = alphaStack.first!

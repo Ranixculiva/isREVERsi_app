@@ -209,7 +209,8 @@ class MenuScene: SKScene {
            
             
             let scene = GameScene(fileNamed: "GameScene")!
-            scene.gameSize = 8
+            scene.gameSize = 4
+            scene.isAIMode = false
             scene.isComputerWhite = false
             if saveUtility.loadGames() == nil{
                 scene.scaleMode = .aspectFill

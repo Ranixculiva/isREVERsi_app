@@ -94,7 +94,51 @@ extension Unicode{
         case 36...50:
             return "\(UnicodeScalar(0x32b1 - 36 + number)!)"
         default:
-            return ""
+            return "\(number)"
         }
+    }
+}
+extension SKAction{
+    open class func moveZPositionTo(to toZPosition: CGFloat, withDuration: TimeInterval) -> SKAction{
+        var firstTimeRunTheBlock = true
+        var originalZPosition: CGFloat = 0.0
+        var deltaOfZPosition: CGFloat = 0.0
+        let customAction = SKAction.customAction(withDuration: withDuration) {
+            node, elapsedTime in
+            
+            if let node = node as? SKSpriteNode {
+                if CGFloat(withDuration) > 0{
+                    if firstTimeRunTheBlock {
+                        originalZPosition = node.zPosition
+                        deltaOfZPosition = (toZPosition - originalZPosition) / CGFloat(withDuration)
+                        firstTimeRunTheBlock = false
+                    }
+                    node.zPosition = originalZPosition + elapsedTime * deltaOfZPosition
+                }
+                
+            }
+        }
+        return customAction
+    }
+    open class func moveValueTo(to toValue: CGFloat, withDuration: TimeInterval) -> SKAction{
+        var firstTimeRunTheBlock = true
+        var originalValue: CGFloat = 0.0
+        var deltaOfValue: CGFloat = 0.0
+        let customAction = SKAction.customAction(withDuration: withDuration) {
+            node, elapsedTime in
+            
+            if let slider = node as? CustomSlider {
+                if CGFloat(withDuration) > 0{
+                    if firstTimeRunTheBlock {
+                        originalValue = slider.value
+                        deltaOfValue = (toValue - originalValue) / CGFloat(withDuration)
+                        firstTimeRunTheBlock = false
+                    }
+                    slider.value = originalValue + elapsedTime * deltaOfValue
+                }
+                
+            }
+        }
+        return customAction
     }
 }
