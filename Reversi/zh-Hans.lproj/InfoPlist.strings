@@ -1,0 +1,8 @@
+/* 
+  InfoPlist.strings
+  Reversi
+
+  Created by john gospai on 2019/2/23.
+  Copyright © 2019 john gospai. All rights reserved.
+*/
+NSPhotoLibraryAddUsageDescription = "请允许存取游戏结果至您的相簿";

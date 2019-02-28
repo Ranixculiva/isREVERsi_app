@@ -1,0 +1,38 @@
+/* 
+  Localizable.strings
+  Reversi
+
+  Created by john gospai on 2019/2/23.
+  Copyright © 2019 john gospai. All rights reserved.
+*/
+//MARK: - menu icon
+"back to title" = "back to title";
+"undo" = "undo";
+"retry" = "retry";
+"help" = "help";
+"share" = "share";
+"resign" = "resign";
+//MARK: - challenges
+"win" = "win the game.";
+"getPoints" = "get %d points.";
+"winTheComputerByPoints" = "win the computer by %d points.";
+//MARK: - alerts
+"alert.retry.title" = "Alert";
+"alert.retry.message" = "You will lose your current progress. Are you sure to start a new game?";
+"alert.retry.action.default.title" = "Cool, sweet!";
+"alert.retry.action.destructive.title" = "No! Let me think.";
+
+"alert.undo.title" = "Alert";
+"alert.undo.message" = "You will be unable to redo. Are you sure to undo to this move?";
+"alert.undo.action.default.title" = "Cool, sweet!";
+"alert.undo.action.destructive.title" = "No! Let me think.";
+//MARK: - level select
+"LEVEL" = "LEVEL";
+//MARK: - mode select
+"ONLINE" = "ONLINE";
+"OFFLINE" = "OFFLINE";
+"PARTY" = "PARTY";
+//MARK: - guide
+"guide.logo" = "Tap the logo to play against either a computer or a human opponent. Now, make it dark to move first and play against the computer.";
+"guide.gameboard.swipe" = "Swipe to choose the size of the game board. Now please choose 4X4.";
+"guide.gameboard.tap" = "Tap to get into level select.";

@@ -1,0 +1,38 @@
+/* 
+  Localizable.strings
+  Reversi
+
+  Created by john gospai on 2019/2/23.
+  Copyright © 2019 john gospai. All rights reserved.
+*/
+//MARK: - menu icon
+"back to title" = "返回标题";
+"undo" = "悔棋";
+"retry" = "重来";
+"help" = "帮助";
+"share" = "分享";
+"resign" = "投降";
+//MARK: - challenges
+"win" = "获得胜利";
+"getPoints" = "得到%d分";
+"winTheComputerByPoints" = "赢过电脑%d分";
+//MARK: - alerts
+"alert.retry.title" = "警告";
+"alert.retry.message" = "你会失去你目前的进度，你确定要开始新的游戏吗？";
+"alert.retry.action.default.title" = "那真是太棒了！";
+"alert.retry.action.destructive.title" = "不！让我再想想。";
+
+"alert.undo.title" = "警告";
+"alert.undo.message" = "在此之后的纪录将会消失。你确定要回到这一步吗？";
+"alert.undo.action.default.title" = "那真是太棒了！";
+"alert.undo.action.destructive.title" = "不！让我再想想。";
+//MARK: - level select
+"LEVEL" = "关卡";
+//MARK: - mode select
+"ONLINE" = "线上游玩";
+"OFFLINE" = "离线游玩";
+"PARTY" = "派对模式";
+//MARK: - guide
+"guide.logo" = "点击标示来决定以电脑或人类为对手，现在请选择黑色作为先手以对抗电脑玩家。";
+"guide.gameboard.swipe" = "滑动以选择游戏棋盘大小，现在请选择4X4大小。";
+"guide.gameboard.tap" = "点击以进入关卡选择。";

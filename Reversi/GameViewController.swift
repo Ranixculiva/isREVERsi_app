@@ -11,25 +11,80 @@ import SpriteKit
 import GameplayKit
 
 class GameViewController: UIViewController {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
+    override var prefersStatusBarHidden: Bool {
+        if #available(iOS 11.0, *) {
+            guard let topInset = UIApplication.shared.delegate?.window.unsafelyUnwrapped?.safeAreaInsets.top else{return true}
+            if topInset > CGFloat(20) {return false}
+            
+        }
+        return true
+    }
+    /*
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         if let view = self.view as! SKView? {
+            
+            //view.preferredFramesPerSecond = 30
             // Load the SKScene from 'GameScene.sks'
-            if let scene = SKScene(fileNamed: "MenuScene") {
-                // Set the scale mode to scale to fit the window
-                scene.scaleMode = .aspectFill
-                //scene.backgroundColor = .black
-                // Present the scene
-                view.presentScene(scene)
-               
-            }
+            //if let scene = SKScene(fileNamed: "MenuScene") {
+            let scene = TitleScene()
+            // Set the scale mode to scale to fit the window
+            scene.scaleMode = .aspectFill
+            // Present the scene
+            //view.presentScene(scene)
+            view.presentScene(scene)
+            //}
             
             view.ignoresSiblingOrder = true
             view.showsFPS = true
             view.showsNodeCount = true
         }
+    }
+ */
+    override func viewDidLoad() {
+        
+        super.viewDidLoad()
+        if let view = self.view as! SKView? {
+            
+            //view.preferredFramesPerSecond = 30
+            // Load the SKScene from 'GameScene.sks'
+            //if let scene = SKScene(fileNamed: "MenuScene") {
+            let scene = TitleScene()
+            // Set the scale mode to scale to fit the window
+            scene.scaleMode = .aspectFill
+            // Present the scene
+            //view.presentScene(scene)
+            view.presentScene(scene)
+            //}
+            
+            view.ignoresSiblingOrder = true
+            view.showsFPS = true
+            view.showsNodeCount = true
+        }
+//        print(UIApplication.shared.delegate?.window??.safeAreaInsets.top)
+//        //TODO: prepare SharedVariable
+//        let scene = SKScene()
+//        scene.backgroundColor = SKColor(red: 0, green: 122/255, blue: 1, alpha: 1)
+//        if let view = self.view as! SKView?{
+//            view.presentScene(scene)
+//        }
+        
+//        if let view = self.view as! SKView? {
+//            
+//            //view.preferredFramesPerSecond = 30
+//            // Load the SKScene from 'GameScene.sks'
+//            //if let scene = SKScene(fileNamed: "TitleScene") {
+//            let scene = TitleScene()
+//                // Set the scale mode to scale to fit the window
+//                scene.scaleMode = .aspectFill
+//                // Present the scene
+//                view.presentScene(scene)
+//            //}
+//            
+//            view.ignoresSiblingOrder = true
+//            view.showsFPS = true
+//            view.showsNodeCount = true
+//        }
     }
     override var shouldAutorotate: Bool {
         return true
@@ -41,9 +96,5 @@ class GameViewController: UIViewController {
         } else {
             return .all
         }
-    }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
     }
 }

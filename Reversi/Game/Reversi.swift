@@ -184,10 +184,33 @@ struct Reversi: Codable, CustomStringConvertible{
     {
         return isWhite ? whiteScore : blackScore
     }
+    func doesWhiteWin() -> Bool{
+        return getWhiteScore() > getBlackScore()
+    }
+    func doesBlackWin() -> Bool{
+        return getBlackScore() > getWhiteScore()
+    }
+    func doBothDraw() -> Bool {
+        return getBlackScore() == getWhiteScore()
+    }
     func getScoreDifference(isWhite: Bool) -> Int{
         return getScore(isWhite: isWhite) - getScore(isWhite: !isWhite)
     }
     //show the game board
+    fileprivate func changeStateIndicator(imageNamed: String, width: CGFloat, height: CGFloat, stateIndicator: SKCropNode, stateIndicatorColorLeft: SKSpriteNode, stateIndicatorColorRight: SKSpriteNode, leftColor: UIColor, rightColor: UIColor) {
+        let stateIndicatorSize =
+            CGSize(width: width, height: height)
+        stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: imageNamed), size: stateIndicatorSize)
+        stateIndicatorColorLeft.color = leftColor
+        stateIndicatorColorRight.color = rightColor
+        stateIndicatorColorLeft.size.width = stateIndicator.frame.width/2
+        stateIndicatorColorRight.size.width = stateIndicator.frame.width/2
+        stateIndicatorColorLeft.size.height = stateIndicator.frame.height
+        stateIndicatorColorRight.size.height = stateIndicator.frame.height
+        stateIndicatorColorLeft.position = CGPoint(x:-0.25 * stateIndicator.frame.width,y:0)
+        stateIndicatorColorRight.position = CGPoint(x: 0.25 * stateIndicator.frame.width,y:0)
+    }
+    
     func showBoard(labels: [[SKLabelNode]], whiteScoreLabel: SKLabelNode, blackScoreLabel: SKLabelNode, stateIndicator: SKCropNode, stateIndicatorColorLeft: SKSpriteNode, stateIndicatorColorRight: SKSpriteNode, chessBoardScaledWidth width: CGFloat ,chessBoardScaledHeight height: CGFloat, isWhite: Bool, withAnimation: Bool = true, action: @escaping () -> Void = {})
     {
         if labels.count != n {fatalError("wrong rows of labels")}
@@ -236,8 +259,8 @@ struct Reversi: Codable, CustomStringConvertible{
                         }
                     }
                 }
-                
-                gameScene.run(SKAction.wait(forDuration: 0.6)){gameScene.isUserInteractionEnabled = true}
+                (gameScene as! GameScene).waitTimeToSetIsUserInteractionEnabledToTrue = 0.7
+                gameScene.run(SKAction.wait(forDuration: 0.7)){gameScene.isUserInteractionEnabled = true}
             }
         }
 //without animation
@@ -277,30 +300,36 @@ struct Reversi: Codable, CustomStringConvertible{
             }
             
             if let isWinnerWhite = isWinnerWhite{
-                
-                let stateIndicatorSize =
-                    CGSize(width: width / 2.5, height: height / 4)
-                
-                stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "crown"), size: stateIndicatorSize)
-                stateIndicatorColorLeft.color = isWinnerWhite ? UIColor.white : UIColor.black
-                stateIndicatorColorRight.color = isWinnerWhite ? UIColor.white : UIColor.black
+                changeStateIndicator(imageNamed: "crown", width: width/2.5, height: height/4, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight, leftColor: isWinnerWhite ? UIColor.white : UIColor.black, rightColor: isWinnerWhite ? UIColor.white : UIColor.black)
+//                let stateIndicatorSize =
+//                    CGSize(width: width / 2.5, height: height / 4)
+//
+//                stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "crown"), size: stateIndicatorSize)
+//                stateIndicatorColorLeft.color = isWinnerWhite ? UIColor.white : UIColor.black
+//                stateIndicatorColorRight.color = isWinnerWhite ? UIColor.white : UIColor.black
+//                stateIndicatorColorLeft.size.width = stateIndicator.frame.width/2
+//                stateIndicatorColorRight.size.width = stateIndicator.frame.width/2
+//                stateIndicatorColorLeft.position = CGPoint(x:-0.25 * stateIndicator.frame.width,y:0)
+//                stateIndicatorColorRight.position = CGPoint(x: 0.25 * stateIndicator.frame.width,y:0)
             }
                 //If the state is draw.
             else {
-                let stateIndicatorSize =
-                    CGSize(width: width / 2.5, height: height / 4)
-                stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "scale"), size: stateIndicatorSize)
-                stateIndicatorColorLeft.color = UIColor.white
-                stateIndicatorColorRight.color = UIColor.black
+                changeStateIndicator(imageNamed: "scale", width: width/2.5, height: height/4, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight,leftColor: .white, rightColor: .black)
             }
         }
         else{
-            let stateIndicatorSize =
-                CGSize(width: width / 6.0, height: height / 6.0)
-            stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "upArrow"), size: stateIndicatorSize)
             let color = isColorWhiteNow ? UIColor.white : UIColor.black
-            stateIndicatorColorLeft.color = color
-            stateIndicatorColorRight.color = color
+            changeStateIndicator(imageNamed: "upArrow", width: width/6.0, height: height/6.0, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight, leftColor: color, rightColor: color)
+//            let stateIndicatorSize =
+//                CGSize(width: width / 6.0, height: height / 6.0)
+//            stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "upArrow"), size: stateIndicatorSize)
+//            let color = isColorWhiteNow ? UIColor.white : UIColor.black
+//            stateIndicatorColorLeft.color = color
+//            stateIndicatorColorRight.color = color
+//            stateIndicatorColorLeft.size.width = stateIndicator.frame.width/2
+//            stateIndicatorColorRight.size.width = stateIndicator.frame.width/2
+//            stateIndicatorColorLeft.position = CGPoint(x:-0.25 * stateIndicator.frame.width,y:0)
+//            stateIndicatorColorRight.position = CGPoint(x: 0.25 * stateIndicator.frame.width,y:0)
         }
     }
     func showBoard(isWhite: Bool)
