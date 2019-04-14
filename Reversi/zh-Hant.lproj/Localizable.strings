@@ -5,34 +5,62 @@
   Created by john gospai on 2019/2/23.
   Copyright © 2019 john gospai. All rights reserved.
 */
+//MARK: - back button
+"back" = "返回";
+//MARK: - loading phase
+"Loading..." = "載入中...";
 //MARK: - menu icon
 "back to title" = "返回標題";
 "undo" = "悔棋";
 "retry" = "重來";
-"help" = "幫助";
+"help" = "說明";
 "share" = "分享";
 "resign" = "投降";
+"state" = "狀態";
+"option" = "選項";
 //MARK: - challenges
 "win" = "獲得勝利";
 "getPoints" = "得到%d分";
 "winTheComputerByPoints" = "贏過電腦%d分";
-//MARK: - alerts
-"alert.retry.title" = "警告";
-"alert.retry.message" = "你會失去你目前的進度，你確定要開始新的遊戲嗎？";
-"alert.retry.action.default.title" = "那真是太棒了！";
-"alert.retry.action.destructive.title" = "不！讓我再想想。";
 
-"alert.undo.title" = "警告";
-"alert.undo.message" = "在此之後的紀錄將會消失。你確定要回到這一步嗎？";
-"alert.undo.action.default.title" = "那真是太棒了！";
-"alert.undo.action.destructive.title" = "不！讓我再想想。";
 //MARK: - level select
-"LEVEL" = "關卡";
+"LEVEL" = "第%d關";
 //MARK: - mode select
 "ONLINE" = "線上遊玩";
 "OFFLINE" = "離線遊玩";
 "PARTY" = "派對模式";
 //MARK: - guide
-"guide.logo" = "點擊標示來決定以電腦或人類為對手，現在請選擇黑色作為先手以對抗電腦玩家。";
+"guide.welcome" = "歡迎來到isREVERsi。遊戲規則就如同黑白棋一般，但是更注重棋子「翻轉的次數」。";
+"guide.help" =
+"❀概要:
+➥isREVERsi的玩法就是黑白棋的玩法,不同在於每顆棋子上多了數字,代表著該棋子已經被翻轉幾次｡
+❀遊戲目標:
+➥盡可能地拿到較高的總翻轉次數｡這些許改變了原本黑白棋的策略｡
+❀玩法:
+➥分成兩個陣營,｢白｣和｢黑｣｡雙方輪流下棋,可以下的地方會用｢✦｣來表示,也就是在水平,垂直或斜角的方向,能夠夾住對方棋子的位置｡被夾住的棋子就會翻面變成你的｡如果有一方無法下棋,則會被跳過｡如果雙方都無法下棋,則遊戲結束｡
+❀挑戰:
+➥在對手為電腦的關卡會有挑戰,試著完成它們吧!
+❀貨幣:
+➥在isREVERsi中,我們使用｢翻｣作為貨幣單位,可以在完成挑戰時獲得,可以用於購買一些道具｡";
+////m
+"guide.hint" = "在不明白的圖示上按住不放就會出現文字提示喔！";
+"guide.logo.default" = "現在在標示上有黑白兩色，這代表的是兩人玩。若想要與電腦對戰，請在標示上滑動，選擇黑或白。現在請先選擇白色。";
+"guide.logo.destructive" = "現在在標示上有黑白兩色，這代表的是兩人玩。若想要與電腦對戰，請在標示上滑動，選擇黑或白。現在請先選擇黑色。";
+////m
 "guide.gameboard.swipe" = "滑動以選擇遊戲棋盤大小，現在請選擇4X4大小。";
 "guide.gameboard.tap" = "點擊以進入關卡選擇。";
+////m
+"message.help.title" = "說明";
+"message.help.default" = "謝謝!";
+"message.help.destructive" = "別吵!";
+
+"message.retry.title" = "警告";
+"message.retry.text" = "你會失去你目前的進度，你確定要開始新的遊戲嗎？";
+"message.retry.default" = "不！讓我再想想。";
+"message.retry.destructive" = "那真是太棒了！";
+
+"message.undo.title" = "警告";
+"message.undo.text" = "在此之後的紀錄將會消失。你確定要回到這一步嗎？";
+"message.undo.default" = "不！讓我再想想。";
+"message.undo.destructive" = "那真是太棒了！";
+////m

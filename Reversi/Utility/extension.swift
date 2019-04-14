@@ -7,7 +7,63 @@
 //
 
 import SpriteKit
-
+extension String {
+    
+    func tokenize() -> [String] {
+        let inputRange = CFRangeMake(0, self.count)
+        let locale = CFLocaleCopyCurrent()
+        let tokenizer = CFStringTokenizerCreate( kCFAllocatorDefault, self as CFString, inputRange, 3, locale)
+        var tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)
+        var tokens : [String] = []
+        
+        while tokenType != []
+        {
+            let currentTokenRange = CFStringTokenizerGetCurrentTokenRange(tokenizer)
+            let substring = self.substringWithRange(aRange: currentTokenRange)
+            tokens.append(substring)
+            tokenType = CFStringTokenizerAdvanceToNextToken(tokenizer)
+        }
+        
+        return tokens
+    }
+    
+    func substringWithRange(aRange : CFRange) -> String {
+        
+        let nsrange = NSMakeRange(aRange.location, aRange.length)
+        let substring = (self as NSString).substring(with: nsrange)
+        return substring
+    }
+    /**
+     ### Usage Example: ###
+     ```
+     var val = "THE_KEY_OF_THE_LOCALIZED_STRING".localized("zh")
+     ```
+     use Locale.current.languageCode to get the current language code.
+     */
+    func localized(_ lang:String) -> String {
+        
+        let path = Bundle.main.path(forResource: lang, ofType: "lproj")
+        let bundle = Bundle(path: path!)
+        
+        return NSLocalizedString(self, tableName: nil, bundle: bundle!, value: "", comment: "")
+    }
+    func localized(_ lang: SharedVariable.lang = SharedVariable.language) -> String {
+        if lang == .defaultLang {
+            return NSLocalizedString(self, comment: "")
+        }
+        return self.localized(lang.rawValue)
+    }
+}
+extension SKLabelNode{
+    func wrapWord(){
+        
+    }
+}
+protocol fontColorizable {
+    var fontColor: UIColor? {get set}
+}
+extension SKMultilineLabel: fontColorizable{}
+extension SKLabelNode: fontColorizable{}
 protocol attachable {
     var anchorPoint: CGPoint{get}
 }
@@ -18,7 +74,7 @@ extension SKCropNode: attachable{
         guard let mask = self.maskNode else {
             return super.frame
         }
-        return mask.frame
+        return CGRect(origin: mask.frame.origin + position, size: mask.frame.size)
     }
 }
 extension SKNode{
@@ -49,6 +105,14 @@ extension CGPoint{
     static func += ( lhs: inout CGPoint, rhs: CGPoint){
         return lhs = lhs + rhs
     }
+    static func * (lhs: CGFloat, rhs: CGPoint) -> CGPoint{
+        return CGPoint(x: rhs.x * lhs, y: rhs.y * lhs)
+    }
+    ////m
+    var norm: CGFloat{
+        return sqrt(self.x * self.x + self.y * self.y)
+    }
+    ////m
 }
 extension UIApplication{
     class func getPresentedViewController() -> UIViewController? {
@@ -105,6 +169,19 @@ extension Unicode{
         }
     }
 }
+////m
+extension UIColor {
+    var rgba: (red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        
+        return (red, green, blue, alpha)
+    }
+}
+////m
 extension SKAction{
     open class func moveZPositionTo(to toZPosition: CGFloat, withDuration: TimeInterval) -> SKAction{
         var firstTimeRunTheBlock = true
@@ -153,7 +230,7 @@ extension SKAction{
     open class func changeFontColor(to toColor: UIColor) -> SKAction{
         let customAction = SKAction.customAction(withDuration: 0) {
             node, elapsedTime in
-            if let label = node as? SKLabelNode {
+            if var label = node as? fontColorizable {
                 label.fontColor = toColor
             }
         }

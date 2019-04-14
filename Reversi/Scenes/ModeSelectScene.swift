@@ -8,6 +8,9 @@
 
 import SpriteKit
 class ModeSelectScene: SKScene {
+    deinit {
+        print("ModeSelectScene deinit")
+    }
     var gameSize = 6
     var currentMode = mode.offline
     enum mode: Int{
@@ -16,13 +19,14 @@ class ModeSelectScene: SKScene {
     func modeName(mode: mode) -> String{
         switch mode {
         case .online:
-            return NSLocalizedString("ONLINE", comment: "")
+            return "ONLINE".localized()
         case .offline:
-            return NSLocalizedString("OFFLINE", comment: "")
+            return "OFFLINE".localized()
         case .party:
-            return NSLocalizedString("PARTY", comment: "")
+            return "PARTY".localized()
         }
     }
+    fileprivate var flipsIndicator = FlipsIndicator(flips: 0)!
     
     fileprivate var numberOfModes = 3
     fileprivate var modeLabels: [SKLabelNode] = []
@@ -37,11 +41,43 @@ class ModeSelectScene: SKScene {
     fileprivate var firstModePictureOrigin = CGPoint.zero
     fileprivate var everMoved = false
     
+    fileprivate let logo = SKCropNode()
+    fileprivate let logoRightBlack = SKSpriteNode(color: .black, size: CGSize())
+    fileprivate let logoLeftWhite = SKSpriteNode(color: .white, size: CGSize())
     
     override func didMove(to view: SKView) {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.size = CGSize(width: view.frame.size.width * UIScreen.main.scale,height: view.frame.size.height * UIScreen.main.scale)
-        backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
+        //backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
+        ////m
+        //set up background
+        UIGraphicsBeginImageContext(size)
+        let bgCtx = UIGraphicsGetCurrentContext()
+        let bgColorSpace = CGColorSpaceCreateDeviceRGB()
+        
+        let bgStartColor = UIColor(red: 122/255, green: 198/255, blue: 239/255, alpha: 1)
+        
+        let bgMidColor = UIColor(red: 222/510, green: 348/510, blue: 499/510, alpha: 1)
+        
+        let bgEndColor = UIColor(red: 100/255, green: 150/255, blue: 255/255, alpha: 1)
+        
+        let bgColors = [bgStartColor.cgColor, bgMidColor.cgColor, bgEndColor.cgColor] as CFArray
+        
+        let bgColorsLocations: [CGFloat] = [0.0, 0.2, 1.0]
+        
+        guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
+        bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+        let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        let background = SKSpriteNode(texture: SKTexture(image: backgroundImage!))
+        background.zPosition = UI.zPosition.background
+        addChild(background)
+        ////m
+        //MARK: - set up flipsIndicator
+        flipsIndicator.position = UI.flipsPosition
+        flipsIndicator.zPosition = UI.zPosition.flipsIndicator
+        flipsIndicator.flips = SharedVariable.flips
+        addChild(flipsIndicator)
         //MARK: - set up menu
         toTitleNode = SKSpriteNode(imageNamed: "toTitle")
         toTitleNode.size = UI.menuIconSize
@@ -52,7 +88,7 @@ class ModeSelectScene: SKScene {
         let BoundsOfHintBubble = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
         toTitleHint = HintBubble(bubbleColor: UI.hintBubbleColor, bounds: BoundsOfHintBubble)
         toTitleHint.attachTo = toTitleNode
-        toTitleHint.text = NSLocalizedString("back to title", comment: "")
+        toTitleHint.text = "back to title".localized()
         toTitleHint.isHidden = true
         toTitleHint.fontSize = UI.menuIconHintLabelFontSize
         addChild(toTitleHint)
@@ -62,8 +98,8 @@ class ModeSelectScene: SKScene {
             let modeLabel = SKLabelNode(text: modeName(mode: mode.init(rawValue: i)!))
             modeLabel.position = UI.levelLabelPosition(indexFromLeft: i)
             modeLabel.fontSize = UI.levelLabelFontSize
-            modeLabel.fontName = UI.levelLabelFontName
-            modeLabel.fontColor = UI.levelLabelFontColor
+            modeLabel.fontName = UI.modeLabelFontName
+            modeLabel.fontColor = UI.modeLabelFontColor
             modeLabel.verticalAlignmentMode = .bottom
             modeLabels.append(modeLabel)
             addChild(modeLabel)
@@ -74,6 +110,21 @@ class ModeSelectScene: SKScene {
             modePictures.append(modePicture)
             addChild(modePicture)
         }
+        //MARK: - set up logo
+        guard let logoImage = UIImage(named: "Logo") else{fatalError("cannot find image Logo")}
+        let logoSize = UI.logoSize
+        logo.maskNode = SKSpriteNode(texture: SKTexture(image: logoImage), size: logoSize)
+        logo.position = UI.logoPosition
+        logo.zPosition = UI.zPosition.logo
+        addChild(logo)
+        //MARK: set up left-half white
+        logoLeftWhite.size = CGSize(width: logoSize.width/2, height: logoSize.height)
+        logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
+        logo.addChild(logoLeftWhite)
+        //MARK: set up right-half black
+        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
+        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
+        logo.addChild(logoRightBlack)
     }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
@@ -173,7 +224,7 @@ class ModeSelectScene: SKScene {
         scene.scaleMode = .aspectFill
         scene.gameSize = gameSize
         scene.isAIMode = false
-        view.presentScene(scene, transition: SKTransition.fade(withDuration: 1))
+        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
         view.ignoresSiblingOrder = true
         view.showsFPS = true
         view.showsNodeCount = true

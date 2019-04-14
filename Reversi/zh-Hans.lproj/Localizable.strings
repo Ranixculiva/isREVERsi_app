@@ -5,6 +5,10 @@
   Created by john gospai on 2019/2/23.
   Copyright © 2019 john gospai. All rights reserved.
 */
+//MARK: - back button
+"back" = "返回";
+//MARK: - loading phase
+"Loading..." = "载入中...";
 //MARK: - menu icon
 "back to title" = "返回标题";
 "undo" = "悔棋";
@@ -12,6 +16,8 @@
 "help" = "帮助";
 "share" = "分享";
 "resign" = "投降";
+"state" = "状态";
+"option" = "选项";
 //MARK: - challenges
 "win" = "获得胜利";
 "getPoints" = "得到%d分";
@@ -27,12 +33,15 @@
 "alert.undo.action.default.title" = "那真是太棒了！";
 "alert.undo.action.destructive.title" = "不！让我再想想。";
 //MARK: - level select
-"LEVEL" = "关卡";
+"LEVEL" = "第%d关";
 //MARK: - mode select
 "ONLINE" = "线上游玩";
 "OFFLINE" = "离线游玩";
 "PARTY" = "派对模式";
 //MARK: - guide
+"guide.welcome" = "欢迎来到isREVERsi。游戏规则就如同黑白棋一般，但是更注重棋子「翻转的次数」。";
+"guide.help" = "「白」和「黑」在棋子的两面分别代表两位玩家。在棋子上的数字代表的是棋子翻转的次数。双方轮流下棋。只要你可以夹住对方棋子的位置就能下，不论是水平、垂直或斜角的方向，被夹住的棋子会翻面变成你的。如果有一方无法下棋，则跳过。如果双方都无法下棋，则游戏结束。每关都会有挑战，试着完成它们吧！在isREVERsi中，我们使用「翻」作为货币。";
+"guide.hint" = "按住不明白的地方就会出现提示喔！";
 "guide.logo" = "点击标示来决定以电脑或人类为对手，现在请选择黑色作为先手以对抗电脑玩家。";
 "guide.gameboard.swipe" = "滑动以选择游戏棋盘大小，现在请选择4X4大小。";
 "guide.gameboard.tap" = "点击以进入关卡选择。";

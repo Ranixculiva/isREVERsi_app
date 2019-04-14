@@ -104,6 +104,23 @@ class MenuScene: SKScene {
 //            SKAction.move(to: CGPoint(x: -100, y: 0), duration: 1),
 //            SKAction.move(to: CGPoint(x: 100, y: 0), duration: 1)
 //            ])))
+        ///test SKMultilineLabel
+        let text  = "歡迎來到isREVERsi。遊戲規則就如同黑白棋一般, 但是更注重棋子\"翻轉的次數\"。"
+        print(text.tokenize())
+        let label = SKMultilineLabel(text: text, labelWidth: 140, pos: CGPoint.zero)
+        label.position = CGPoint(x: 0, y: 400)
+        label.fontSize = UI.gridSize / 16
+        label.showBorder()
+        addChild(label)
+        
+        let standard = SKSpriteNode(color: .red, size: CGSize(width: 140, height: 10))
+        standard.position = CGPoint(x: 0, y: 400)
+        addChild(standard)
+        ///test
+        
+        
+        
+        
         let fontColor = UIColor.white
         let fontSize = UI.gridSize / 16
         let fontName = "chalkboard SE"

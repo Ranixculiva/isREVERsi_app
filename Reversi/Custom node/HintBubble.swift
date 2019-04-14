@@ -88,7 +88,7 @@ class HintBubble: SKSpriteNode {
         
         labelNode.fontColor = UIColor.black
         labelNode.fontSize = 30.0
-        labelNode.fontName = "Chalkboard SE"
+        labelNode.fontName = UI.HintBubbleFontName
         labelNode.verticalAlignmentMode = .center
         labelNode.horizontalAlignmentMode = .center
         labelNode.zPosition = 1

@@ -21,6 +21,9 @@ class Grid:SKSpriteNode {
         }
         self.texture = texture
         self.size = texture.size()
+        ////m
+        self.color = color
+        ////m
         self.blockSize = blockSize
         self.rows = rows
         self.cols = cols

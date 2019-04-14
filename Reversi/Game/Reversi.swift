@@ -40,6 +40,36 @@ struct Reversi: Codable, CustomStringConvertible{
         return des
     }
     
+    enum ability: Int, CaseIterable, Codable{
+        case none = 0, translate, clearBomb, colorBomb
+    }
+    private var abilityCoolDown = ["white": 0, "black": 0]
+    mutating func setAbilityCoolDown(isWhite: Bool, duration: Int){
+        if isWhite{
+            abilityCoolDown["white"] = max(duration,0)
+        }
+        else {
+            abilityCoolDown["black"] = max(duration,0)
+        }
+    }
+    func getAbilityCoolDown(isWhite: Bool) -> Int{
+        if isWhite{
+            return abilityCoolDown["white"] ?? 0
+        }
+        return abilityCoolDown["black"] ?? 0
+    }
+    static var translateDx = 1
+    static var translateDy = 1
+    static var withAbility = ability.none
+    enum condition: Int, CaseIterable, Codable{
+        case none = 0, translate, clearBomb, colorBomb
+    }
+    var currentCondition: condition{
+        if getScoreDifference(isWhite: isColorWhiteNow) < -3{
+            return .translate
+        }
+        return .none
+    }
     
     enum direction: Int, CaseIterable{
         case right = 0, rightUp, up, leftUp, left, leftDown, down, rightDown, allDirctions
@@ -209,128 +239,6 @@ struct Reversi: Codable, CustomStringConvertible{
         stateIndicatorColorRight.size.height = stateIndicator.frame.height
         stateIndicatorColorLeft.position = CGPoint(x:-0.25 * stateIndicator.frame.width,y:0)
         stateIndicatorColorRight.position = CGPoint(x: 0.25 * stateIndicator.frame.width,y:0)
-    }
-    
-    func showBoard(labels: [[SKLabelNode]], whiteScoreLabel: SKLabelNode, blackScoreLabel: SKLabelNode, stateIndicator: SKCropNode, stateIndicatorColorLeft: SKSpriteNode, stateIndicatorColorRight: SKSpriteNode, chessBoardScaledWidth width: CGFloat ,chessBoardScaledHeight height: CGFloat, isWhite: Bool, withAnimation: Bool = true, action: @escaping () -> Void = {})
-    {
-        if labels.count != n {fatalError("wrong rows of labels")}
-/// with animation
-        if withAnimation{
-            if let gameScene = labels[0][0].parent{
-                gameScene.isUserInteractionEnabled = false
-                let originScaleX = labels[0][0].xScale
-                let flipFirstHalfPart = SKAction.scaleX(to: 0, duration: 0.3)
-                let flipLastHalfPart = SKAction.scaleX(to: originScaleX, duration: 0.3)
-                let flipWait = SKAction.wait(forDuration: 0.6)
-                
-                
-                for row in 0...n - 1{
-                    if labels[row].count != n {fatalError("wrong columns of labels")}
-                    for col in 0...n - 1{
-                        let label = labels[row][col]
-                        var labelText = String()
-                        
-                        var labelColor = (red: CGFloat(1), green: CGFloat(1), blue: CGFloat(1), alpha: CGFloat(1))
-                        if let number = self.getNumber(Row: row, Col: col){
-                            if Unicode.circledNumber(number) != label.text{
-                                //labelText = "\(number)"
-                                
-                                labelText = Unicode.circledNumber(number)
-                                labelColor = (self.getColor(Row: row, Col: col)! ? (1, 1, 1, 1) : (0, 0, 0, 1))
-                                label.run(flipFirstHalfPart){
-                                    label.text = labelText
-                                    label.fontColor = SKColor.init(red:labelColor.red, green: labelColor.green, blue: labelColor.blue, alpha: labelColor.alpha)
-                                    label.run(flipLastHalfPart)
-                                }
-                            }
-                        }
-                        else if self.isAvailable(Row: row, Col: col, isWhite: isWhite){
-                            label.text = "\(UnicodeScalar(0x2726)!)"
-                            label.isHidden = true
-                            labelColor = isWhite ? (1, 1, 1, 1) : (0, 0, 0, 1)
-                            label.run(flipWait){
-                                label.isHidden = false
-                                label.fontColor = SKColor.init(red:labelColor.red, green: labelColor.green, blue: labelColor.blue, alpha: labelColor.alpha)
-                                action()
-                            }
-                        }
-                        else {
-                            label.text = ""
-                        }
-                    }
-                }
-                (gameScene as! GameScene).waitTimeToSetIsUserInteractionEnabledToTrue = 0.7
-                gameScene.run(SKAction.wait(forDuration: 0.7)){gameScene.isUserInteractionEnabled = true}
-            }
-        }
-//without animation
-        else{
-            for row in 0...n - 1{
-                if labels[row].count != n {fatalError("wrong columns of labels")}
-                for col in 0...n - 1{
-                    let label = labels[row][col]
-                    if let number = self.getNumber(Row: row, Col: col){
-                        if Unicode.circledNumber(number) != label.text{
-                            label.text = Unicode.circledNumber(number)
-                            label.fontColor = self.getColor(Row: row, Col: col)! ? UIColor(red: 1, green: 1, blue: 1, alpha: 1) : UIColor(red: 0, green: 0, blue: 0, alpha: 1)
-                        }
-                    }
-                    else if self.isAvailable(Row: row, Col: col, isWhite: isWhite){
-                        label.text = "\(UnicodeScalar(0x2726)!)"
-                        label.fontColor = isWhite ? UIColor(red: 1, green: 1, blue: 1, alpha: 1) : UIColor(red: 0, green: 0, blue: 0, alpha: 1)
-                        
-                    }
-                    else {
-                        label.text = ""
-                    }
-                }
-            }
-        }
-    
-//ScoreLabel
-        whiteScoreLabel.text = "\(self.whiteScore)"
-        blackScoreLabel.text = "\(self.blackScore)"
-//TODO:stateIndicator
-        if self.isEnd(){
-            
-            //show crown
-            var isWinnerWhite: Bool? = self.getWhiteScore() > self.getBlackScore()  ? true : false
-            if self.getWhiteScore() == self.getBlackScore(){
-                isWinnerWhite = nil
-            }
-            
-            if let isWinnerWhite = isWinnerWhite{
-                changeStateIndicator(imageNamed: "crown", width: width/2.5, height: height/4, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight, leftColor: isWinnerWhite ? UIColor.white : UIColor.black, rightColor: isWinnerWhite ? UIColor.white : UIColor.black)
-//                let stateIndicatorSize =
-//                    CGSize(width: width / 2.5, height: height / 4)
-//
-//                stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "crown"), size: stateIndicatorSize)
-//                stateIndicatorColorLeft.color = isWinnerWhite ? UIColor.white : UIColor.black
-//                stateIndicatorColorRight.color = isWinnerWhite ? UIColor.white : UIColor.black
-//                stateIndicatorColorLeft.size.width = stateIndicator.frame.width/2
-//                stateIndicatorColorRight.size.width = stateIndicator.frame.width/2
-//                stateIndicatorColorLeft.position = CGPoint(x:-0.25 * stateIndicator.frame.width,y:0)
-//                stateIndicatorColorRight.position = CGPoint(x: 0.25 * stateIndicator.frame.width,y:0)
-            }
-                //If the state is draw.
-            else {
-                changeStateIndicator(imageNamed: "scale", width: width/2.5, height: height/4, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight,leftColor: .white, rightColor: .black)
-            }
-        }
-        else{
-            let color = isColorWhiteNow ? UIColor.white : UIColor.black
-            changeStateIndicator(imageNamed: "upArrow", width: width/6.0, height: height/6.0, stateIndicator: stateIndicator, stateIndicatorColorLeft: stateIndicatorColorLeft, stateIndicatorColorRight: stateIndicatorColorRight, leftColor: color, rightColor: color)
-//            let stateIndicatorSize =
-//                CGSize(width: width / 6.0, height: height / 6.0)
-//            stateIndicator.maskNode = SKSpriteNode(texture: SKTexture(imageNamed: "upArrow"), size: stateIndicatorSize)
-//            let color = isColorWhiteNow ? UIColor.white : UIColor.black
-//            stateIndicatorColorLeft.color = color
-//            stateIndicatorColorRight.color = color
-//            stateIndicatorColorLeft.size.width = stateIndicator.frame.width/2
-//            stateIndicatorColorRight.size.width = stateIndicator.frame.width/2
-//            stateIndicatorColorLeft.position = CGPoint(x:-0.25 * stateIndicator.frame.width,y:0)
-//            stateIndicatorColorRight.position = CGPoint(x: 0.25 * stateIndicator.frame.width,y:0)
-        }
     }
     func showBoard(isWhite: Bool)
     {
@@ -616,8 +524,15 @@ struct Reversi: Codable, CustomStringConvertible{
         return isColorWhiteNowOut
     }*/
     mutating func play(Row row: Int, Col col: Int){
-        if !Array(0...n - 1).contains(where: {$0 == row || $0 == col}){fatalError("wrong row or column")}
-        if self.fillColoredNumber(Row: row, Col: col, isWhite: self.isColorWhiteNow){
+        let currentCondition = self.currentCondition
+        let abilityCoolDown = getAbilityCoolDown(isWhite: isColorWhiteNow)
+        setAbilityCoolDown(isWhite: isColorWhiteNow, duration: abilityCoolDown - 1)
+        if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate{
+            translate()
+            self.isColorWhiteNow = !self.isColorWhiteNow
+            turn += 1
+        }
+        else if self.fillColoredNumber(Row: row, Col: col, isWhite: self.isColorWhiteNow){
             self.isColorWhiteNow = !self.isColorWhiteNow
             turn += 1
         }
@@ -692,6 +607,18 @@ struct Reversi: Codable, CustomStringConvertible{
         weightedSideSquaresScore
         let score = weightedScoreDifference + weightedPositionScore
         return score
+    }
+    mutating func translate(dx: Int = Reversi.translateDx, dy: Int = Reversi.translateDy){
+        var isColorWhiteCopy = isColorWhite
+        var gameBoardCopy = gameBoard
+        for row in 0...n-1{
+            for col in 0...n-1{
+                let referenceRow = ((row - dy)%n + n)%n
+                let referenceCol = ((col - dx)%n + n)%n
+                isColorWhite[row][col] = isColorWhiteCopy[referenceRow][referenceCol]
+                gameBoard[row][col] = gameBoardCopy[referenceRow][referenceCol]
+            }
+        }
     }
     public func bestSolutionWithoutAlphaBetaCut(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool, weight: Weight = Weight()) -> chessBoardPos?{
         
@@ -807,9 +734,13 @@ struct Reversi: Codable, CustomStringConvertible{
         let max = firstStepMinLastScore.values.max()
         return firstStepMinLastScore.filter({$0.value == max}).keys.randomElement()
     }
-    public func bestSolution(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool, weight: Weight = Weight()) -> chessBoardPos?{
-        
-        if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}.randomElement()}
+    public mutating func bestSolution(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool, weight: Weight = Weight()) -> chessBoardPos?{
+        let currentCondition = self.currentCondition
+        let abilityCoolDown = getAbilityCoolDown(isWhite: isColorWhiteNow)
+        if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate{
+            return nil
+        }
+        else if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}.randomElement()}
         //if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}[2]}
 //        print("\n\nnew search \n\n")
         ///description

@@ -5,6 +5,10 @@
   Created by john gospai on 2019/2/23.
   Copyright © 2019 john gospai. All rights reserved.
 */
+//MARK: - back button
+"back" = "back";
+//MARK: - loading phase
+"Loading..." = "Loading...";
 //MARK: - menu icon
 "back to title" = "back to title";
 "undo" = "undo";
@@ -12,6 +16,8 @@
 "help" = "help";
 "share" = "share";
 "resign" = "resign";
+"state" = "state";
+"option" = "option";
 //MARK: - challenges
 "win" = "win the game.";
 "getPoints" = "get %d points.";
@@ -27,12 +33,20 @@
 "alert.undo.action.default.title" = "Cool, sweet!";
 "alert.undo.action.destructive.title" = "No! Let me think.";
 //MARK: - level select
-"LEVEL" = "LEVEL";
+"LEVEL" = "LEVEL %d";
 //MARK: - mode select
 "ONLINE" = "ONLINE";
 "OFFLINE" = "OFFLINE";
 "PARTY" = "PARTY";
 //MARK: - guide
+"guide.welcome" = "Welcome to isREVERsi. Its game rule is similar to Othello, but we focus on the total number of \"flips\".";
+"guide.help" = "Each discs' two sides, dark and light correspond to two players. The number on each disc is the number of flips of itself. You can place a disc on anywhere as long as your discs surround your opponent's discs horizontally, vertically, or diagonally. Any disc you surround will flip over and be yours. You simply pass if you cannot place a disc. Games end when both two players cannot place a disc. In isREVERsi, we use \"Flip\" as currency.";
+"guide.hint" = "Tapping and holding where you are confused will give you some hints";
 "guide.logo" = "Tap the logo to play against either a computer or a human opponent. Now, make it dark to move first and play against the computer.";
-"guide.gameboard.swipe" = "Swipe to choose the size of the game board. Now please choose 4X4.";
-"guide.gameboard.tap" = "Tap to get into level select.";
+"guide.gameboard.swipe" = "Swipe it to choose the size of the game board. Now please choose 4X4.";
+"guide.gameboard.tap" = "Tap it to get into level select.";
+////m
+"message.help.title" = "HELP";
+"message.help.default" = "Thanks!";
+"message.help.destructive" = "Shut up!";
+////m

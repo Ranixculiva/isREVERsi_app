@@ -24,6 +24,7 @@ class FlipsIndicator: SKSpriteNode {
             size = texture!.size()
         }
     }
+    // high energy impact
     var withAnimation = true{
         didSet{
             if withAnimation == true{
@@ -53,17 +54,19 @@ class FlipsIndicator: SKSpriteNode {
         self.init(texture: SKTexture(), color:SKColor.clear, size: CGSize())
         flipsLabel.verticalAlignmentMode = .center
         flipsLabel.fontColor = .black
-        flipsLabel.fontName = "negative-circled-number"
-        flipsLabel.fontSize = UI.flipsFontSize
+        flipsLabel.fontName = UI.flipsIndicatorFlipsLabelFontName
+        flipsLabel.fontSize = UI.flipsFontSize * 8.5/10
         flipsLabel.zPosition = UI.zPosition.flips
         flipsLabel.removeFromParent()
         addChild(flipsLabel)
         
-        flipsNumberLabel.text = "\(flips)"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        flipsNumberLabel.text = formatter.string(from: NSNumber(integerLiteral: flips))!
         flipsNumberLabel.verticalAlignmentMode = .center
         flipsNumberLabel.horizontalAlignmentMode = .left
         flipsNumberLabel.fontColor = UIColor.black
-        flipsNumberLabel.fontName = "chalkboard SE"
+        flipsNumberLabel.fontName = UI.flipsIndicatorFlipsNumberFontName
         flipsNumberLabel.fontSize = UI.flipsFontSize
         flipsNumberLabel.zPosition = UI.zPosition.flipNumber
         flipsNumberLabel.removeFromParent()
@@ -75,8 +78,8 @@ class FlipsIndicator: SKSpriteNode {
         self.texture = texture
         self.size = texture.size()
         self.flips = flips
-        flipsLabel.position.x = -texture.size().width/2 + flipsLabel.frame.height * 3/4
-        flipsNumberLabel.position.x = flipsLabel.position.x + 10*UIScreen.main.scale + flipsLabel.frame.height/2
+        flipsLabel.position.x = -texture.size().width/2 + UI.flipsFontSize * 3/4
+        flipsNumberLabel.position.x = flipsLabel.position.x + 10*UIScreen.main.scale + UI.flipsFontSize/2
         if withAnimation{
             flipsLabel.run(SKAction.repeatForever(flipAnimation))
         }
@@ -84,8 +87,10 @@ class FlipsIndicator: SKSpriteNode {
     }
     func flipsBackground(flips: Int) -> SKTexture? {
         // Add 1 to the height and width to ensure the borders are within the sprite
-        flipsNumberLabel.text = "\(flips)"
-        let size = CGSize(width: flipsLabel.frame.height + flipsNumberLabel.frame.width + 10*UIScreen.main.scale + UI.flipsFontSize/2 , height: flipsLabel.frame.height)
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        flipsNumberLabel.text = formatter.string(from: NSNumber(integerLiteral: flips))!
+        let size = CGSize(width: UI.flipsFontSize + flipsNumberLabel.frame.width + 10*UIScreen.main.scale + UI.flipsFontSize/2 , height: UI.flipsFontSize)
         UIGraphicsBeginImageContext(size)
         
         guard let context = UIGraphicsGetCurrentContext() else {
@@ -100,8 +105,8 @@ class FlipsIndicator: SKSpriteNode {
         context.fillPath()
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        flipsLabel.position.x = -size.width/2 + flipsLabel.frame.height * 3/4
-        flipsNumberLabel.position.x = flipsLabel.position.x + 10*UIScreen.main.scale + flipsLabel.frame.height/2
+        flipsLabel.position.x = -size.width/2 + UI.flipsFontSize * 3/4
+        flipsNumberLabel.position.x = flipsLabel.position.x + 10*UIScreen.main.scale + UI.flipsFontSize/2
         return SKTexture(image: image!)
     }
 }

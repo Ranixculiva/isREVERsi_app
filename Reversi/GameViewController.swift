@@ -49,6 +49,7 @@ class GameViewController: UIViewController {
             //view.preferredFramesPerSecond = 30
             // Load the SKScene from 'GameScene.sks'
             //if let scene = SKScene(fileNamed: "MenuScene") {
+            UI.loadUIEssentials()
             let scene = TitleScene()
             // Set the scale mode to scale to fit the window
             scene.scaleMode = .aspectFill
