@@ -14,6 +14,9 @@
 import SpriteKit
 
 class SKMultilineLabel: SKNode {
+    deinit {
+        print(self.text,"deinit")
+    }
     //props
     override var frame: CGRect{
         var x:CGFloat = position.x

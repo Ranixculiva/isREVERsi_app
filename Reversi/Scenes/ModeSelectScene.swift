@@ -7,30 +7,37 @@
 //
 
 import SpriteKit
-class ModeSelectScene: SKScene {
+class ModeSelectScene: SKScene, FetchValueDelegate {
+    func didFetchValue(value: Int, name: String?) {
+        currentMode = mode.init(rawValue: value)!
+        modeToTheCurrentMode()
+    }
+    
     deinit {
         print("ModeSelectScene deinit")
     }
     var gameSize = 6
     var currentMode = mode.offline
     enum mode: Int{
-        case offline = 0, online, party
+        case offline = 0, offlineParty, online, onlineParty
     }
     func modeName(mode: mode) -> String{
         switch mode {
         case .online:
-            return "ONLINE".localized()
+            return UI.Texts.online
         case .offline:
-            return "OFFLINE".localized()
-        case .party:
-            return "PARTY".localized()
+            return UI.Texts.offline
+        case .offlineParty:
+            return UI.Texts.offlineParty
+        case .onlineParty:
+            return UI.Texts.onlineParty
         }
     }
-    fileprivate var flipsIndicator = FlipsIndicator(flips: 0)!
     
-    fileprivate var numberOfModes = 3
+    fileprivate var numberOfModes = 4
     fileprivate var modeLabels: [SKLabelNode] = []
     fileprivate var modePictures: [SKSpriteNode] = []
+    fileprivate var modeSelector: SelectButtons!
     //MARK: - menu
     fileprivate var toTitleNode: SKSpriteNode!
     fileprivate var toTitleHint: HintBubble!
@@ -40,10 +47,6 @@ class ModeSelectScene: SKScene {
     fileprivate var firstModeLabelOrigin = CGPoint.zero
     fileprivate var firstModePictureOrigin = CGPoint.zero
     fileprivate var everMoved = false
-    
-    fileprivate let logo = SKCropNode()
-    fileprivate let logoRightBlack = SKSpriteNode(color: .black, size: CGSize())
-    fileprivate let logoLeftWhite = SKSpriteNode(color: .white, size: CGSize())
     
     override func didMove(to view: SKView) {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -73,11 +76,16 @@ class ModeSelectScene: SKScene {
         background.zPosition = UI.zPosition.background
         addChild(background)
         ////m
+        //MARK: - set up modeSelector
+        modeSelector = SelectButtons(spacing: UI.modeSelectorSpacing, leftButton: SKSpriteNode(color: .red, size: CGSize(width: 100, height: 100)), rightButton: SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 100)), isCyclic: false, upperBound: numberOfModes - 1)
+        modeSelector.fetchValueDelegate = self
+        modeSelector.zPosition = UI.zPosition.modeSelector
+        modeSelector.position = UI.modeSelectorPosition
+        addChild(modeSelector)
         //MARK: - set up flipsIndicator
-        flipsIndicator.position = UI.flipsPosition
-        flipsIndicator.zPosition = UI.zPosition.flipsIndicator
-        flipsIndicator.flips = SharedVariable.flips
-        addChild(flipsIndicator)
+        UI.flipsIndicator.withAnimation = true
+        UI.flipsIndicator.flips = SharedVariable.flips
+        UI.addFlipsIndicator(to: self)
         //MARK: - set up menu
         toTitleNode = SKSpriteNode(imageNamed: "toTitle")
         toTitleNode.size = UI.menuIconSize
@@ -88,7 +96,7 @@ class ModeSelectScene: SKScene {
         let BoundsOfHintBubble = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
         toTitleHint = HintBubble(bubbleColor: UI.hintBubbleColor, bounds: BoundsOfHintBubble)
         toTitleHint.attachTo = toTitleNode
-        toTitleHint.text = "back to title".localized()
+        toTitleHint.text = UI.Texts.backToTitle
         toTitleHint.isHidden = true
         toTitleHint.fontSize = UI.menuIconHintLabelFontSize
         addChild(toTitleHint)
@@ -111,20 +119,8 @@ class ModeSelectScene: SKScene {
             addChild(modePicture)
         }
         //MARK: - set up logo
-        guard let logoImage = UIImage(named: "Logo") else{fatalError("cannot find image Logo")}
-        let logoSize = UI.logoSize
-        logo.maskNode = SKSpriteNode(texture: SKTexture(image: logoImage), size: logoSize)
-        logo.position = UI.logoPosition
-        logo.zPosition = UI.zPosition.logo
-        addChild(logo)
-        //MARK: set up left-half white
-        logoLeftWhite.size = CGSize(width: logoSize.width/2, height: logoSize.height)
-        logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
-        logo.addChild(logoLeftWhite)
-        //MARK: set up right-half black
-        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
-        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
-        logo.addChild(logoRightBlack)
+        UI.logoSwitch.isUserInteractionEnabled = false
+        UI.addLogoSwitch(to: self)
     }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
@@ -172,6 +168,13 @@ class ModeSelectScene: SKScene {
             }
         }
     }
+    fileprivate func modeToTheCurrentMode() {
+        for i in 0...numberOfModes - 1{
+            modeLabels[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelLabelPosition(indexFromLeft: currentMode.rawValue).x
+            modePictures[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelPicturePosition(indexFromLeft: currentMode.rawValue).x
+        }
+    }
+    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
         let pos = touch.location(in: self)
@@ -189,12 +192,19 @@ class ModeSelectScene: SKScene {
                 }
             }
             else if abs(offset) < 10, !everMoved{
-                touchDownOnModes()
+                switch currentMode{
+                case .offline:
+                        touchDownOnOffline()
+                case .offlineParty:
+                        touchDownOnOfflineParty()
+                case .online:
+                        touchDownOnOnline()
+                case .onlineParty:
+                        touchDownOnOnlineParty()
+                }
             }
-            for i in 0...numberOfModes - 1{
-                modeLabels[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelLabelPosition(indexFromLeft: currentMode.rawValue).x
-                modePictures[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelPicturePosition(indexFromLeft: currentMode.rawValue).x
-            }
+            modeToTheCurrentMode()
+            modeSelector.value = currentMode.rawValue
         }
         let node = atPoint(pos)
         switch node {
@@ -214,19 +224,59 @@ class ModeSelectScene: SKScene {
             let scene = TitleScene()
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
-            scene.currentMode = .two
+            //UI.logoSwitch.currentState = .half
             view.presentScene(scene, transition: transition)
         }
     }
-    fileprivate func touchDownOnModes(){
+    fileprivate func touchDownOnOffline(){
         guard let view = view else{return}
         guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
         scene.scaleMode = .aspectFill
         scene.gameSize = gameSize
         scene.isAIMode = false
+        scene.offline = true
+        
+        //settings
+        scene.canPlayerUseAbility = false
+        
+        
         view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
-        view.ignoresSiblingOrder = true
-        view.showsFPS = true
-        view.showsNodeCount = true
+    }
+    fileprivate func touchDownOnOfflineParty(){
+        guard let view = view else{return}
+        guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
+        scene.scaleMode = .aspectFill
+        scene.gameSize = gameSize
+        scene.isAIMode = false
+        scene.offline =  true
+        //settings
+        scene.canPlayerUseAbility = true
+        scene.withAbility = .none
+        
+        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+    }
+    fileprivate func touchDownOnOnline(){
+        guard let view = view else{return}
+        guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
+        scene.scaleMode = .aspectFill
+        scene.gameSize = gameSize
+        scene.isAIMode = false
+        scene.offline = false
+        //settings
+        scene.canPlayerUseAbility = false
+        
+        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+    }
+    fileprivate func touchDownOnOnlineParty(){
+        guard let view = view else{return}
+        guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
+        scene.scaleMode = .aspectFill
+        scene.gameSize = gameSize
+        scene.isAIMode = false
+        scene.offline = false
+        //settings
+        scene.canPlayerUseAbility = true
+        scene.withAbility = .none
+        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
     }
 }

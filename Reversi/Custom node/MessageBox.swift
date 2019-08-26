@@ -8,6 +8,9 @@
 ////m
 import SpriteKit
 class MessageBox: SKSpriteNode {
+    deinit {
+        print(title,"deinit")
+    }
     var title: String = ""{
         didSet{
             titleNode.text = title
@@ -48,14 +51,14 @@ class MessageBox: SKSpriteNode {
         }
     }
     fileprivate var withoutUpdateText = false
-    var textBoxWithScroll = ScrollTextBox(text: ""){
+    var textBoxWithScroll: ScrollTextBox!{
         didSet{
             withoutUpdateText = true
             text = textBoxWithScroll.text
             withoutUpdateText = false
         }
     }
-    var textBoxWithoutScroll = SKMultilineLabel(text: "", labelWidth: UI.messageBoxLabelWidth){
+    var textBoxWithoutScroll: SKMultilineLabel!{
         didSet{
             withoutUpdateText = true
             text = textBoxWithoutScroll.text
@@ -74,11 +77,13 @@ class MessageBox: SKSpriteNode {
             
         }
     }
-    fileprivate var messageBoxBackground = SKSpriteNode(color: UIColor(red: 0, green: 0, blue: 0, alpha: 0.7), size: UI.rootSize)
-    fileprivate var grayButtonLayer = SKSpriteNode()
+    fileprivate var messageBoxBackground: SKSpriteNode!
+    fileprivate var grayButtonLayer: SKSpriteNode!
     
     convenience init(title: String = "", text: String, size: CGSize = UI.messageBoxSize, color: UIColor = UI.messageBoxColor, actions: [MessageAction] = [], isWithScroll: Bool = false) {
         self.init()
+        self.textBoxWithScroll = ScrollTextBox(text: "")
+        self.textBoxWithoutScroll = SKMultilineLabel(text: "", labelWidth: UI.messageBoxLabelWidth)
         self.isWithScroll = isWithScroll
         self.zPosition = UI.zPosition.messageBox
         self.size = isWithScroll ? UI.messageBoxSize : size
@@ -98,10 +103,14 @@ class MessageBox: SKSpriteNode {
         self.texture = messageBoxTexture()
         self.actions = actions
         setUpButtons()
+        //MARK: set up grayButtonLayer
+        grayButtonLayer = SKSpriteNode()
         grayButtonLayer.zPosition = 2
         grayButtonLayer.isHidden = true
         if grayButtonLayer.parent == nil {addChild(grayButtonLayer)}
         
+        //MARK: messageBoxBackground
+        messageBoxBackground = SKSpriteNode(color: UIColor(red: 0, green: 0, blue: 0, alpha: 0.7), size: UI.rootSize)
         if messageBoxBackground.parent == nil {addChild(messageBoxBackground)}
         messageBoxBackground.zPosition = -1
         
@@ -373,11 +382,16 @@ class MessageBox: SKSpriteNode {
         if !everMovedOverTenPx {
             if let touchOnWhichButton = getTouchedButtonIndex(pos: pos){
                 //DispatchQueue.main.async{[weak self] in
-                    self.isHidden = true
+                
                 //}
-                DispatchQueue(label: "com.beAwesome.Reversi", qos: DispatchQoS.userInteractive).async{[weak self] in
-                    self?.actions[touchOnWhichButton].handler()
+//                DispatchQueue(label: "com.Ranixculiva.ISREVERSI.message.handler", qos: DispatchQoS.userInteractive).async{
+                    self.isHidden = true
+                    
+//                }
+                DispatchQueue.main.async{[weak self] in
+                    self?.actions[touchOnWhichButton].handler?()
                 }
+                
                 
                 
             }

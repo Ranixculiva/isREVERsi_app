@@ -1,36 +1,35 @@
 import Cocoa
 import AITraining_Sources
 
-
-
 var stopFinding = false
 var testNumber = 10
 var draws = 0.0
 var wins = [0.0, 0.0]
-let gameSize = 6
+let gameSize = 4
 let home = FileManager.default.homeDirectoryForCurrentUser
 let desktopWeightsAutoWritePath =  "Desktop/WeightsAutoWrite.txt"
 let path = home.appendingPathComponent(desktopWeightsAutoWritePath)
 
 
 let serialQueue = DispatchQueue(label: "com.beAwesome.Reversi", qos: DispatchQoS.userInteractive)
-struct Player: CustomStringConvertible{
-    var description: String{
-        var des = ""
-        des += "name: \(name)\n"
-        des += "searchDepth: \(searchDepth)\n"
-        des += "weight: \(weights)"
-        return des
-    }
-    
-    var name: String = "p"
-    var searchDepth: UInt = 1
-    var weights = [Weight](repeating: Weight(), count: 3)
-    //var weight = Weight(scoreDifferenceWeight: 1, sideWeight: 2, CWeight: 5, XWeight: 20, cornerWeight: 50)
-}
-func test(players: [Player], whoFirst: Int, testOfNumber i: Int,description: Bool = false){
+//struct Player: CustomStringConvertible{
+//    var description: String{
+//        var des = ""
+//        des += "name: \(name)\n"
+//        des += "searchDepth: \(searchDepth)\n"
+//        des += "weight: \(weights)"
+//        return des
+//    }
+//    
+//    var name: String = "p"
+//    var searchDepth: UInt = 1
+//    var weights = [Weight](repeating: Weight(), count: 3)
+//    //var weight = Weight(scoreDifferenceWeight: 1, sideWeight: 2, CWeight: 5, XWeight: 20, cornerWeight: 50)
+//}
+func test(players: [Player], whoFirst: Int, testOfNumber i: Int,description: Bool = false, isComputerWhite: Bool = true){
     
     var Game = Reversi.init(n: gameSize)
+    Reversi.withAbility = .translate
     if description{
         print("•test number: ", i, ", ", Double(i) / Double(testNumber) * 100.0 , "%")
         Game.showBoard(isWhite: false)
@@ -39,18 +38,30 @@ func test(players: [Player], whoFirst: Int, testOfNumber i: Int,description: Boo
     }
     
     while !Game.isEnd(){
-        //Game.showBoard(isWhite: Game.isColorWhiteNow)
+        Game.showBoard(isWhite: Game.isColorWhiteNow)
+        print(Game.isColorWhiteNow ? "now is white" : "now is black")
+        print("cool down white:", Game.getAbilityCoolDown(isWhite: true), ", black", Game.getAbilityCoolDown(isWhite: false))
         //black
         if Game.isColorWhiteNow == false{
+            let weight = players[whoFirst].weight(turn: Game.turn, gameSize: gameSize)
             if let bestSolution = Game.bestSolution(isWhite: Game.isColorWhiteNow, searchDepth: players[whoFirst].searchDepth, stopFinding: &stopFinding,
-                                                    weight: players[whoFirst].weights[Game.turn / 32]){
-                Game.play(Row: bestSolution.row, Col: bestSolution.col)
+                                                    weight: weight, isComputerWhite: isComputerWhite){
+                Game.play(Row: bestSolution.row, Col: bestSolution.col,isComputerWhite: isComputerWhite)
+            }
+            else{
+                Game.play(Row: 0, Col: 0,isComputerWhite: isComputerWhite)
+                print("translate!!!!")
             }
         }
         else{
             //white
-            if let bestSolution = Game.bestSolution(isWhite: Game.isColorWhiteNow, searchDepth: players[1 - whoFirst].searchDepth, stopFinding: &stopFinding, weight: players[1 - whoFirst].weights[Game.turn / 32]){
-                Game.play(Row: bestSolution.row, Col: bestSolution.col)
+            let weight = players[1 - whoFirst].weight(turn: Game.turn, gameSize: gameSize)
+            if let bestSolution = Game.bestSolution(isWhite: Game.isColorWhiteNow, searchDepth: players[1 - whoFirst].searchDepth, stopFinding: &stopFinding, weight: weight, isComputerWhite: isComputerWhite){
+                Game.play(Row: bestSolution.row, Col: bestSolution.col,isComputerWhite: isComputerWhite)
+            }
+            else {
+                Game.play(Row: 0, Col: 0,isComputerWhite: isComputerWhite)
+                print("translate!!!!!")
             }
         }
         
@@ -107,38 +118,41 @@ var initialStartWeight = Weight(scoreDifferenceWeight: 1,
                       sideWeight: 11,
                       CWeight: -30,
                       XWeight: -50,
-                      cornerWeight: 60
+                      cornerWeight: 60,
+                      mobilityWeight: 100
 )
 var initialMiddleWeight = Weight(scoreDifferenceWeight: 1,
                           sideWeight: 22,
                           CWeight: -30,
                           XWeight: -50,
-                          cornerWeight: 40
+                          cornerWeight: 40,
+                          mobilityWeight: 100
 )
 var initialFinalWeight = Weight(scoreDifferenceWeight: 1,
                          sideWeight: 20,
                          CWeight: -30,
                          XWeight: -50,
-                         cornerWeight: 19
+                         cornerWeight: 19,
+                         mobilityWeight: 100
 )
 let initialWeights = [initialStartWeight, initialMiddleWeight, initialFinalWeight]
 var p0 = Player(
     name: "player0",
-    searchDepth: 5, weights: initialWeights
+    searchDepth: 4, weights: initialWeights
     )
 var p1 = Player(
     name: "player1",
-    searchDepth: 5,
+    searchDepth: 4,
     weights: initialWeights)
 var players = [p0,p1]
 var bestWeightChoice = p0.weights
 var winsInARow = 0
 var maxConsecutiveWins = 0
 var winner = 0
-//while true{
-//    test(players: players, whoFirst: 0, testOfNumber: 1)
-//    print(wins)
-//}
+for _ in 0...20{
+    test(players: players, whoFirst: 0, testOfNumber: 2, description: false, isComputerWhite: true)
+    print(wins)
+}
 
 
 //var game = Reversi(n: 4)
@@ -164,27 +178,27 @@ var winner = 0
 //test(players: players, whoFirst: 0, testOfNumber: 1, description: true)
 
 
-while true{
-    
-        //print(players[0])
-        //print(players[1])
-        let loser = 1 - whoWins(players: players, testNumber: testNumber)
-        players[loser].weights = [Weight.random(),Weight.random(),Weight.random()]
-        if winner == 1 - loser{
-            winsInARow += 1
-            if winsInARow > maxConsecutiveWins{
-                maxConsecutiveWins += 1
-                bestWeightChoice = players[winner].weights
-                let text = "maxConsecutiveWins = \(maxConsecutiveWins)\n" + bestWeightChoice.description
-                try? text.write(to: path, atomically: false, encoding: .utf8)
-            }
-        }
-        else {
-            winsInARow = 0
-            winner = 1 - loser
-        }
-        print("\(players[winner].name) wins having \(winsInARow) wins in a row")
-        print("max consecutive win is = ", maxConsecutiveWins)
-        print("the best weight choice is \(bestWeightChoice)\n\n")
-    
-}
+//while true{
+//
+//        //print(players[0])
+//        //print(players[1])
+//        let loser = 1 - whoWins(players: players, testNumber: testNumber)
+//        players[loser].weights = [Weight.random(),Weight.random(),Weight.random()]
+//        if winner == 1 - loser{
+//            winsInARow += 1
+//            if winsInARow > maxConsecutiveWins{
+//                maxConsecutiveWins += 1
+//                bestWeightChoice = players[winner].weights
+//                let text = "maxConsecutiveWins = \(maxConsecutiveWins)\n" + bestWeightChoice.description
+//                try? text.write(to: path, atomically: false, encoding: .utf8)
+//            }
+//        }
+//        else {
+//            winsInARow = 0
+//            winner = 1 - loser
+//        }
+//        print("\(players[winner].name) wins having \(winsInARow) wins in a row")
+//        print("max consecutive win is = ", maxConsecutiveWins)
+//        print("the best weight choice is \(bestWeightChoice)\n\n")
+//
+//}

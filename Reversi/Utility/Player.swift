@@ -17,7 +17,7 @@ struct Player: CustomStringConvertible{
     }
     
     var name: String = ""
-    var searchDepth: UInt = 0
+    var searchDepth: UInt = 1
     var weights = [Weight()]
     /**
      It will tell you the weight you should use in the current turn according to the given weights.

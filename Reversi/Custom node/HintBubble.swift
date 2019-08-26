@@ -25,6 +25,9 @@ It will create a hint bubble and attach it to some SKNode.
  ## Important Notes ##
  */
 class HintBubble: SKSpriteNode {
+    deinit {
+        print("HintBubble deinit")
+    }
     var bubbleColor = SKColor.white
     var text: String?{
         get{
@@ -41,7 +44,7 @@ class HintBubble: SKSpriteNode {
      This bounds is in the coordinate system of the parent of the attachTo.
      */
     var bounds: CGRect?
-    var attachTo: (SKNode & attachable)?{
+    weak var attachTo: (SKNode & attachable)?{
         didSet{
             fitInBounds()
         }
@@ -77,9 +80,6 @@ class HintBubble: SKSpriteNode {
         }
     }
     fileprivate var labelNode = SKLabelNode()
-    fileprivate class AttachedNode: SKSpriteNode{
-        
-    }
     convenience init?(bubbleColor color: SKColor, bounds: CGRect? = nil) {
         self.init(texture: SKTexture(), color:SKColor.clear, size: CGSize())
         self.bounds = bounds

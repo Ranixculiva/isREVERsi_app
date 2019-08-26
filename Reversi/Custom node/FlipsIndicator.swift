@@ -8,6 +8,9 @@
 
 import SpriteKit
 class FlipsIndicator: SKSpriteNode {
+    deinit {
+        print("flipsIndicator deinited!!")
+    }
     fileprivate var flipAnimation: SKAction{
         return SKAction.sequence([
             SKAction.scaleX(to: 0, duration: 0.4),
@@ -84,6 +87,9 @@ class FlipsIndicator: SKSpriteNode {
             flipsLabel.run(SKAction.repeatForever(flipAnimation))
         }
         self.isUserInteractionEnabled = false
+        
+        self.position = UI.flipsPosition
+        self.zPosition = UI.zPosition.flipsIndicator
     }
     func flipsBackground(flips: Int) -> SKTexture? {
         // Add 1 to the height and width to ensure the borders are within the sprite

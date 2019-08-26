@@ -43,6 +43,7 @@ struct Reversi: Codable, CustomStringConvertible{
     enum ability: Int, CaseIterable, Codable{
         case none = 0, translate, clearBomb, colorBomb
     }
+    var didLastTurnUseAbility = false
     private var abilityCoolDown = ["white": 0, "black": 0]
     mutating func setAbilityCoolDown(isWhite: Bool, duration: Int){
         if isWhite{
@@ -59,7 +60,7 @@ struct Reversi: Codable, CustomStringConvertible{
         return abilityCoolDown["black"] ?? 0
     }
     static var translateDx = 1
-    static var translateDy = 1
+    static var translateDy = 0
     static var withAbility = ability.none
     enum condition: Int, CaseIterable, Codable{
         case none = 0, translate, clearBomb, colorBomb
@@ -523,14 +524,17 @@ struct Reversi: Codable, CustomStringConvertible{
         }
         return isColorWhiteNowOut
     }*/
-    mutating func play(Row row: Int, Col col: Int){
+    mutating func play(Row row: Int, Col col: Int, isComputerWhite: Bool? = nil ){
         let currentCondition = self.currentCondition
         let abilityCoolDown = getAbilityCoolDown(isWhite: isColorWhiteNow)
         setAbilityCoolDown(isWhite: isColorWhiteNow, duration: abilityCoolDown - 1)
-        if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate{
+        if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate, isComputerWhite == isColorWhiteNow{
+            
             translate()
+            setAbilityCoolDown(isWhite: isColorWhiteNow, duration: 3)
             self.isColorWhiteNow = !self.isColorWhiteNow
             turn += 1
+            print("translate")
         }
         else if self.fillColoredNumber(Row: row, Col: col, isWhite: self.isColorWhiteNow){
             self.isColorWhiteNow = !self.isColorWhiteNow
@@ -548,24 +552,28 @@ struct Reversi: Codable, CustomStringConvertible{
             //print("\(isColorWhiteNowOut ? "White" : "Black") cannot move")
             self.isColorWhiteNow = !self.isColorWhiteNow
         }
+//        print("test/////////")
+//        self.showBoard(isWhite: isColorWhiteNow)
+//        print("test/////////")
+//        print("now abilityCoolDown is white: ", self.abilityCoolDown["white"]!, "black", self.abilityCoolDown["black"]!)
     }
-    func allStepScores(isWhite: Bool) -> Dictionary<chessBoardPos, Int>?{
+    func allStepScores(isWhite: Bool, isComputerWhite: Bool? = nil) -> Dictionary<chessBoardPos, Int>?{
         
         var stepScore = Dictionary<chessBoardPos, Int>()
         for availableStep in self.availableSteps(isWhite: isWhite){
             var testGame = self
-            testGame.play(Row: availableStep.row, Col: availableStep.col)
+            testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isComputerWhite)
             stepScore[chessBoardPos((row: availableStep.row, col: availableStep.col))] = testGame.getScore(isWhite: isWhite)
         }
         
         return stepScore.count == 0 ? nil : stepScore
     }
-    func allStepScoresDifference(isWhite: Bool) -> Dictionary<chessBoardPos, Int>?{
+    func allStepScoresDifference(isWhite: Bool, isComputerWhite: Bool? = nil) -> Dictionary<chessBoardPos, Int>?{
         
         var stepScore = Dictionary<chessBoardPos, Int>()
         for availableStep in self.availableSteps(isWhite: isWhite){
             var testGame = self
-            testGame.play(Row: availableStep.row, Col: availableStep.col)
+            testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isComputerWhite)
             
             stepScore[chessBoardPos((row: availableStep.row, col: availableStep.col))] = testGame.getScore(isWhite: true) - testGame.getScore(isWhite: false)
         }
@@ -583,8 +591,12 @@ struct Reversi: Codable, CustomStringConvertible{
         let CWeight = weight.CWeight
         let XWeight = weight.XWeight
         let cornerWeight = weight.cornerWeight
+        let mobilityWeight = weight.mobilityWeight
         
         let weightedScoreDifference: Int = scoreDifferenceWeight * scoreDifference
+        var mobilityScore = 0
+        if mobilityWeight != 0
+        {mobilityScore = (availableSteps(isWhite: isColorWhiteNow).count - availableSteps(isWhite: !isColorWhiteNow).count) * mobilityWeight}
         
         let weightedCSquaresScorePositive = CWeight * Set(Reversi.CSquares[size.rawValue]).intersection(chessBoardPositionsForMyself).count
         let weightedXSquaresScorePositive = XWeight * Set(Reversi.XSquares[size.rawValue]).intersection(chessBoardPositionsForMyself).count
@@ -605,7 +617,7 @@ struct Reversi: Codable, CustomStringConvertible{
             weightedXSquaresScore +
             weightedCornerSquaresScore +
         weightedSideSquaresScore
-        let score = weightedScoreDifference + weightedPositionScore
+        let score = weightedScoreDifference + weightedPositionScore + mobilityScore
         return score
     }
     mutating func translate(dx: Int = Reversi.translateDx, dy: Int = Reversi.translateDy){
@@ -630,7 +642,7 @@ struct Reversi: Codable, CustomStringConvertible{
         //add all first steps to nodesToVist
         for availableStep in self.availableSteps(isWhite: isWhite){
             var testGame = self
-            testGame.play(Row: availableStep.row, Col: availableStep.col)
+            testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isColorWhiteNow)
             firstStepGames.append(testGame)
             firstSteps.append(chessBoardPos(availableStep))
             
@@ -692,7 +704,7 @@ struct Reversi: Codable, CustomStringConvertible{
                     //print("if numberOfScoresToCalculateStack: ", numberOfScoresToCalculateStack)
                     for availableStep in samepleOfAvailableSteps{
                         var testGame = currentNode
-                        testGame.play(Row: availableStep.row, Col: availableStep.col)
+                        testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isColorWhiteNow)
                         nodesToVist.insert(testGame, at: 0)
                     }
                 }
@@ -740,9 +752,88 @@ struct Reversi: Codable, CustomStringConvertible{
         if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate{
             return nil
         }
+        func alphaBetaMinMaxScore(isMaximizer: Bool, alpha: Int? = nil, beta: Int? = nil, game: Reversi, depth: UInt) -> Int{
+            if depth == 0 || game.isEnd(){
+                return game.evaluation(weight: weight)
+            }
+            
+            let abilityCoolDown = game.getAbilityCoolDown(isWhite: game.isColorWhiteNow)
+            let needToBreak = abilityCoolDown == 0 && Reversi.withAbility == .translate && game.currentCondition == .translate
+            if isMaximizer{
+                var score: Int? = nil
+                var newAlpha: Int? = alpha
+                for step in game.availableSteps(isWhite: game.isColorWhiteNow){
+                    if stopFinding {return -1}
+                    var gameTest = game
+                    gameTest.play(Row: step.row, Col: step.col, isComputerWhite: isColorWhiteNow)
+                    let isMaximizer = (gameTest.isColorWhiteNow == isColorWhiteNow)
+                    if score == nil {score =  alphaBetaMinMaxScore(isMaximizer: isMaximizer, alpha: newAlpha, beta: beta, game: gameTest, depth: depth-1)}
+                    else {
+                        score = max(score!, alphaBetaMinMaxScore(isMaximizer: isMaximizer, alpha: newAlpha, beta: beta, game: gameTest, depth: depth-1))
+                    }
+                    
+                    if let alpha = alpha{
+                        newAlpha = max(alpha,score!)
+                        if let beta = beta {
+                            if newAlpha! >= beta {break}
+                        }
+                    }
+                    else{
+                        newAlpha = score!
+                    }
+                    if needToBreak{break}
+                }
+                
+                return score!
+                
+            }
+            else {
+                var score: Int? = nil
+                var newBeta: Int? = beta
+                for step in game.availableSteps(isWhite: game.isColorWhiteNow){
+                    if stopFinding {return -1}
+                    var gameTest = game
+                    gameTest.play(Row: step.row, Col: step.col, isComputerWhite: isColorWhiteNow)
+                    let isMaximizer = (gameTest.isColorWhiteNow == isColorWhiteNow)
+                    if score == nil {score =  alphaBetaMinMaxScore(isMaximizer: isMaximizer, alpha: alpha, beta: newBeta, game: gameTest, depth: depth-1)}
+                    else{
+                        score = min(score!, alphaBetaMinMaxScore(isMaximizer: isMaximizer, alpha: alpha, beta: newBeta, game: gameTest, depth: depth-1))
+                    }
+                    
+                    if let beta = beta{
+                        newBeta = min(beta,score!)
+                        if let alpha = alpha {
+                            if alpha >= newBeta! {break}
+                        }
+                    }
+                    else{
+                        newBeta = score!
+                    }
+                    if needToBreak{break}
+                }
+                return score!
+            }
+        }
+        var posVSscore: [chessBoardPos : Int] = [:]
+        for step in self.availableSteps(isWhite: isColorWhiteNow){
+            var game = self
+            game.play(Row: step.row, Col: step.col, isComputerWhite: isColorWhiteNow)
+            let isMaximizer = (game.isColorWhiteNow == isColorWhiteNow)
+            posVSscore[chessBoardPos(step)] = alphaBetaMinMaxScore(isMaximizer: isMaximizer, game: game, depth: searchDepth-1)
+            if stopFinding {return nil}
+        }
+        guard let scoreMax = posVSscore.values.max() else {return nil}
+        return posVSscore.filter{$0.value == scoreMax}.keys.randomElement()
+    }//TODO: Clear bug when with ability
+    public mutating func bestSolutionOrigin(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool, weight: Weight = Weight()) -> chessBoardPos?{
+        let currentCondition = self.currentCondition
+        let abilityCoolDown = getAbilityCoolDown(isWhite: isColorWhiteNow)
+        if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate{
+            return nil
+        }
         else if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}.randomElement()}
         //if self.turn == 0{return self.availableSteps(isWhite: isWhite).map{chessBoardPos($0)}[2]}
-//        print("\n\nnew search \n\n")
+        //        print("\n\nnew search \n\n")
         ///description
         ///var space = ""
         ///description
@@ -751,16 +842,16 @@ struct Reversi: Codable, CustomStringConvertible{
         //add all first steps to nodesToVist
         for availableStep in self.availableSteps(isWhite: isWhite){
             var testGame = self
-            testGame.play(Row: availableStep.row, Col: availableStep.col)
+            testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isColorWhiteNow)
             firstStepGames.append(testGame)
             firstSteps.append(chessBoardPos(availableStep))
-            
+
         }
         var firstStepMinLastScore = Dictionary<chessBoardPos, Int>()
         //if game is already end, then load game, will cause a problem
         if firstStepGames.count == 0{return nil}
         for i in 0...firstStepGames.count - 1 {
-//            print("branch #\(i)")
+            //print("branch #\(i):", "(\(firstSteps[i].row),\(firstSteps[i].col))")
             ///for a fixed firstStepGame
             var lastDepth = 0
             var scoreStack: [Int] = []
@@ -783,9 +874,9 @@ struct Reversi: Codable, CustomStringConvertible{
             while !nodesToVisit.isEmpty{
                 if stopFinding {return nil}
                 let currentNode = nodesToVisit.removeFirst()
-                
-//                print(String(Array(repeating: "●", count: currentNode.turn)), currentNode)
-                
+
+                //                print(String(Array(repeating: "●", count: currentNode.turn)), currentNode)
+
                 ///discription
                 //                space = ""
                 //                for _ in 0...currentNode.turn{
@@ -793,13 +884,14 @@ struct Reversi: Codable, CustomStringConvertible{
                 //                }
                 //                print(space)
                 //                currentNode.showBoard(isWhite: currentNode.isColorWhiteNow)
-                
+
                 ///discription
                 var currentDepth = currentNode.turn - self.turn
+                //print("depth:",currentDepth)
                 if currentDepth < lastDepth{
                     var isMaxOperator = false
                     for _ in 1...lastDepth - currentDepth{
-                         isMaxOperator = isMaxOperatorStack.removeFirst()
+                        isMaxOperator = isMaxOperatorStack.removeFirst()
                         let numberOfScoresToCalculate = numberOfScoresToCalculateStack.removeFirst()
                         nodeNumberStack.removeFirst()
                         //if !nodeNumberStack.isEmpty { nodeNumberStack[0] += 1}
@@ -809,32 +901,32 @@ struct Reversi: Codable, CustomStringConvertible{
                         scoreStack.insert(isMaxOperator ? scoreToCalculate.max()! : scoreToCalculate.min()!, at: 0)
                         alphaStack.removeFirst()
                         betaStack.removeFirst()
-//                        print("currentDepth < lastDepth  i: ", i)
-//                        print("currentDepth < lastDepth use operator: ", isMaxOperator ? "max" : "min")
-//                        print("currentDepth < lastDepth numberOfScoresToCalculate: ", numberOfScoresToCalculate)
-//                        print("currentDepth < lastDepth scoreStack: ", scoreStack)
+                        //                        print("currentDepth < lastDepth  i: ", i)
+                        //                        print("currentDepth < lastDepth use operator: ", isMaxOperator ? "max" : "min")
+                        //                        print("currentDepth < lastDepth numberOfScoresToCalculate: ", numberOfScoresToCalculate)
+                        //                        print("currentDepth < lastDepth scoreStack: ", scoreStack)
                     }
                     //BUG
                     if isMaxOperatorStack.first!{
                         if alphaStack[0] != nil{alphaStack[0] = scoreStack[0] > alphaStack[0]! ? scoreStack[0] : alphaStack[0]}
                         else {alphaStack[0] = scoreStack[0]}
-                        
-                        
+
+
                     }
                     else {
                         if betaStack[0] != nil{betaStack[0] = scoreStack[0] < betaStack[0]! ? scoreStack[0] : betaStack[0]}
                         else {betaStack[0] = scoreStack[0]}
-                        
+
                     }
-//                    print("currentDepth < lastDepth alphaStack ",alphaStack)
-//                    print("currentDepth < lastDepth betaStack ",betaStack)
+                    //                    print("currentDepth < lastDepth alphaStack ",alphaStack)
+                    //                    print("currentDepth < lastDepth betaStack ",betaStack)
                     if let alpha = alphaStack[0], let beta = betaStack[0] {
                         if alpha > beta{
-//                            print("currentDepth < lastDepth α > β, address ", nodeNumberStack)
-//                            print("currentDepth < lastDepth nodesToVisit = \n", nodesToVisit)
-//                            print("currentDepth < lastDepth numberOfScoresToCalculateStack ", numberOfScoresToCalculateStack)
-//                            print("currentDepth < lastDepth nodeNumberStack ",nodeNumberStack)
-//                            print("")
+                            //                            print("currentDepth < lastDepth α > β, address ", nodeNumberStack)
+                            //                            print("currentDepth < lastDepth nodesToVisit = \n", nodesToVisit)
+                            //                            print("currentDepth < lastDepth numberOfScoresToCalculateStack ", numberOfScoresToCalculateStack)
+                            //                            print("currentDepth < lastDepth nodeNumberStack ",nodeNumberStack)
+                            //                            print("")
                             nodesToVisit.removeFirst(numberOfScoresToCalculateStack[0] - nodeNumberStack[0] - 1)
                             let score = scoreStack[0]
                             scoreStack.removeFirst(nodeNumberStack[0])
@@ -849,11 +941,11 @@ struct Reversi: Codable, CustomStringConvertible{
                             continue
                         }
                     }
-                    
+
                 }
-                
-                
-                
+
+
+
                 isMaxOperatorStack.insert(currentNode.isColorWhiteNow == isWhite ? true : false, at: 0)
                 if alphaStack.isEmpty{
                     alphaStack = [nil]
@@ -863,63 +955,65 @@ struct Reversi: Codable, CustomStringConvertible{
                     alphaStack.insert(alphaStack.first!, at: 0)
                     betaStack.insert(betaStack.first!,at: 0)
                 }
-//                print("init isMaxOperatorStack ", isMaxOperatorStack)
-//                print("init alhpaStack ", alphaStack)
-//                print("init betaStack ", betaStack)
-                
+                //                print("init isMaxOperatorStack ", isMaxOperatorStack)
+                //                print("init alhpaStack ", alphaStack)
+                //                print("init betaStack ", betaStack)
+
                 if currentDepth < searchDepth - 1 && !currentNode.isEnd(){
-                    
-                    
+
+
                     ///expand the current node
                     let sampleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(3)
                     //let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
                     numberOfScoresToCalculateStack.insert(sampleOfAvailableSteps.count, at: 0)
-                        nodeNumberStack.insert(0, at: 0)
-//                    print("currentDepth < searchDepth - 1  numberOfScoresToCalculateStack: ", numberOfScoresToCalculateStack)
+                    nodeNumberStack.insert(0, at: 0)
+                    //                    print("currentDepth < searchDepth - 1  numberOfScoresToCalculateStack: ", numberOfScoresToCalculateStack)
                     for availableStep in sampleOfAvailableSteps{
                         var testGame = currentNode
-                        testGame.play(Row: availableStep.row, Col: availableStep.col)
+                        testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isColorWhiteNow)
                         nodesToVisit.insert(testGame, at: 0)
+                        //print("(\(availableStep.row),\(availableStep.col))", testGame.isColorWhiteNow)
                     }
-//                    print("currentDepth < searchDepth - 1  nodesToVisit: ", nodesToVisit)
+                    //                    print("currentDepth < searchDepth - 1  nodesToVisit: ", nodesToVisit)
                     ///expand the current node
-                    
+
                     //print("if isMaxOperatorStack", isMaxOperatorStack)
-                    
+
                 }
                     //end node
                 else if currentNode.isEnd(){
                     isMaxOperatorStack.removeFirst()
                     alphaStack.removeFirst()
                     betaStack.removeFirst()
-                    
+
                     let currentEvaluation = currentNode.evaluation(weight: weight)
                     scoreStack.insert(currentEvaluation, at: 0)
-                    
-                    
-//                    print("current Node end scoreStack ", scoreStack)
-//                    print("current Node end isMaxOperatorStack ", isMaxOperatorStack)
+
+
+                    //                    print("current Node end scoreStack ", scoreStack)
+                    //                    print("current Node end isMaxOperatorStack ", isMaxOperatorStack)
                 }
                 else{
                     ///expand the current node according to alpha, beta
                     let samepleOfAvailableSteps = currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow)//.choose(2)
                     //let samepleOfAvailableSteps = Array(currentNode.availableSteps(isWhite: currentNode.isColorWhiteNow).suffix(2))
                     let isMaxOperator = isMaxOperatorStack.first!
-                    
+
                     var alpha = alphaStack.first!
                     var beta = betaStack.first!
                     var numberOfScoreToCalculate = 0
-                    
+
                     for availableStep in samepleOfAvailableSteps{
                         numberOfScoreToCalculate += 1
                         var testGame = currentNode
-                        testGame.play(Row: availableStep.row, Col: availableStep.col)
+                        testGame.play(Row: availableStep.row, Col: availableStep.col, isComputerWhite: isColorWhiteNow)
                         //nodesToVist.insert(testGame, at: 0)
                         currentDepth = testGame.turn - self.turn
                         let currentEvaluation = testGame.evaluation(weight: weight)
-//                        print("endpoint: ", currentEvaluation)
+                        //                        print("endpoint: ", currentEvaluation)
+                        //print("(\(availableStep.row),\(availableStep.col))", currentEvaluation)
                         scoreStack.insert(currentEvaluation, at: 0)
-                        
+
                         ///alpha-beta cut
                         if isMaxOperator{
                             //for the first time
@@ -947,7 +1041,7 @@ struct Reversi: Codable, CustomStringConvertible{
                         ///alpha-beta cut
                     }
                     ///expand the current node according to alpha, beta
-                    
+
                     //                    print("else lastDepth: ", lastDepth)
                     //                    print("else scoreStack: ", scoreStack)
                     ///description
@@ -956,7 +1050,7 @@ struct Reversi: Codable, CustomStringConvertible{
                     ///description
                     numberOfScoresToCalculateStack.insert(numberOfScoreToCalculate, at: 0)
                     nodeNumberStack.insert(0, at: 0)
-                    
+
                 }
                 lastDepth = currentDepth
             }
@@ -966,17 +1060,17 @@ struct Reversi: Codable, CustomStringConvertible{
                 let scoreToCalculate = Array(scoreStack.prefix(numberOfScoresToCalculate))
                 scoreStack.removeFirst(numberOfScoresToCalculate)
                 scoreStack.insert(isMaxOperator ? scoreToCalculate.max()! : scoreToCalculate.min()!, at: 0)
-//                print("end use operator: ", isMaxOperator ? "max" : "min")
-//                print("end numberOfScoresToCalculateStack: ", numberOfScoresToCalculate)
-//                print("end scoreStack: ", scoreStack)
+                //                print("end use operator: ", isMaxOperator ? "max" : "min")
+                //                print("end numberOfScoresToCalculateStack: ", numberOfScoresToCalculate)
+                //                print("end scoreStack: ", scoreStack)
                 //print("")
             }
             firstStepMinLastScore[firstSteps[i]] = scoreStack.first!
-//            print("end one branch, and score is ", scoreStack.first!)
-//            print("")
-            
-            
-            
+            //            print("end one branch, and score is ", scoreStack.first!)
+            //            print("")
+
+
+
         }
         let max = firstStepMinLastScore.values.max()
         return firstStepMinLastScore.filter({$0.value == max}).keys.randomElement()

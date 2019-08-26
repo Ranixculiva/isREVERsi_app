@@ -20,7 +20,25 @@ class Challenge: Codable{
     var level: Int
     var gameSize: Int
     var difficulty: difficultyType
-    var description: String
+    var description: String{
+        get{
+            switch type{
+            case .win:
+                return UI.Texts.win
+            case .getPoints:
+                let points = parameters.getPoints.points
+                return String(format: UI.Texts.getPoints, points)
+                //self.parameters.getPoints.points = points
+            case .winTheComputerByPoints:
+                let byPoints = parameters.winTheComputerByPoints.byPoints
+                return String(format: UI.Texts.winTheComputerByPoints, byPoints)
+                //self.parameters.winTheComputerByPoints.byPoints = byPoints
+            }
+        }
+    }
+    enum key: String{
+        case sharedChallenge = "shareChallenge"
+    }
     //parameters for getPoints
     fileprivate var parameters = Parameters()
     fileprivate struct Parameters: Codable{
@@ -373,6 +391,16 @@ class Challenge: Codable{
         let gameSizeIndex = gameSize / 2 - 2
         return Challenge.sharedChallenge[gameSizeIndex][isColorWhite ? 0 : 1][level - 1][difficulty.rawValue]
     }
+    class func getTheNumberOfCompletedChallenge(gameSize: Int, isColorWhite: Bool, level: Int, difficulty: difficultyType) -> Int{
+        let challenges = Challenge.sharedChallenge(gameSize: gameSize, isColorWhite: isColorWhite, level: level, difficulty: difficulty)
+        var number = 0
+        for challenge in challenges{
+            if challenge.isCompleted{
+                number += 1
+            }
+        }
+        return number
+    }
     func getChallengeParametersForGetPoints() -> Int{
         if type != .getPoints {fatalError("wrong type")}
         return parameters.getPoints.points
@@ -386,44 +414,45 @@ class Challenge: Codable{
             challenge.canGetOneFlip = false
         }
     }
+    
     fileprivate init<T: Codable>(gameSize: Int, level: Int, difficulty: difficultyType, type: challengeType, _ parameters: T...){
         self.level = level
         self.difficulty = difficulty
         self.gameSize = gameSize
         self.type = type
         switch type{
-        case .win:
-            self.description = "win".localized()
         case .getPoints:
-            guard let points = parameters[0] as? Int else{fatalError("wrong parameters.")}
-            self.description = String(format: "getPoints".localized(), points)
-            self.parameters.getPoints.points = points
+            self.parameters.getPoints.points = parameters[0] as! Int
         case .winTheComputerByPoints:
-            guard let byPoints = parameters[0] as? Int else{fatalError("wrong parameters.")}
-            self.description = String(format: "winTheComputerByPoints".localized(), byPoints)
-            self.parameters.winTheComputerByPoints.byPoints = byPoints
+            self.parameters.winTheComputerByPoints.byPoints = parameters[0] as! Int
+        default:
+            break
         }
     }
     static func saveSharedChallenge(){
         //save with JSONEncoder
-        let filemanager = FileManager()
-        let URL = filemanager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let path = URL.appendingPathComponent("challenges.dat")
+//        let filemanager = FileManager()
+//        let URL = filemanager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+//        let path = URL.appendingPathComponent("challenges.dat")
         let encoder = JSONEncoder()
         
         guard let data = try? encoder.encode(sharedChallenge) else {
             print("saving challeges failed")
             return
         }
-        try? data.write(to: path)
+        //try? data.write(to: path)
+        KeychainWrapper.standard.set(data, forKey: key.sharedChallenge.rawValue)
     }
     static func loadSharedChallenge(){
-        let filemanager = FileManager()
-        let URL = filemanager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let path = URL.appendingPathComponent("challenges.dat")
+//        let filemanager = FileManager()
+//        let URL = filemanager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+//        let path = URL.appendingPathComponent("challenges.dat")
         let decoder = JSONDecoder()
-        guard let data = try? Data(contentsOf: path) else {return}
+        
+        guard let data = KeychainWrapper.standard.data(forKey: key.sharedChallenge.rawValue) else {return}
+        
         guard let sharedAchievement = try? decoder.decode([[[[[Challenge]]]]].self, from: data) else{return}
+        
         self.sharedChallenge = sharedAchievement
     }
 }

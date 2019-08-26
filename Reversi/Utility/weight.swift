@@ -8,10 +8,12 @@ public struct Weight: CustomStringConvertible{
         des += " CWeight: \(CWeight)\n"
         des += " XWeight: \(XWeight)\n"
         des += " cornerWeight: \(cornerWeight)\n"
+        des += " mobility: \(mobilityWeight)\n"
         return des
         
     }
     public var scoreDifferenceWeight: Int
+    public var mobilityWeight: Int
     public var sideWeight: Int
     public var CWeight: Int
     public var XWeight: Int
@@ -20,25 +22,29 @@ public struct Weight: CustomStringConvertible{
         sideWeight: Int = 15,//12,//3,
         CWeight: Int = -30,//9,//32,//9,
         XWeight: Int = -50,//15,//29,//15,
-        cornerWeight: Int = 60){//43){//60){
+        cornerWeight: Int = 60,//43){//60){
+        mobilityWeight: Int = 50){
         self.scoreDifferenceWeight = scoreDifferenceWeight
         self.sideWeight = sideWeight
         self.CWeight = CWeight
         self.XWeight = XWeight
         self.cornerWeight = cornerWeight
+        self.mobilityWeight = mobilityWeight
     }
     public static func random() -> Weight{
         
         let sideWeight = Array(1...5).randomElement()!
-        let CWeight = Array(-1 ... -30).randomElement()!
-        let XWeight = Array(-30 ... -50).randomElement()!
+        let CWeight = Array(-30 ... -10).randomElement()!
+        let XWeight = Array(-50 ... -40).randomElement()!
         let cornerWeight = Array(30...60).randomElement()!
+        let mobilityWeight = Array(30...60).randomElement()!
         return Weight(
             scoreDifferenceWeight: 1,
             sideWeight: sideWeight,
             CWeight: CWeight,
             XWeight: XWeight,
-            cornerWeight: cornerWeight)
+            cornerWeight: cornerWeight,
+            mobilityWeight: mobilityWeight)
        
     }
 }

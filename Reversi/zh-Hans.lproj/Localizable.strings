@@ -1,47 +1,145 @@
-/* 
-  Localizable.strings
-  Reversi
-
-  Created by john gospai on 2019/2/23.
-  Copyright © 2019 john gospai. All rights reserved.
-*/
-//MARK: - back button
-"back" = "返回";
-//MARK: - loading phase
-"Loading..." = "载入中...";
-//MARK: - menu icon
-"back to title" = "返回标题";
-"undo" = "悔棋";
-"retry" = "重来";
-"help" = "帮助";
-"share" = "分享";
-"resign" = "投降";
-"state" = "状态";
-"option" = "选项";
-//MARK: - challenges
+/*
+ Localizable.strings
+ Reversi
+ 
+ Created by john gospai on 2019/2/23.
+ Copyright © 2019 john gospai. All rights reserved.
+ */
+//MARK: - in Challenge.swift
 "win" = "获得胜利";
 "getPoints" = "得到%d分";
 "winTheComputerByPoints" = "赢过电脑%d分";
-//MARK: - alerts
-"alert.retry.title" = "警告";
-"alert.retry.message" = "你会失去你目前的进度，你确定要开始新的游戏吗？";
-"alert.retry.action.default.title" = "那真是太棒了！";
-"alert.retry.action.destructive.title" = "不！让我再想想。";
 
-"alert.undo.title" = "警告";
-"alert.undo.message" = "在此之后的纪录将会消失。你确定要回到这一步吗？";
-"alert.undo.action.default.title" = "那真是太棒了！";
-"alert.undo.action.destructive.title" = "不！让我再想想。";
-//MARK: - level select
-"LEVEL" = "第%d关";
-//MARK: - mode select
-"ONLINE" = "线上游玩";
-"OFFLINE" = "离线游玩";
-"PARTY" = "派对模式";
-//MARK: - guide
-"guide.welcome" = "欢迎来到isREVERsi。游戏规则就如同黑白棋一般，但是更注重棋子「翻转的次数」。";
-"guide.help" = "「白」和「黑」在棋子的两面分别代表两位玩家。在棋子上的数字代表的是棋子翻转的次数。双方轮流下棋。只要你可以夹住对方棋子的位置就能下，不论是水平、垂直或斜角的方向，被夹住的棋子会翻面变成你的。如果有一方无法下棋，则跳过。如果双方都无法下棋，则游戏结束。每关都会有挑战，试着完成它们吧！在isREVERsi中，我们使用「翻」作为货币。";
-"guide.hint" = "按住不明白的地方就会出现提示喔！";
-"guide.logo" = "点击标示来决定以电脑或人类为对手，现在请选择黑色作为先手以对抗电脑玩家。";
+//MARK: - in GameScene.swift
+//MARK: menu icon
+"back to title" = "返回标题";
+"undo" = "历史纪录";
+"retry" = "重来";
+"help" = "说明";
+"option" = "选项";
+"state" = "状态";
+"resign" = "投降";
+"back" = "返回";
+"share" = "分享";
+//MARK: guide
+"guide.welcome" = "欢迎来到isREVERsi。游戏规则就如同黑白棋一般，但是更注重棋子“翻转的次数”。";
+"guide.help" =
+"❀概要:
+➥isREVERsi的玩法就是黑白棋的玩法,不同在于每颗棋子上多了数字,代表着该棋子已经被翻转几次｡
+❀游戏目标:
+➥尽可能地拿到较高的总翻转次数｡这些许改变了原本黑白棋的策略｡
+❀玩法:
+➥分成两个阵营,｢白｣和｢黑｣｡双方轮流下棋,可以下的地方会用｢✦｣来表示,也就是在水平,垂直或斜角的方向,能够夹住对方棋子的位置｡被夹住的棋子就会翻面变成你的｡如果有一方无法下棋,则会被跳过｡如果双方都无法下棋,则游戏结束｡
+❀挑战:
+➥在对手为电脑的关卡会有挑战,试着完成它们吧!
+❀货币:
+➥在isREVERsi中,我们使用｢翻｣作为货币单位,可以在完成挑战时获得,可以用于购买一些道具｡";
+////m
+"guide.hint" = "在不明白的图示上按住不放就会出现文字提示喔！";
+"guide.logo.default" = "现在在标示上有黑白两色，这代表的是两人玩。若想要与电脑对战，请在标示上滑动，选择黑或白。现在请先选择白色。";
+"guide.logo.destructive" = "现在在标示上有黑白两色，这代表的是两人玩。若想要与电脑对战，请在标示上滑动，选择黑或白。现在请先选择黑色。";
+////m
 "guide.gameboard.swipe" = "滑动以选择游戏棋盘大小，现在请选择4X4大小。";
 "guide.gameboard.tap" = "点击以进入关卡选择。";
+//MARK: message
+//MARK: - help
+"message.help.title" = "说明";
+"message.help.default" = "谢谢!";
+"message.help.destructive" = "别吵!";
+//MARK: - undo
+"message.undo.title" = "警告";
+"message.undo.text" = "在此之后的纪录将会消失。你确定要回到这一步吗？";
+"message.undo.default" = "不！让我再想想。";
+"message.undo.destructive" = "那真是太棒了！（-1翻）";
+"message.undo.destructive.withoutAds" = "那真是太棒了！";
+//MARK: - retry
+"message.retry.title" = "警告";
+"message.retry.text" = "你会失去你目前的进度，你确定要开始新的游戏吗？";
+"message.retry.default" = "不！让我再想想。";
+"message.retry.destructive" = "那真是太棒了！";
+//MARK: - earnFlips
+"message.earnFlips.title" = "醒醒";
+"message.earnFlips.text" = "你没有足够的翻可以悔棋，要观看广告以赚取翻吗？";
+"message.earnFlips.default" = "那真是太棒了！";
+"message.earnFlips.destructive" = "不！我死也不看。";
+//MARK: - in LevelSelectScene.swift
+"LEVEL1" = "经典";
+"LEVEL2" = "泽费罗斯";
+//MARK: - in ModeSelectScene.swift
+"ONLINE" = "线上游玩";
+"OFFLINE" = "离线游玩";
+"OFFLINEPARTY" = "离线派对";
+"ONLINEPARTY" = "线上派对";
+//MARK: - in TitleScene.swift
+"loadGame" = "载入游戏";
+"Loading..." = "载入中...";
+"noGameToLoad.title" = "TT";
+"noGameToLoad.text" = "没有可载入的游戏";
+"noGameToLoad.defaultAction" = "好吧";
+//MARK: - in purchaseButtons.swift
+"purchase" = "购买";
+"restore" = "回复购买";
+"purchased" = "已购买";
+
+
+////MARK: - back button
+//"back" = "返回";
+////MARK: - loading phase
+//"Loading..." = "载入中...";
+////MARK: - menu icon
+//"back to title" = "返回标题";
+//"undo" = "历史纪录";
+//"retry" = "重来";
+//"help" = "说明";
+//"share" = "分享";
+//"resign" = "投降";
+//"state" = "状态";
+//"option" = "选项";
+////MARK: - challenges
+//"win" = "获得胜利";
+//"getPoints" = "得到%d分";
+//"winTheComputerByPoints" = "赢过电脑%d分";
+//
+////MARK: - level select
+//"LEVEL1" = "经典";
+//"LEVEL2" = "泽费罗斯";
+////MARK: - mode select
+//"ONLINE" = "线上游玩";
+//"OFFLINE" = "离线游玩";
+//"OFFLINEPARTY" = "离线派对";
+//"ONLINEPARTY" = "线上派对";
+////MARK: - guide
+//"guide.welcome" = "欢迎来到isREVERsi。游戏规则就如同黑白棋一般，但是更注重棋子“翻转的次数”。";
+//"guide.help" =
+//"❀概要:
+//➥isREVERsi的玩法就是黑白棋的玩法,不同在于每颗棋子上多了数字,代表着该棋子已经被翻转几次｡
+//❀游戏目标:
+//➥尽可能地拿到较高的总翻转次数｡这些许改变了原本黑白棋的策略｡
+//❀玩法:
+//➥分成两个阵营,｢白｣和｢黑｣｡双方轮流下棋,可以下的地方会用｢✦｣来表示,也就是在水平,垂直或斜角的方向,能够夹住对方棋子的位置｡被夹住的棋子就会翻面变成你的｡如果有一方无法下棋,则会被跳过｡如果双方都无法下棋,则游戏结束｡
+//❀挑战:
+//➥在对手为电脑的关卡会有挑战,试着完成它们吧!
+//❀货币:
+//➥在isREVERsi中,我们使用｢翻｣作为货币单位,可以在完成挑战时获得,可以用于购买一些道具｡";
+//////m
+//"guide.hint" = "在不明白的图示上按住不放就会出现文字提示喔！";
+//"guide.logo.default" = "现在在标示上有黑白两色，这代表的是两人玩。若想要与电脑对战，请在标示上滑动，选择黑或白。现在请先选择白色。";
+//"guide.logo.destructive" = "现在在标示上有黑白两色，这代表的是两人玩。若想要与电脑对战，请在标示上滑动，选择黑或白。现在请先选择黑色。";
+//////m
+//"guide.gameboard.swipe" = "滑动以选择游戏棋盘大小，现在请选择4X4大小。";
+//"guide.gameboard.tap" = "点击以进入关卡选择。";
+//////m
+//"message.help.title" = "说明";
+//"message.help.default" = "谢谢!";
+//"message.help.destructive" = "别吵!";
+//
+//"message.retry.title" = "警告";
+//"message.retry.text" = "你会失去你目前的进度，你确定要开始新的游戏吗？";
+//"message.retry.default" = "不！让我再想想。";
+//"message.retry.destructive" = "那真是太棒了！";
+//
+//"message.undo.title" = "警告";
+//"message.undo.text" = "在此之后的纪录将会消失。你确定要回到这一步吗？";
+//"message.undo.default" = "不！让我再想想。";
+//"message.undo.destructive" = "那真是太棒了！";
+//////m

@@ -9,6 +9,9 @@
 import SpriteKit
 
 class GestureGuide: SKSpriteNode{
+    deinit {
+        print("guidegesture deinit")
+    }
     var isOnTouch = false{didSet{update()}}
     var strokeWidth = UI.gestureGuideStrokeWidth {didSet {update()}}
     convenience init(color: UIColor, isOnTouch: Bool = false) {

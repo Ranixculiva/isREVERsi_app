@@ -12,6 +12,9 @@ class Grid:SKSpriteNode {
     var cols:Int!
     var blockSize:CGFloat!
     var lineWidth: CGFloat = 6.0
+    deinit {
+        print("grid deinit")
+    }
     convenience init?(color: SKColor,blockSize:CGFloat,rows:Int,cols:Int,lineWidth: CGFloat) {
         
         self.init(texture: SKTexture(), color:SKColor.clear, size: CGSize())

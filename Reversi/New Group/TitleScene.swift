@@ -5,44 +5,74 @@
 //  Created by john gospai on 2019/2/13.
 //  Copyright © 2019 john gospai. All rights reserved.
 //
-
+import GoogleMobileAds
 import SpriteKit
-class TitleScene: SKScene {
+extension TitleScene: optionMenuDelegate{
+    @objc func didTapOnButton(type: OptionMenuVC.type, sender: OptionMenu) {
+        switch type {
+        case .confirm:
+            SharedVariable.save()
+            reloadScene()
+        case .close:
+            SharedVariable.language = sender.savedVariables[.originalLanguageOption]! as! SharedVariable.lang
+        }
+    }
+}
+extension TitleScene: logoSwitchDelegate{
+    func touch(touches: Set<UITouch>) {
+        if let touch = touches.first{
+            switch touch.phase{
+            case .moved:
+                if SharedVariable.needToGuide, currentGuide == .logo, (UI.logoSwitch.currentState == .white && doesClickOnHelpMessageDefaultButton) || (UI.logoSwitch.currentState == .black && !doesClickOnHelpMessageDefaultButton){
+                    ////m
+                    self.guideGesture.isHidden = false
+                    self.guideGesture.isPaused = false
+                    self.guideGesture.position = CGPoint.zero
+                    let swipeGuideVector = CGVector(dx: UI.gridSize/2, dy: 0)
+                    self.guideGesture.swipeGuide(by: swipeGuideVector)
+                    ////m
+                    removeGuide(nodesToRecover: [UI.logoSwitch], key: guideKey.logo)
+                    currentGuide = .gameboardSwipe
+                    var nodesToLight: [SKNode] = backgroundGrids
+                    nodesToLight.append(contentsOf: backgroundGridBackgrounds)
+                    let lightRegion = CGRect(x: -UI.gridSize/2, y: -UI.gridSize/2, width: UI.gridSize, height: UI.gridSize)
+                    guideLitByRoundedRectangle(nodesToLight: nodesToLight, lightRegion: lightRegion, cornerRadius: 5*UIScreen.main.scale, key: .gameboardSwipe)
+                }
+            default:
+                break
+            }
+        }
+    }
+}
+class TitleScene: SKScene{
+    
     deinit {
         print("TitleScene deinit")
     }
+    fileprivate var optionMenu: OptionMenu!
     ////m
-    fileprivate var guideGesture = GestureGuide(color: UI.gestureGuideStrokeColor)
+    fileprivate var guideGesture: GestureGuide!
     ////m
-    fileprivate var flipsIndicator = FlipsIndicator(flips: 0)!
-    fileprivate var helpNode = SKSpriteNode()
-    fileprivate var helpHint = HintBubble()
-    fileprivate var optionNode = SKSpriteNode()
-    fileprivate var optionHint = HintBubble()
+    //fileprivate var flipsIndicator: FlipsIndicator!
+    fileprivate var loadButton: Button!
+    fileprivate var helpNode: SKSpriteNode!
+    fileprivate var helpHint: HintBubble!
+    fileprivate var optionNode: SKSpriteNode!
+    fileprivate var optionHint: HintBubble!
     fileprivate var backgroundGrids: [Grid] = []
     fileprivate var backgroundGridBackgrounds: [SKSpriteNode] = []
-    fileprivate let logo = SKCropNode()
-    fileprivate let logoRightBlack = SKSpriteNode(color: .black, size: CGSize())
-    fileprivate let logoLeftWhite = SKSpriteNode(color: .white, size: CGSize())
-    //MARK: - parameters for logo switch
-    fileprivate var currentWhiteSwitchPosition = CGPoint.zero
-    fileprivate var switchTouchCycle = 1
     //MARK: - parameters for touches
     fileprivate var touchOrigin = CGPoint.zero
-    fileprivate var touchDownOnWhere: SKNode? = nil
+    fileprivate weak var touchDownOnWhere: SKNode? = nil
     fileprivate var firstGridOrigin = CGPoint.zero
     fileprivate var everMoved = false
-    fileprivate var loadingPhase = SKSpriteNode()
+    fileprivate var loadingPhase: SKSpriteNode!
     
     enum gameSize : Int{
         case four = 4, six = 6, eight = 8
     }
     var currentGameSize = gameSize.six
     
-    enum mode: Int{
-        case black = 0, two, white
-    }
-    var currentMode = mode.two
     enum guideKey: String, CaseIterable{
         case welcome = "guide.welcome"
         case hint = "guide.hint"
@@ -54,7 +84,7 @@ class TitleScene: SKScene {
     var currentGuide = guideKey.welcome
     fileprivate func touchUpOnBackgroundGrids(){
         var scene = SKScene()
-        switch currentMode {
+        switch UI.logoSwitch.currentState {
         case .black:
             scene = LevelSelectScene()
             let scene = scene as! LevelSelectScene
@@ -65,7 +95,7 @@ class TitleScene: SKScene {
             let scene = scene as! LevelSelectScene
             scene.isComputerWhite = false
             scene.gameSize = currentGameSize.rawValue
-        case .two:
+        case .half:
             scene = ModeSelectScene()
             let scene = scene as! ModeSelectScene
             scene.gameSize = currentGameSize.rawValue
@@ -74,8 +104,6 @@ class TitleScene: SKScene {
         guard let view = view else{return}
         view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
         view.ignoresSiblingOrder = true
-        view.showsFPS = true
-        view.showsNodeCount = true
     }
     ////m
     fileprivate var helpMessage: MessageBox!
@@ -88,11 +116,11 @@ class TitleScene: SKScene {
         //backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
         ////m
         //set up guide gesture
+        guideGesture = GestureGuide(color: UI.gestureGuideStrokeColor)
         addChild(guideGesture)
         guideGesture.position.y = (-UI.gridSize/2 + UI.menuIconSize.height/2 + UI.getMenuIconPosition(indexFromLeft: 0, numberOfMenuIcon: 1).y)/2
         guideGesture.zPosition = UI.zPosition.gestureGuide
         guideGesture.isHidden = true
-        
         
         
         //set up background
@@ -144,14 +172,27 @@ class TitleScene: SKScene {
         //        addChild(messageBox)
         ////m
         
-        
-        
-        
-        
-        
+        // MARK: set up chessBoard background
+        let chessBoardBackgroundSize = CGSize(width: UI.gridSize * 12.0/11.0 ,height:  UI.gridSize * 12.0/11.0)
+        let chessBoardBackground = SKSpriteNode(texture: SKTexture(imageNamed: "chessBoardBackground"), size: chessBoardBackgroundSize)
+        chessBoardBackground.zPosition = UI.zPosition.chessBoardBackground
+        addChild(chessBoardBackground)
+        ///set up chessBoard background
+        /////test
+//        let sourceBox = SKSpriteNode(color: .red, size: CGSize(width: 200, height: 50))
+//        sourceBox.zPosition = 999
+//        let spark = SKEmitterNode(fileNamed: "abilityHint.sks")!
+//        spark.zPosition = 1000
+//        sourceBox.run(SKAction.repeatForever(SKAction.move(by: CGVector(dx: frame.width/2, dy: frame.height/2), duration: 1)))
+//        addChild(sourceBox)
+//        sourceBox.addChild(spark)
+        /////test
+       
+
         //MARK: - set to default for guide. This should place in the first place of didMove.
-        //SharedVariable.load()
-        //Challenge.loadSharedChallenge()
+
+        SharedVariable.load()
+        Challenge.loadSharedChallenge()
         if SharedVariable.needToGuide{
             ////m
             guideGesture.isHidden = false
@@ -160,14 +201,31 @@ class TitleScene: SKScene {
             ////m
             currentGuide = .welcome
             currentGameSize = .six
-            currentMode = .two
-            switchTouchCycle = 1
+            UI.logoSwitch.currentState = .half
         }
+        
+        
+//        optionMenu = OptionMenu()
+//        addChild(optionMenu)
+//        optionMenu.zPosition = 10000
+//        optionMenu.isHidden = true
+//        //MARK: - set up purchaseButtons
+//        let purchaseButton = PurchaseButtons()
+//        addChild(purchaseButton)
+//        purchaseButton.zPosition = 1000
         //MARK: - set up flipsIndicator
-        flipsIndicator.position = UI.flipsPosition
-        flipsIndicator.zPosition = UI.zPosition.flipsIndicator
-        flipsIndicator.flips = SharedVariable.flips
-        addChild(flipsIndicator)
+        //flipsIndicator = FlipsIndicator(flips: 0)
+        UI.flipsIndicator.flips = SharedVariable.flips
+        UI.flipsIndicator.withAnimation = true
+        UI.addFlipsIndicator(to: self)
+        //MARK: - set up loadButton
+        loadButton = Button(buttonColor: UI.loadButtonColor, cornerRadius: UI.loadButtonCornerRadius)!
+        loadButton.fontSize = UI.loadButtonFontSize
+        loadButton.position = UI.loadButtonPosition
+        loadButton.zPosition = UI.zPosition.loadButton
+        loadButton.text = UI.Texts.loadGame
+        addChild(loadButton)
+        
         //MARK: - set up helpNode
         helpNode = SKSpriteNode(imageNamed: "help")
         helpNode.size = UI.menuIconSize
@@ -178,7 +236,7 @@ class TitleScene: SKScene {
         let boundsOfHintBubble = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
         helpHint = HintBubble(bubbleColor: UI.hintBubbleColor, bounds: boundsOfHintBubble)!
         helpHint.attachTo = (helpNode as (SKNode & attachable))
-        helpHint.text = "help".localized()
+        helpHint.text = UI.Texts.help
         helpHint.isHidden = true
         helpHint.fontSize = UI.menuIconHintLabelFontSize
         addChild(helpHint)
@@ -192,7 +250,7 @@ class TitleScene: SKScene {
         let boundsOfOptionBubble = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
         optionHint = HintBubble(bubbleColor: UI.hintBubbleColor, bounds: boundsOfOptionBubble)!
         optionHint.attachTo = (optionNode as (SKNode & attachable))
-        optionHint.text = "option".localized()
+        optionHint.text = UI.Texts.option
         optionHint.isHidden = true
         optionHint.fontSize = UI.menuIconHintLabelFontSize
         addChild(optionHint)
@@ -216,31 +274,40 @@ class TitleScene: SKScene {
         }
         
         //MARK: - set up logo
-        guard let logoImage = UIImage(named: "Logo") else{fatalError("cannot find image Logo")}
-        let logoSize = UI.logoSize
-        logo.maskNode = SKSpriteNode(texture: SKTexture(image: logoImage), size: logoSize)
-        logo.position = UI.logoPosition
-        logo.zPosition = UI.zPosition.logo
+        UI.logoSwitch.delegate = self
+        UI.logoSwitch.isUserInteractionEnabled = true
+        UI.addLogoSwitch(to: self)
         
-        addChild(logo)
-        //MARK: set up left-half white
-        logoLeftWhite.size = CGSize(width: logoSize.width/2 *  CGFloat(currentMode.rawValue), height: logoSize.height)
-        logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
-        logo.addChild(logoLeftWhite)
-        //MARK: set up right-half black
-        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
-        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
-        logo.addChild(logoRightBlack)
+        
+//        ////test abilityMenu
+//        let abilityMenu = AbilityMenu{
+//            print($0.rawValue)
+//        }
+//        abilityMenu.zPosition = 1000
+//        abilityMenu.attachTo = helpNode
+//        abilityMenu.popAnimation{abilityMenu.collapseAnimation{abilityMenu.popAnimation()}}
+//        addChild(abilityMenu)
+//
+//        //// test abilityMenu
+        ////test scoreLabel
+//        let scoreLabel = ScoreLabel(fontColor: .black, fontSize: UI.secondaryScoreFontSize, numberOfParts: 4, currentNumber: 3, score: 10)
+//        scoreLabel.zPosition = 1000000
+//        addChild(scoreLabel)
+        ////test scoreLabel
         
         //MARK: set up loadingPhase
         loadingPhase = SKSpriteNode(color: UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1), size: size)
-        let loadingText = SKLabelNode(text: "Loading...".localized())
+        let loadingText = SKLabelNode(text: UI.Texts.loading)
         loadingText.fontName = UI.loadingTextFontName
         loadingText.fontSize = UI.fontSize.loadingPhase
         loadingPhase.addChild(loadingText)
         loadingPhase.zPosition = UI.zPosition.loadingPahse
         addChild(loadingPhase)
         loadAllGuideTexts()
+        
+        //MARK: set up loadAlert
+        //addChild(loadAlert)
+        //loadAlert.isHidden = true
         
     }
     ////m
@@ -272,46 +339,44 @@ class TitleScene: SKScene {
         let node = atPoint(touch.location(in: self))
         touchDownOnWhere = node
         firstGridOrigin = backgroundGrids.first!.position
-        currentWhiteSwitchPosition = logoLeftWhite.position
         switch node{
         case helpNode:
             helpHint.isHidden = false
         case optionNode:
             optionHint.isHidden = false
         default:
+            if loadButton.nodesTouched.contains(node){
+                loadButton.fontColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+            }
             break
         }
     }
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
+        loadButton.fontColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
         let pos = touch.location(in: self)
         let node = atPoint(pos)
         //MARK: when move on hints
+//        helpNode.alpha = 1
+//        optionNode.alpha = 1
         helpHint.isHidden = true
         optionHint.isHidden = true
         switch node {
         case helpNode:
+//            helpNode.alpha = 0.5
             helpHint.isHidden = false
         case optionNode:
+//            optionNode.alpha = 0.5
             optionHint.isHidden = false
         default:
+            if loadButton.nodesTouched.contains(node){
+                loadButton.fontColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+            }
             break
         }
         
         let offset = pos.x - touchOrigin.x
         if abs(offset) > 10 {everMoved = true}
-        if let touchDownOnWhere = touchDownOnWhere{
-            //MARK: move on logo
-            if touchDownOnWhere == logoLeftWhite || touchDownOnWhere == logoRightBlack{
-                
-                logoLeftWhite.position.x = currentWhiteSwitchPosition.x + offset/2
-                logoLeftWhite.position.x = min(max(logoLeftWhite.position.x,-logo.frame.width/2),0)
-                logoLeftWhite.size.width = (logoLeftWhite.position.x + logo.frame.width/2)*2
-                logoRightBlack.position.x = logoLeftWhite.position.x + logo.frame.width/2
-                logoRightBlack.size.width = logo.frame.width - logoLeftWhite.size.width
-                
-            }
-        }
     }
     fileprivate func help(){
         if currentGuide == .hint{
@@ -328,17 +393,65 @@ class TitleScene: SKScene {
         ////m
         helpMessage.isHidden = false
         ////m
+        ////test
+        let text =
+"""
+afsdjfile
+jjfa;fij ej
+fka
+j;f aeij ejkfa;difj kakf jkefjajf
+j;id fkef jaewjfask;fjfkw e
+wfkfkfiewj fk fjask f;awe
+;  akfj;a fi
+i  a skfj ak f;asfkj
+"""
+        
+        let mvc = MessageViewController(title: "1234")
+        mvc.message = text
+        mvc.addActions([
+            //.init(title: "asdf", style: .cancel),
+            //.init(title: "default", style: .default),
+            //.init(title: "destructive", style: .destructive),
+            .init(title: "desteeeeeeeeee", style: .destructive){mvc.dismiss(animated: true, completion: nil)},
+            .init(title: "canele", style: .cancel){print("canele")}
+            
+            ])
+        UI.rootViewController?.present(mvc, animated: true, completion: nil)
+        ////test
+    }
+    fileprivate func reloadScene(){
+        let scene = TitleScene()
+        scene.scaleMode = .aspectFill
+        guard let view = view else{return}
+        view.presentScene(scene)
     }
     fileprivate func option(){
+        let alert = OptionMenuVC()
+        alert.delegate = self
+        UI.rootViewController?.present(alert, animated: true, completion: nil)
+        
+//        if !optionMenu.isHidden{
+//            optionMenu.close()
+//            SharedVariable.save()
+//            reloadScene()
+//        }
+//        else{
+//            optionMenu.show()
+//        }
+    }
+    fileprivate func showTuorial(){
         currentGuide = .welcome
+        guideGesture.isHidden = false
+        guideGesture.isPaused = false
+        guideGesture.tapGuide()
         currentGameSize = .six
-        currentMode = .two
-        switchTouchCycle = 1
-        let logoSize = UI.logoSize
-        logoLeftWhite.size = CGSize(width: logoSize.width/2 *  CGFloat(currentMode.rawValue), height: logoSize.height)
-        logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
-        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
-        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
+        //currentMode = .two
+        UI.logoSwitch.currentState = .half
+//        let logoSize = UI.logoSize
+//        logoLeftWhite.size = CGSize(width: logoSize.width/2 *  CGFloat(currentMode.rawValue), height: logoSize.height)
+//        logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
+//        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
+//        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
         for i in 0...backgroundGrids.count - 1{
             backgroundGrids[i].position.x = size.width * CGFloat(i - currentGameSize.rawValue/2 + 2)
             backgroundGridBackgrounds[i].position.x = size.width * CGFloat(i)
@@ -349,6 +462,7 @@ class TitleScene: SKScene {
     }
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
+        loadButton.fontColor = UIColor(red: 0, green: 0, blue: 0, alpha: 1)
         let pos = touch.location(in: self)
         let node = atPoint(pos)
         //MARK: remove welcome guide and add help guide
@@ -369,6 +483,8 @@ class TitleScene: SKScene {
         //MARK: touch up on hints
         helpHint.isHidden = true
         optionHint.isHidden = true
+//        helpNode.alpha = 1
+//        optionNode.alpha = 1
         switch node{
         case helpNode:
             help()
@@ -378,11 +494,17 @@ class TitleScene: SKScene {
             break
         }
         if let touchDownOnWhere = touchDownOnWhere{
+            //MARK: - touch up on laodButton
+            if loadButton.nodesTouched.contains(touchDownOnWhere){
+                if !everMoved{
+                    continueTheLastGame()
+                }
+            }
             //MARK: - touch up on backgroundGrids
-            if (backgroundGrids as [SKNode]).contains(touchDownOnWhere){
+            else if (backgroundGrids as [SKNode]).contains(touchDownOnWhere){
                 let offset = pos.x - touchOrigin.x
                 var shouldAddOffset = true
-                if (currentGameSize == .four && offset > 0) || (currentGameSize == .eight && offset < 0){shouldAddOffset = false}
+                if (currentGameSize == .four && offset > 0) || (currentGameSize == .eight && offset < 0) || (SharedVariable.needToGuide && currentGuide == .gameboardTap){shouldAddOffset = false}
                 var currentGameSizeIndex = (currentGameSize.rawValue - 4)/2
                 if abs(offset) > 100{
                     if shouldAddOffset{
@@ -399,6 +521,7 @@ class TitleScene: SKScene {
                         var nodesToRecover: [SKNode] = backgroundGrids
                         nodesToRecover.append(contentsOf: backgroundGridBackgrounds)
                         removeGuide(nodesToRecover: nodesToRecover, key: .gameboardTap)
+                        SharedVariable.needToGuide = false
                     }
                     if !SharedVariable.needToGuide || currentGuide == .gameboardTap {touchUpOnBackgroundGrids()}
                 }
@@ -421,50 +544,34 @@ class TitleScene: SKScene {
                     currentGuide = .gameboardTap
                     let lightRegion = CGRect(x: -UI.gridSize/2, y: -UI.gridSize/2, width: UI.gridSize, height: UI.gridSize)
                     guideLitByRoundedRectangle(nodesToLight: nodesToRecover, lightRegion: lightRegion, cornerRadius: 5*UIScreen.main.scale, key: .gameboardTap)
-                    SharedVariable.needToGuide = false
                 }
             }
                 //MARK: - touch up on logo
-            else if touchDownOnWhere == logoRightBlack || touchDownOnWhere == logoLeftWhite{
-                let offset = pos.x - touchOrigin.x
-                var state = floor(2 * logoLeftWhite.size.width / logo.frame.width + 0.5)
-                if abs(offset) < 10, !everMoved{
-                    switch state{
-                    case 0:
-                        state = 1
-                        switchTouchCycle = 1
-                    case 1:
-                        state = CGFloat(2 * switchTouchCycle)
-                        switchTouchCycle = 1 - switchTouchCycle
-                    case 2:
-                        state = 1
-                        switchTouchCycle = 0
-                    default:
-                        break
-                    }
-                }
-                currentMode = mode.init(rawValue: Int(state))!
-                logoLeftWhite.size.width = state * logo.frame.width/2
-                logoLeftWhite.position.x = -logo.frame.width / 2 + logoLeftWhite.size.width/2
-                logoRightBlack.position.x = logoLeftWhite.position.x + logo.frame.width/2
-                logoRightBlack.size.width = logo.frame.width - logoLeftWhite.size.width
+//            else if touchDownOnWhere == logoRightBlack || touchDownOnWhere == logoLeftWhite{
+//                let offset = pos.x - touchOrigin.x
+//                var state = floor(2 * logoLeftWhite.size.width / logo.frame.width + 0.5)
+//                if abs(offset) < 10, !everMoved{
+//                    switch state{
+//                    case 0:
+//                        state = 1
+//                        switchTouchCycle = 1
+//                    case 1:
+//                        state = CGFloat(2 * switchTouchCycle)
+//                        switchTouchCycle = 1 - switchTouchCycle
+//                    case 2:
+//                        state = 1
+//                        switchTouchCycle = 0
+//                    default:
+//                        break
+//                    }
+//                }
+//                currentMode = mode.init(rawValue: Int(state))!
+//                logoLeftWhite.size.width = state * logo.frame.width/2
+//                logoLeftWhite.position.x = -logo.frame.width / 2 + logoLeftWhite.size.width/2
+//                logoRightBlack.position.x = logoLeftWhite.position.x + logo.frame.width/2
+//                logoRightBlack.size.width = logo.frame.width - logoLeftWhite.size.width
                 //MARK: guide to logo
-                if SharedVariable.needToGuide, currentGuide == .logo, (currentMode == .white && doesClickOnHelpMessageDefaultButton) || (currentMode == .black && !doesClickOnHelpMessageDefaultButton){
-                    ////m
-                    self.guideGesture.isHidden = false
-                    self.guideGesture.isPaused = false
-                    self.guideGesture.position = CGPoint.zero
-                    let swipeGuideVector = CGVector(dx: UI.gridSize/2, dy: 0)
-                    self.guideGesture.swipeGuide(by: swipeGuideVector)
-                    ////m
-                    removeGuide(nodesToRecover: [logo], key: guideKey.logo)
-                    currentGuide = .gameboardSwipe
-                    var nodesToLight: [SKNode] = backgroundGrids
-                    nodesToLight.append(contentsOf: backgroundGridBackgrounds)
-                    let lightRegion = CGRect(x: -UI.gridSize/2, y: -UI.gridSize/2, width: UI.gridSize, height: UI.gridSize)
-                    guideLitByRoundedRectangle(nodesToLight: nodesToLight, lightRegion: lightRegion, cornerRadius: 5*UIScreen.main.scale, key: .gameboardSwipe)
-                }
-            }
+            
         }
         everMoved = false
         ////m
@@ -477,14 +584,14 @@ class TitleScene: SKScene {
     }
     fileprivate func loadAllGuideTexts(){
         self.isUserInteractionEnabled = false
-        let serialQueue = DispatchQueue(label: "com.Ranixculiva.isREVERsi", qos: DispatchQoS.userInteractive)
+        let serialQueue = DispatchQueue(label: "com.Ranixculiva.ISREVERSI", qos: DispatchQoS.userInteractive)
         let gridSize = UI.gridSize
         let fontSize = UI.guideFontSize
         
         serialQueue.async {
             for aGuideKey in guideKey.allCases{
                 if aGuideKey == .logo{
-                    let logoText1 = (guideKey.logo.rawValue+".default").localized()
+                    let logoText1 = UI.Texts.guide.logo.default_
                     let label1 = SKMultilineLabel(text: logoText1, labelWidth: gridSize)
                     label1.fontName = UI.guideFontName
                     label1.fontColor = UI.guideFontColor
@@ -497,7 +604,7 @@ class TitleScene: SKScene {
                     label1.isHidden = true
                     self.addChild(label1)
                     
-                    let logoText2 = (guideKey.logo.rawValue+".destructive").localized()
+                    let logoText2 = UI.Texts.guide.logo.destructive
                     let label2 = SKMultilineLabel(text: logoText2, labelWidth: gridSize)
                     label2.fontName = UI.guideFontName
                     label2.fontColor = UI.guideFontColor
@@ -513,27 +620,27 @@ class TitleScene: SKScene {
                 }
                 if aGuideKey == .help {
                     //set up messageBox
-                    let helpGuideText = guideKey.help.rawValue.localized()
-                    let helpGuideTitle = "message.help.title".localized()
+                    let helpGuideText = UI.Texts.guide.help
+                    let helpGuideTitle = UI.Texts.message.help.title
                     let helpMessageActionsTitle = [
-                        "message.help.default".localized(),
-                        "message.help.destructive".localized()
+                        UI.Texts.message.help.default_,
+                        UI.Texts.message.help.destructive
                     ]
                     let switchGuideFromHelpToLogo: () -> Void = {[unowned self] in
                         if self.currentGuide == .help, SharedVariable.needToGuide{
                             
                             self.guideGesture.isHidden = false
                             self.guideGesture.isPaused = false
-                            self.guideGesture.position = self.logo.position
-                            let swipeGuideVector = CGVector(dx: (self.doesClickOnHelpMessageDefaultButton ? 1:-1)*self.logo.frame.width/2, dy: 0)
+                            self.guideGesture.position = UI.logoSwitch.position
+                            let swipeGuideVector = CGVector(dx: (self.doesClickOnHelpMessageDefaultButton ? 1:-1)*UI.logoSwitch.frame.width/2, dy: 0)
                             self.guideGesture.swipeGuide(by: swipeGuideVector)
                             
                             self.removeGuide(nodesToRecover: [], key: .help)
                             if SharedVariable.needToGuide{
                                 self.currentGuide = .logo
-                                let lightRegionOfLogo = CGRect(origin: CGPoint(x: self.logo.frame.minX, y: self.logo.frame.minY), size: self.logo.frame.size)
+                                let lightRegionOfLogo = CGRect(origin: CGPoint(x: UI.logoSwitch.frame.minX, y: UI.logoSwitch.frame.minY), size: UI.logoSwitch.frame.size)
                                 //not com
-                                self.guideLitByEllipse(nodesToLight: [self.logo], lightRegion: lightRegionOfLogo, key: .logo)
+                                self.guideLitByEllipse(nodesToLight: [UI.logoSwitch], lightRegion: lightRegionOfLogo, key: .logo)
                             }
                         }
                     }
@@ -557,7 +664,7 @@ class TitleScene: SKScene {
                     continue
                     
                 }
-                let text = aGuideKey.rawValue.localized()
+                let text = UI.Texts.guide.guide(aGuideKey)
                 let label = SKMultilineLabel(text: text, labelWidth: gridSize)
                 label.fontName = UI.guideFontName
                 label.fontColor = UI.guideFontColor
@@ -611,6 +718,24 @@ class TitleScene: SKScene {
         label.isHidden = false
         label.removeFromParent()
         background.addChild(label)
+    }
+    //let loadAlert = MessageBox(title: UI.Texts.loadAlert.title, text: UI.Texts.loadAlert.text, actions: [MessageAction(title: UI.Texts.loadAlert.defaultAction, style: .default)], isWithScroll: false)
+    let loadAlert = MessageViewController(title: UI.Texts.loadAlert.title, message: UI.Texts.loadAlert.text, actions: [MessageAction(title: UI.Texts.loadAlert.defaultAction, style: .default)])
+    fileprivate func continueTheLastGame(){
+        if !SharedVariable.isThereGameToLoad{
+            UI.rootViewController?.present(loadAlert, animated: true, completion: nil)
+            return
+        }
+        guard let view = view else{return}
+        guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
+        scene.needToLoad = SharedVariable.isThereGameToLoad
+        //TODO: if isInResultMode should not Load!!!!!
+        
+        
+        
+        
+        //TODO: alert no game to load
+        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
     }
     fileprivate func guideLitByRoundedRectangle(nodesToLight: [SKNode], lightRegion: CGRect, cornerRadius: CGFloat,key: guideKey){
         if nodesToLight.isEmpty{fatalError("empty nodeToLights")}

@@ -7,6 +7,11 @@
 //
 
 import SpriteKit
+extension NSNotification.Name{
+    static let showRewardedVideos = Notification.Name("showRewardedVideos")
+    static let showGoogleAds = Notification.Name("showGoogleAds")
+    static let rewardBasedVideoAdDidClose = Notification.Name("rewardBasedVideoAdDidClose")
+}
 extension String {
     
     func tokenize() -> [String] {
@@ -59,13 +64,48 @@ extension SKLabelNode{
         
     }
 }
-protocol fontColorizable {
+
+protocol fontColorizable: AnyObject {
     var fontColor: UIColor? {get set}
+}
+extension UIColor{
+    func blend(colorToBlend: UIColor, weightOfColorToBlend: CGFloat) -> UIColor{
+        let weightB = max(min(weightOfColorToBlend,1),0)
+        let weightSelf = 1 - weightB
+        let r = self.rgba.red * weightSelf + colorToBlend.rgba.red * weightB
+        let g = self.rgba.green * weightSelf + colorToBlend.rgba.green * weightB
+        let b = self.rgba.blue * weightSelf + colorToBlend.rgba.blue * weightB
+        let a = self.rgba.alpha * weightSelf + colorToBlend.rgba.alpha * weightB
+        return UIColor(red: r, green: g, blue: b, alpha: a)
+    }
 }
 extension SKMultilineLabel: fontColorizable{}
 extension SKLabelNode: fontColorizable{}
-protocol attachable {
+protocol attachable: AnyObject {
     var anchorPoint: CGPoint{get}
+}
+extension SKLabelNode: attachable{
+    var anchorPoint: CGPoint {
+        var x = CGFloat(0.5)
+        var y = CGFloat(0.5)
+        switch verticalAlignmentMode {
+        case .bottom:
+            y = 0
+        case .top:
+            y = 1
+        default:
+            y = 0.5
+        }
+        switch horizontalAlignmentMode {
+        case .left:
+            x = 0
+        case .right:
+            x = 1
+        default:
+            x = 0.5
+        }
+        return CGPoint(x: x, y: y)
+    }
 }
 extension SKSpriteNode: attachable{}
 extension SKCropNode: attachable{

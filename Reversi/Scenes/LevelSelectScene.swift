@@ -7,7 +7,19 @@
 //
 
 import SpriteKit
-class LevelSelectScene: SKScene {
+class LevelSelectScene: SKScene, FetchValueDelegate {
+    func didFetchValue(value: Int, name: String?) {
+        guard let name = name else {return}
+        if name == "levelSelector"{
+            currentLevel = value
+            levelPictureToTheCurrentLevel()
+        }
+        else if name == "difficultySelector"{
+            difficulty = Challenge.difficultyType(rawValue: value)!
+            updateLevelPictures(difficulty)
+        }
+    }
+    
     deinit {
         print("LevelSelectScene deinit")
     }
@@ -21,18 +33,19 @@ class LevelSelectScene: SKScene {
         case .normal:
             return UInt(4)
         case .hard:
-            return UInt(6)
+            return UInt(4)
         }
     }
     var currentLevel = 0
     var difficulty = Challenge.difficultyType.easy
     var challenges: [Challenge] = []
     
-    fileprivate var flipsIndicator = FlipsIndicator(flips: 0)!
     
-    fileprivate var numberOfLevels = 3
+    
+    fileprivate var numberOfLevels = 2
     fileprivate var levelLabels: [SKLabelNode] = []
     fileprivate var levelPictures: [SKSpriteNode] = []
+    fileprivate var levelSelector: SelectButtons!
     //MARK: - menu
     fileprivate var toTitleNode: SKSpriteNode!
     fileprivate var toTitleHint: HintBubble!
@@ -43,11 +56,62 @@ class LevelSelectScene: SKScene {
     fileprivate var firstLevelPictureOrigin = CGPoint.zero
     fileprivate var everMoved = false
     
-    fileprivate let logo = SKCropNode()
-    fileprivate let logoRightBlack = SKSpriteNode(color: .black, size: CGSize())
-    fileprivate let logoLeftWhite = SKSpriteNode(color: .white, size: CGSize())
-    
-    
+    fileprivate var difficultySelector: TextOptionsWithSelectButtons!
+    fileprivate func drawLevelPicture(_ level: Int, difficulty: Challenge.difficultyType = .easy) -> UIImage{
+        let levelPictureSize = UI.levelPictureSize
+        //MARK: draw a rounded frame for the picture
+        UIGraphicsBeginImageContext(levelPictureSize)
+        let context = UIGraphicsGetCurrentContext()
+        //draw corner according to the number of completed chanllenges.
+        let theCompletedNumbers = Challenge.getTheNumberOfCompletedChallenge(gameSize: gameSize, isColorWhite: !isComputerWhite, level: level+1, difficulty: difficulty)
+        if theCompletedNumbers > 0{
+            let rect = CGRect(x: levelPictureSize.width/2, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+            let copper = UIColor(red: 184/255, green: 115/255, blue: 51/255, alpha: 1)
+            copper.setFill()
+            context?.fill(rect)
+            
+        }
+        if theCompletedNumbers > 1{
+            let rect = CGRect(x: 0, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+            let silver = UIColor(red: 192/255, green: 192/255, blue: 192/255, alpha: 1)
+            silver.setFill()
+            context?.fill(rect)
+        }
+        if theCompletedNumbers > 2{
+            let rect = CGRect(x: levelPictureSize.width/2, y: 0, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+            let gold = UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)
+            gold.setFill()
+            context?.fill(rect)
+        }
+        //            if theCompletedNumbers > 3{
+        //                let rect = CGRect(x: levelPictureSize.width/2, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+        //                let copper = UIColor(red: 184/255, green: 115/255, blue: 51/255, alpha: 1)
+        //
+        //                context?.stroke(rect)
+        //            }
+        
+        
+        
+        
+        
+        
+        let imageFrame = CGRect(origin: CGPoint.zero, size: levelPictureSize)
+        let roundedImageFrame = UIBezierPath(roundedRect: imageFrame, cornerRadius: UI.levelPictureRoundedCornerRadius)
+        context?.saveGState()
+        roundedImageFrame.addClip()
+        let image = UIImage(named: "level\(level + 1)")!
+        image.draw(in: imageFrame)
+        context?.restoreGState()
+        let levelImage = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        return levelImage
+    }
+    fileprivate func updateLevelPictures(_ difficulty: Challenge.difficultyType){
+        for i in 0...numberOfLevels - 1{
+            let levelImage = drawLevelPicture(i, difficulty: difficulty)
+            levelPictures[i].texture = SKTexture(image: levelImage)
+        }
+    }
     override func didMove(to view: SKView) {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         self.size = CGSize(width: view.frame.size.width * UIScreen.main.scale,height: view.frame.size.height * UIScreen.main.scale)
@@ -75,12 +139,27 @@ class LevelSelectScene: SKScene {
         let background = SKSpriteNode(texture: SKTexture(image: backgroundImage!))
         background.zPosition = UI.zPosition.background
         addChild(background)
+        //MARK: - set up levelSelector
+        levelSelector = SelectButtons(spacing: UI.levelSelectorSpacing, leftButton: SKSpriteNode(color: .red, size: CGSize(width: 100, height: 100)), rightButton: SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 100)), isCyclic: false, upperBound: numberOfLevels - 1)
+        levelSelector.name = "levelSelector"
+        levelSelector.fetchValueDelegate = self
+        levelSelector.zPosition = UI.zPosition.levelSelector
+        levelSelector.position = UI.levelSelectorPosition
+        addChild(levelSelector)
+        //MARK: - set up difficultySelector
+        let difficultyOptions = ["COM 1", "COM 2", "COM 3"]
+        difficultySelector = TextOptionsWithSelectButtons(texts: difficultyOptions, spacing: UI.difficultySelectorSpacing, leftButton: SKSpriteNode(color: .red, size: CGSize(width: 100, height: 100)), rightButton: SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 100)), fontColor: isComputerWhite ? .white:.black)
+        difficultySelector.fetchValueDelegate = self
+        difficultySelector.name = "difficultySelector"
+        difficultySelector.zPosition = UI.zPosition.difficultySelector
+        difficultySelector.position = UI.difficultySelectorPosition
+        addChild(difficultySelector)
+        
         ////m
         //MARK: - set up flipsIndicator
-        flipsIndicator.position = UI.flipsPosition
-        flipsIndicator.zPosition = UI.zPosition.flipsIndicator
-        flipsIndicator.flips = SharedVariable.flips
-        addChild(flipsIndicator)
+        UI.flipsIndicator.flipsColor = !isComputerWhite ? .white:.black
+        UI.flipsIndicator.flips = SharedVariable.flips
+        UI.addFlipsIndicator(to: self)
         //MARK: - set up menu
         toTitleNode = SKSpriteNode(imageNamed: "toTitle")
         toTitleNode.size = UI.menuIconSize
@@ -91,14 +170,14 @@ class LevelSelectScene: SKScene {
         let BoundsOfHintBubble = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
         toTitleHint = HintBubble(bubbleColor: UI.hintBubbleColor, bounds: BoundsOfHintBubble)
         toTitleHint.attachTo = toTitleNode
-        toTitleHint.text = "back to title".localized()
+        toTitleHint.text = UI.Texts.backToTitle
         toTitleHint.isHidden = true
         toTitleHint.fontSize = UI.menuIconHintLabelFontSize
         addChild(toTitleHint)
         //MARK: - set up levelLabels and levelPictures
         for i in 0...numberOfLevels - 1{
             //MARK: set up levelLabels
-            let levelLabel = SKLabelNode(text: String.init(format: "LEVEL".localized(), i + 1))
+            let levelLabel = SKLabelNode(text: UI.Texts.level(i))
             levelLabel.position = UI.levelLabelPosition(indexFromLeft: i)
             levelLabel.fontSize = UI.levelLabelFontSize
             levelLabel.fontName = UI.levelLabelFontName
@@ -108,38 +187,15 @@ class LevelSelectScene: SKScene {
             addChild(levelLabel)
             //MARK: set up levelPictures
             let levelPictureSize = UI.levelPictureSize
-            //MARK: draw a rounded frame for the picture
-            UIGraphicsBeginImageContext(levelPictureSize)
-            let context = UIGraphicsGetCurrentContext()
-            let imageFrame = CGRect(origin: CGPoint.zero, size: levelPictureSize)
-            let roundedImageFrame = UIBezierPath(roundedRect: imageFrame, cornerRadius: UI.levelPictureRoundedCornerRadius)
-            context?.saveGState()
-            roundedImageFrame.addClip()
-            let image = UIImage(named: "level\(i + 1)")!
-            image.draw(in: imageFrame)
-            context?.restoreGState()
-            let levelImage = UIGraphicsGetImageFromCurrentImageContext()!
-            UIGraphicsEndImageContext()
+            let levelImage = drawLevelPicture(i,difficulty: difficulty)
             let levelPicture = SKSpriteNode(texture: SKTexture(image: levelImage), size: levelPictureSize)
             levelPicture.position = UI.levelPicturePosition(indexFromLeft: i)
             levelPictures.append(levelPicture)
             addChild(levelPicture)
         }
         //MARK: - set up logo
-        guard let logoImage = UIImage(named: "Logo") else{fatalError("cannot find image Logo")}
-        let logoSize = UI.logoSize
-        logo.maskNode = SKSpriteNode(texture: SKTexture(image: logoImage), size: logoSize)
-        logo.position = UI.logoPosition
-        logo.zPosition = UI.zPosition.logo
-        addChild(logo)
-        //MARK: set up left-half white
-        logoLeftWhite.size = CGSize(width: logoSize.width *  CGFloat(!isComputerWhite ? 1 : 0 ), height: logoSize.height)
-        logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
-        logo.addChild(logoLeftWhite)
-        //MARK: set up right-half black
-        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
-        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
-        logo.addChild(logoRightBlack)
+        UI.logoSwitch.isUserInteractionEnabled = false
+        UI.addLogoSwitch(to: self)
     }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
@@ -187,6 +243,13 @@ class LevelSelectScene: SKScene {
             }
         }
     }
+    fileprivate func levelPictureToTheCurrentLevel() {
+        for i in 0...numberOfLevels - 1{
+            levelLabels[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelLabelPosition(indexFromLeft: currentLevel).x
+            levelPictures[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelPicturePosition(indexFromLeft: currentLevel).x
+        }
+    }
+    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
         //MARK: hide all hints
@@ -207,10 +270,8 @@ class LevelSelectScene: SKScene {
             else if abs(offset) < 10, !everMoved{
                 touchDownOnLevels()
             }
-            for i in 0...numberOfLevels - 1{
-                levelLabels[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelLabelPosition(indexFromLeft: currentLevel).x
-                levelPictures[i].position.x = UI.levelLabelPosition(indexFromLeft: i).x - UI.levelPicturePosition(indexFromLeft: currentLevel).x
-            }
+            levelPictureToTheCurrentLevel()
+            levelSelector.value = currentLevel
         }
         let node = atPoint(pos)
         switch node {
@@ -226,18 +287,38 @@ class LevelSelectScene: SKScene {
         touchesEnded(touches, with: event)
     }
     fileprivate func touchDownOnLevels(){
+        switch difficultySelector.value {
+        case 0:
+            difficulty = .easy
+        case 1:
+            difficulty = .normal
+        case 2:
+            difficulty = .hard
+        default:
+            break
+        }
         guard let view = view else{return}
         guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
         scene.scaleMode = .aspectFill
+        scene.difficulty = difficulty
         scene.gameSize = gameSize
         scene.AIlevel = AIlevel
         scene.isAIMode = true
         scene.isComputerWhite = isComputerWhite
         scene.level = currentLevel + 1
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
-        view.ignoresSiblingOrder = true
-        view.showsFPS = true
-        view.showsNodeCount = true
+        scene.withAbility = .none
+        //settings
+        
+        if currentLevel == 1{
+            scene.withAbility = .translate
+        }
+        
+        UI.loadingVC.modalTransitionStyle = .crossDissolve
+        UI.rootViewController?.present(UI.loadingVC, animated: true, completion: nil)
+        run(SKAction.wait(forDuration: 0.3)){
+            view.presentScene(scene)
+        }
+        
     }
     fileprivate func toTitle(){
         if let view = view {
@@ -245,7 +326,7 @@ class LevelSelectScene: SKScene {
             let scene = TitleScene()
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
-            scene.currentMode = !isComputerWhite ? .white : .black
+            //UI.logoSwitch.currentState = !isComputerWhite ? .white : .black
             view.presentScene(scene, transition: transition)
         }
     }
