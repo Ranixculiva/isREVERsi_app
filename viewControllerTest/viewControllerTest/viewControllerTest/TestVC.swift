@@ -109,14 +109,19 @@ class TestVC: UIViewController{
 //        //view.addSubview(view5)
 //        stackView.addArrangedSubview(view5)
 //        view.addSubview(stackView)
-        let view5 = UIButton(frame: CGRect(x: 100, y: 100, width: 0, height: 0))
-        view5.setTitle("world is so beautful. And I want to turn it into a heaven.", for: .normal)
-        view5.titleLabel?.lineBreakMode = .byWordWrapping
-        view5.titleLabel?.numberOfLines = 0
-        view5.titleLabel?.frame = CGRect(x: 100, y: 100, width: 10, height: 10)
-        //view5.titleLabel?.sizeToFit()
-        view5.backgroundColor = .blue
-        view5.sizeToFit()
+//        let view5 = UIButton(frame: CGRect(x: 100, y: 100, width: 0, height: 0))
+//        view5.setTitle("world is so beautful. And I want to turn it into a heaven.", for: .normal)
+//        view5.titleLabel?.lineBreakMode = .byWordWrapping
+//        view5.titleLabel?.numberOfLines = 0
+//        view5.titleLabel?.frame = CGRect(x: 100, y: 100, width: 10, height: 10)
+//        //view5.titleLabel?.sizeToFit()
+//        view5.backgroundColor = .blue
+//        view5.sizeToFit()
+        let acv = UIActivityIndicatorView(frame: CGRect(x: 100, y: 100, width: 50, height: 50))
+        acv.style = .whiteLarge
+        acv.hidesWhenStopped = true
+        acv.startAnimating()
+        view.addSubview(acv)
         
         
     }

@@ -22,6 +22,7 @@
 		D31D04E62196C18300B95A99 /* chessBoardTiles.sks in Resources */ = {isa = PBXBuildFile; fileRef = D31D04E52196C18300B95A99 /* chessBoardTiles.sks */; };
 		D31D04EE21973F1A00B95A99 /* Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31D04ED21973F1A00B95A99 /* Grid.swift */; };
 		D31D04F0219751DC00B95A99 /* Reversi.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31D04EF219751DB00B95A99 /* Reversi.swift */; };
+		D325EE0123143A6400F01883 /* help.html in Resources */ = {isa = PBXBuildFile; fileRef = D325EE0323143A6400F01883 /* help.html */; };
 		D33180EA230E39F700EE4498 /* LoadingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33180E9230E39F700EE4498 /* LoadingViewController.swift */; };
 		D335829C2301270100618366 /* abilityHint.sks in Resources */ = {isa = PBXBuildFile; fileRef = D335829A2301270100618366 /* abilityHint.sks */; };
 		D336243322D4DDA800D0997F /* SelectButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D336243222D4DDA800D0997F /* SelectButtons.swift */; };
@@ -89,6 +90,9 @@
 		D31D04E52196C18300B95A99 /* chessBoardTiles.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = chessBoardTiles.sks; sourceTree = "<group>"; };
 		D31D04ED21973F1A00B95A99 /* Grid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grid.swift; sourceTree = "<group>"; };
 		D31D04EF219751DB00B95A99 /* Reversi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reversi.swift; sourceTree = "<group>"; };
+		D325EE0223143A6400F01883 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hant"; path = "zh-Hant.lproj/help.html"; sourceTree = "<group>"; };
+		D325EE0423143A6800F01883 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/help.html; sourceTree = "<group>"; };
+		D325EE0623143E1300F01883 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hans"; path = "zh-Hans.lproj/help.html"; sourceTree = "<group>"; };
 		D33180E9230E39F700EE4498 /* LoadingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingViewController.swift; sourceTree = "<group>"; };
 		D335829A2301270100618366 /* abilityHint.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = abilityHint.sks; sourceTree = "<group>"; };
 		D336243222D4DDA800D0997F /* SelectButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectButtons.swift; sourceTree = "<group>"; };
@@ -200,6 +204,7 @@
 		D31D04CC2196BE5700B95A99 /* Reversi */ = {
 			isa = PBXGroup;
 			children = (
+				D325EE0523143D3C00F01883 /* html */,
 				D3AF3587231167BA0047E290 /* ViewControllers */,
 				D342BC3A22E590F700A10EDF /* OptionMenu */,
 				D342BC3822E5909900A10EDF /* ProductIds.plist */,
@@ -225,6 +230,14 @@
 				D3A988C2220D81E10047E420 /* Chess Board */,
 			);
 			path = Reversi;
+			sourceTree = "<group>";
+		};
+		D325EE0523143D3C00F01883 /* html */ = {
+			isa = PBXGroup;
+			children = (
+				D325EE0323143A6400F01883 /* help.html */,
+			);
+			path = html;
 			sourceTree = "<group>";
 		};
 		D33EADF9228FB84900918C89 /* CocoaPods */ = {
@@ -447,6 +460,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D31D04D92196BE5700B95A99 /* Main.storyboard in Resources */,
+				D325EE0123143A6400F01883 /* help.html in Resources */,
 				D335829C2301270100618366 /* abilityHint.sks in Resources */,
 				D31D04D02196BE5700B95A99 /* GameScene.sks in Resources */,
 				D36271E92212F20D00E2790F /* negative-circled-number.ttf in Resources */,
@@ -588,6 +602,16 @@
 				D35473A122213CAB00178015 /* zh-Hans */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		D325EE0323143A6400F01883 /* help.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D325EE0223143A6400F01883 /* zh-Hant */,
+				D325EE0423143A6800F01883 /* en */,
+				D325EE0623143E1300F01883 /* zh-Hans */,
+			);
+			name = help.html;
 			sourceTree = "<group>";
 		};
 		D35473A422213CDD00178015 /* Localizable.strings */ = {

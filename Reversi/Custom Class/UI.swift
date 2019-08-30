@@ -243,6 +243,9 @@ class UI {
     static var difficultySelectorSpacing: CGFloat{
         return levelPictureSize.width
     }
+    static var difficultySelectorButtonSize: CGSize{
+        return CGSize(width: fontSize.difficultySelector/2, height: fontSize.difficultySelector)
+    }
     //MARK: - fontName
     enum fontName: String{
         case PingFangSCSemibold = "PingFang-SC-Semibold"
@@ -325,12 +328,18 @@ class UI {
     static var levelSelectorPosition: CGPoint{
         return levelPicturePosition(indexFromLeft: 0)
     }
+    static var levelSelectorButtonSize: CGSize{
+        return difficultySelectorButtonSize
+    }
     //MARK: - modeSelector
     static var modeSelectorSpacing: CGFloat{
         return levelSelectorSpacing
     }
     static var modeSelectorPosition: CGPoint{
         return levelSelectorPosition
+    }
+    static var modeSelectorButtonSize: CGSize{
+        return difficultySelectorButtonSize
     }
     //MARK: - purchased button
     static var purchasedButtonColor: UIColor{
@@ -378,6 +387,9 @@ class UI {
     }
     static var languageOptionSpacing: CGFloat{
         return 7*languageOptionFontSize
+    }
+    static var languageOptionButtonSize: CGSize{
+        return CGSize(width: languageOptionFontSize/2, height: languageOptionFontSize)
     }
     //MARK: - closeButton in option menu
     static var closeButtonFrame: CGRect{

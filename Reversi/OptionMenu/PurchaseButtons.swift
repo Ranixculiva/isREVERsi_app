@@ -19,7 +19,7 @@ class PurchaseButtons: SKNode {
     fileprivate var purchaseButton: Button!
     fileprivate var restoreButton: Button!
     fileprivate var purchasedButton: Button!
-    fileprivate var IAP_utility = Utilities()
+    fileprivate var IAP_utility: Utilities!
     override var frame: CGRect{
         let height = max(purchaseButton.frame.height,restoreButton.frame.height,purchasedButton.frame.height)
         let width = max(purchaseButton.frame.width,restoreButton.frame.width,purchasedButton.frame.width)
@@ -28,6 +28,7 @@ class PurchaseButtons: SKNode {
     }
     override init() {
         super.init()
+        IAP_utility = Utilities()
         self.isUserInteractionEnabled = true
         //MARK: set up purchased button
         purchasedButton = Button(buttonColor: UI.purchasedButtonColor, cornerRadius: UI.purchasedButtonCornerRadius)!

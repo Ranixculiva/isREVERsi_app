@@ -121,6 +121,26 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
     func interstitialWillPresentScreen(_ ad: GADInterstitial){
         musicPlayer.savePlayersState()
     }
+    fileprivate var doesFirstAppeared = false
+    override func viewDidAppear(_ animated: Bool) {
+        if !doesFirstAppeared {
+            doesFirstAppeared = true
+            guard let view = view as! SKView? else{return}
+            let scene = TitleScene()
+            // Set the scale mode to scale to fit the window
+            scene.scaleMode = .aspectFill
+            // Present the scene
+            //view.presentScene(scene)
+            self.present(UI.loadingVC, animated: false){
+                view.presentScene(scene)
+                UI.loadingVC.dismiss(animated: true, completion: nil)
+            }
+            
+            //}
+        }
+        
+        
+    }
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -147,13 +167,7 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
             
             
             
-            let scene = TitleScene()
-            // Set the scale mode to scale to fit the window
-            scene.scaleMode = .aspectFill
-            // Present the scene
-            //view.presentScene(scene)
-            view.presentScene(scene)
-            //}
+            
             
             view.ignoresSiblingOrder = true
             view.showsFPS = true

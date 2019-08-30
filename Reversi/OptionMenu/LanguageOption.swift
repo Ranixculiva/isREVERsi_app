@@ -26,9 +26,8 @@ class LanguageOption: TextOptionsWithSelectButtons{
         let languages = ["繁體中文","简体中文","English"]
         let fontNames = [UI.fontName.PingFangSCSemibold.rawValue,UI.fontName.PingFangSCSemibold.rawValue,
         UI.fontName.ChalkboardSEBold.rawValue]
-        let spacing = CGFloat(250)
-        let leftButton = SKSpriteNode(color: .blue, size: CGSize(width: 25, height: 50))
-        let rightButton = SKSpriteNode(color: .red, size: CGSize(width: 25, height: 50))
+        let leftButton = SKSpriteNode(texture: SKTexture(image: #imageLiteral(resourceName: "leftSelecButton")), size: UI.languageOptionButtonSize)
+        let rightButton = SKSpriteNode(texture: SKTexture(image: #imageLiteral(resourceName: "rightSelectButton")), size: UI.languageOptionButtonSize)
         self.init(texts: languages, spacing: UI.languageOptionSpacing, leftButton: leftButton, rightButton: rightButton, isCyclic: true, fontNames: fontNames, fontSize:  UI.languageOptionFontSize, fontColor: UI.languageOptionFontColor)
         selectButtons.fetchValueDelegate = self
         switch SharedVariable.language {

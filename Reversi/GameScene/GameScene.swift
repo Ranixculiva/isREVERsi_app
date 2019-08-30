@@ -52,20 +52,20 @@ class GameScene: SKScene {
     
     //MARK: - nodes
     ////m
-    fileprivate var background = SKSpriteNode()
+    fileprivate var background: SKSpriteNode!
     ////m
-    fileprivate var backNode = Button()
+    fileprivate var backNode: Button!
     
     fileprivate var labels: [[SKLabelNode]] = []
-    fileprivate var blackScore_label = ScoreLabel(fontColor: .black)
-    fileprivate var whiteScore_label = ScoreLabel(fontColor: .white)
-    fileprivate var stateIndicator = SKCropNode()
+    fileprivate var blackScore_label: ScoreLabel!
+    fileprivate var whiteScore_label: ScoreLabel!
+    fileprivate var stateIndicator: SKCropNode!
     fileprivate var stateHint: HintBubble!
     fileprivate var chessBoard: SKSpriteNode!
     fileprivate var stateIndicatorColorLeft : SKSpriteNode!
     fileprivate var stateIndicatorColorRight: SKSpriteNode!
-    fileprivate var stateLabel = SKLabelNode()
-    fileprivate var abilityIndicator = SKSpriteNode()
+    fileprivate var stateLabel: SKLabelNode!
+    fileprivate var abilityIndicator: SKSpriteNode!
     fileprivate var retryNode:SKSpriteNode!
     fileprivate var toTitleNode: SKSpriteNode!
     fileprivate var undoNode: SKSpriteNode!
@@ -83,10 +83,15 @@ class GameScene: SKScene {
     fileprivate var rightAbilityMenu: AbilityMenu? = nil
     
     //MARK: - message boxes
-    fileprivate var helpMessage: MessageBox!
-    fileprivate var undoMessage: MessageBox!
-    fileprivate var retryMessage: MessageBox!
-    fileprivate var earnFlipsMessage: MessageBox!
+//    fileprivate var helpMessage: MessageBox!
+//    fileprivate var undoMessage: MessageBox!
+//    fileprivate var retryMessage: MessageBox!
+//    fileprivate var earnFlipsMessage: MessageBox!
+    
+    fileprivate var helpMessage: MessageViewController!
+    fileprivate var undoMessage: MessageViewController!
+    fileprivate var retryMessage: MessageViewController!
+    fileprivate var earnFlipsMessage: MessageViewController!
     
     fileprivate var chessBoardScaledWidth: CGFloat!
     fileprivate var chessBoardScaledHeight: CGFloat!
@@ -151,14 +156,14 @@ class GameScene: SKScene {
     fileprivate var imagesOfReview: [UIImage] = []
     fileprivate var reviews:[SKSpriteNode] = []
     //MARK: - parameters for result
-    fileprivate var shareButton = SKSpriteNode()
+    fileprivate var shareButton: SKSpriteNode!
     fileprivate var shareHint: HintBubble!
-    fileprivate var winImage = UIImage()
+    fileprivate var winImage: UIImage!
     fileprivate var screenshotOriginX: CGFloat = 0
     fileprivate var challengeLabelOriginX: CGFloat = 0
     fileprivate var challengeFlipLabelOriginX: CGFloat = 0
     //MARK: - nodes in result
-    fileprivate var screenshot = SKSpriteNode()
+    fileprivate var screenshot: SKSpriteNode!
     fileprivate var challengeLabels: [SKMultilineLabel] = []
     fileprivate var challengeFlipLabels: [SKLabelNode] = []
     //MARK: - parameter for games
@@ -304,7 +309,8 @@ class GameScene: SKScene {
     //fileprivate let loadingVC = LoadingViewController()
     override func didMove(to view: SKView) {
         
-
+        winImage = UIImage()
+        screenshot = SKSpriteNode()
         SharedVariable.isThereGameToLoad = true
         SharedVariable.save()
         
@@ -534,6 +540,10 @@ class GameScene: SKScene {
 //        borderWidth = (view.frame.width - chessBoard!.mapSize.width * chessBoard!.xScale * CGFloat(gameSize - 1) / CGFloat(gameSize)) / 2.0
 //        borderHeight = (view.frame.height -         chessBoard!.mapSize.height * chessBoard!.yScale * CGFloat(gameSize - 1) / CGFloat(gameSize)) / 2.0
         //print("borderWidth: ", borderWidth)
+        
+        
+        
+        
         //MARK: - set up menu
         //MARK: set up toTitleNode
         toTitleNode = SKSpriteNode(imageNamed: "toTitle")
@@ -638,8 +648,8 @@ class GameScene: SKScene {
             isComputerWhite = true
         }
         // MARK: initialize score labels
-//        blackScore_label = childNode(withName: "blackScore") as? SKLabelNode
-//        whiteScore_label = childNode(withName: "whiteScore") as? SKLabelNode
+        blackScore_label = ScoreLabel(fontColor: .black)
+        whiteScore_label = ScoreLabel(fontColor: .white)
         addChild(blackScore_label)
         addChild(whiteScore_label)
         let needToArrangeUpDown = (isAIMode || !offline)
@@ -724,7 +734,7 @@ class GameScene: SKScene {
         reviewSlider.zPosition = UI.zPosition.reviewSlider
         
         //initialize stateIndicator with mask and show upArrow
-        
+        stateIndicator = SKCropNode()
         let stateIndicatorSize =
             CGSize(
                 width: UI.gridSize / 6.0,
@@ -749,12 +759,18 @@ class GameScene: SKScene {
         
         addChild(stateIndicator)
         //MARK: initialize state label
-        stateLabel = labels[0][0].copy() as! SKLabelNode
+        stateLabel = SKLabelNode()
+        stateLabel = (labels[0][0].copy() as! SKLabelNode)
         stateLabel.name = "stateLabel"
         stateLabel.isHidden = true
         stateLabel.fontSize = stateIndicatorSize.height
         stateLabel.zPosition = UI.zPosition.stateIndicator
         addChild(stateLabel)
+        
+        //MARK: prepare background color animation
+        if self.isAIMode{
+            self.prepareBackgroundColorAnimation(fps: 15, duration: 0.6)
+        }
         //MARK: update state indicator
         updateStateIndicator(nowAt)
         //MARK: set up the state hint
@@ -767,7 +783,7 @@ class GameScene: SKScene {
         addChild(stateHint)
         
         //MARK: set up abilityIndicator
-        //abilityIndicator = SKSpriteNode(color: .red, size: UI.menuIconSize)
+        abilityIndicator = SKSpriteNode()
         abilityIndicator = SKSpriteNode(imageNamed: "translate")
         abilityIndicator.size = UI.menuIconSize
         abilityIndicator.position = stateIndicator.position
@@ -786,10 +802,6 @@ class GameScene: SKScene {
         self.showBoard(self.nowAt)
         Game[nowAt].showBoard(isWhite: isColorWhiteNow)
         
-        //MARK: prepare background color animation
-        if self.isAIMode{
-            self.prepareBackgroundColorAnimation(fps: 15, duration: 0.6)
-        }
         
         //MARK: set up notificationCenter
         let notificationCenter = NotificationCenter.default
@@ -808,15 +820,19 @@ class GameScene: SKScene {
             MessageAction(title: helpMessageActionsTitle[0], style: .default, handler: {}),
             MessageAction(title: helpMessageActionsTitle[1], style: .destructive, handler: {}),
         ]
-        self.helpMessage = MessageBox(title: helpGuideTitle, text: helpGuideText, actions: helpMessageActions)
-        self.addChild(self.helpMessage)
-        self.helpMessage.isHidden = true
+        //self.helpMessage = MessageBox(title: helpGuideTitle, text: helpGuideText, actions: helpMessageActions)
+        helpMessage = MessageViewController(title: helpGuideTitle, url: URL.html.help, actions: helpMessageActions)
+        
+        //self.addChild(self.helpMessage)
+        //self.helpMessage.isHidden = true
+        
         //MARK: set up undo message box
         let undoHandler: () -> Void = {[unowned self] in
             print("destructive")
             if SharedVariable.flips < 1, SharedVariable.withAds{
                 print("you don't have enough Flips")
-                self.earnFlipsMessage.isHidden = false
+                //self.earnFlipsMessage.isHidden = false
+                self.earnFlipsMessage.dismiss(animated: true, completion: nil)
                 return
             }
             else{
@@ -840,9 +856,11 @@ class GameScene: SKScene {
             MessageAction(title: undoMessageActionsTitle[0], style: .default, handler: {}),
             MessageAction(title: undoMessageActionsTitle[1], style: .destructive, handler: undoHandler),
         ]
-        self.undoMessage = MessageBox(title: undoGuideTitle, text: undoGuideText, actions: undoMessageActions, isWithScroll: false)
-        self.addChild(self.undoMessage)
-        self.undoMessage.isHidden = true
+        //self.undoMessage = MessageBox(title: undoGuideTitle, text: undoGuideText, actions: undoMessageActions, isWithScroll: false)
+        self.undoMessage = MessageViewController(title: undoGuideTitle, message: undoGuideText, actions: undoMessageActions)
+//        self.addChild(self.undoMessage)
+//        self.undoMessage.isHidden = true
+        
         //MARK: set up retry message box
         let retryHandler: () -> Void = {[unowned self] in
             NotificationCenter.default.post(name: .showGoogleAds, object: nil)
@@ -877,9 +895,12 @@ class GameScene: SKScene {
             MessageAction(title: retryMessageActionsTitle[0], style: .default, handler: {}),
             MessageAction(title: retryMessageActionsTitle[1], style: .destructive, handler: retryHandler),
         ]
-        self.retryMessage = MessageBox(title: retryGuideTitle, text: retryGuideText, actions: retryMessageActions, isWithScroll: false)
-        self.addChild(self.retryMessage)
-        self.retryMessage.isHidden = true
+        //self.retryMessage = MessageBox(title: retryGuideTitle, text: retryGuideText, actions: retryMessageActions, isWithScroll: false)
+        self.retryMessage = MessageViewController(title: retryGuideTitle, message: retryGuideText, actions: retryMessageActions)
+        //self.addChild(self.retryMessage)
+        //self.retryMessage.isHidden = true
+        
+        
         //MARK: set up earnFlips Messagebox
         let earnFlipsHandler: () -> Void = {
             print("default")
@@ -895,9 +916,10 @@ class GameScene: SKScene {
             MessageAction(title: earnFlipsMessageActionsTitle[0], style: .default, handler: earnFlipsHandler),
             MessageAction(title: earnFlipsMessageActionsTitle[1], style: .destructive, handler: {}),
         ]
-        self.earnFlipsMessage = MessageBox(title: earnFlipsGuideTitle, text: earnFlipsGuideText, actions: earnFlipsMessageActions, isWithScroll: false)
-        self.addChild(self.earnFlipsMessage)
-        self.earnFlipsMessage.isHidden = true
+        //self.earnFlipsMessage = MessageBox(title: earnFlipsGuideTitle, text: earnFlipsGuideText, actions: earnFlipsMessageActions, isWithScroll: false)
+        self.earnFlipsMessage = MessageViewController(title: earnFlipsGuideTitle, message: earnFlipsGuideText, actions: earnFlipsMessageActions)
+        //self.addChild(self.earnFlipsMessage)
+        //self.earnFlipsMessage.isHidden = true
         
         let serialQueue = DispatchQueue(label: "com.Ranixculiva.ISREVERSI", qos: DispatchQoS.userInteractive)
         if self.isAIMode && self.isColorWhiteNow == self.isComputerWhite && !self.Game[self.nowAt].isEnd(){
@@ -945,7 +967,6 @@ class GameScene: SKScene {
         else if isReviewMode{
             undo(withTakingScreenshot: false, withAnimation: false)
         }
-        UI.loadingVC.dismiss(animated: true, completion: nil)
         /*
          //Light
          reviewLight = SKLightNode()
@@ -1174,8 +1195,9 @@ class GameScene: SKScene {
 //        alert.addAction(UIAlertAction(title: actionDestructiveTitle, style: .destructive, handler: handler))
 //        UIApplication.getPresentedViewController()!.present(alert, animated: true){}
 //
-        retryMessage.isHidden = false
-        if retryMessage.parent == nil { addChild(retryMessage)}
+        UI.rootViewController?.present(retryMessage, animated: true)
+        //retryMessage.isHidden = false
+        //if retryMessage.parent == nil { addChild(retryMessage)}
         
         
     }
@@ -1294,8 +1316,8 @@ class GameScene: SKScene {
         addChild(undoHint)
         addChild(helpHint)
         addChild(optionHint)
-        addChild(helpMessage)
-        addChild(retryMessage)
+        //addChild(helpMessage)
+        //addChild(retryMessage)
         addChild(grid)
         addChild(brighterFilterRow)
         addChild(brighterFilterCol)
@@ -1318,8 +1340,8 @@ class GameScene: SKScene {
         indexOfTheToppestReview = reviews.count - 1
     
         removeAllChildren()
-        addChild(undoMessage)
-        addChild(earnFlipsMessage)
+        //addChild(undoMessage)
+        //addChild(earnFlipsMessage)
         let reviewBackground = SKSpriteNode(color: .black, size: scene!.size)
         print(scene!.size)
         reviewBackground.name = "reviewBackground"
@@ -2224,12 +2246,16 @@ class GameScene: SKScene {
     }
     fileprivate func toTitle() {
         if let view = view {
-            let transition:SKTransition = SKTransition.fade(withDuration: 1)
+//            let transition:SKTransition = SKTransition.fade(withDuration: 1)
             let scene = TitleScene()
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             UI.logoSwitch.currentState = LogoSwitch.state(rawValue: !isAIMode ? 1 : (!isComputerWhite ? 2 : 0))!
-            view.presentScene(scene, transition: transition)
+            UI.rootViewController?.present(UI.loadingVC, animated: false){
+                view.presentScene(scene)
+                UI.loadingVC.dismiss(animated: true, completion: nil)
+            }
+            //view.presentScene(scene, transition: transition)
         }
     }
     fileprivate var didLastTurnUseAbility = false
@@ -2277,8 +2303,8 @@ class GameScene: SKScene {
 //                        alert.addAction(UIAlertAction(title: actionDestructiveTitle, style: .destructive, handler: handler))
 //                        UIApplication.getPresentedViewController()!.present(alert, animated: true){}
                         
-                        
-                        undoMessage.isHidden = false
+                        UI.rootViewController?.present(undoMessage, animated: true, completion: nil)
+                        //undoMessage.isHidden = false
                         
                         
                     }
@@ -2725,8 +2751,8 @@ class GameScene: SKScene {
                 var flipWait = SKAction.wait(forDuration: 0.6)
                 //var firstTimeAddTimeToWait = true
                 let isToPresentColorWhite = Game[nowAt].isColorWhiteNow
-                let scoreLabel = isToPresentColorWhite ? whiteScore_label:blackScore_label
-                let secondaryScoreLabel = !isToPresentColorWhite ? whiteScore_label:blackScore_label
+                let scoreLabel = isToPresentColorWhite ? whiteScore_label!:blackScore_label!
+                let secondaryScoreLabel = !isToPresentColorWhite ? whiteScore_label!:blackScore_label!
                 //isThereAFlipBackAnimation = false
                 
                 for row in 0...gameSize - 1{
@@ -3108,7 +3134,8 @@ class GameScene: SKScene {
         waitTimeToSetIsUserInteractionEnabledToTrue = -1
     }
     fileprivate func help(){
-        helpMessage.isHidden = false
+        UI.rootViewController?.present(helpMessage, animated: true, completion: nil)
+        //helpMessage.isHidden = false
     }
     fileprivate func option(){
         

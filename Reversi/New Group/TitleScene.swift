@@ -106,7 +106,7 @@ class TitleScene: SKScene{
         view.ignoresSiblingOrder = true
     }
     ////m
-    fileprivate var helpMessage: MessageBox!
+    fileprivate var helpMessage: MessageViewController!
     fileprivate var doesClickOnHelpMessageDefaultButton = true
     ////m
     override func didMove(to view: SKView) {
@@ -302,12 +302,24 @@ class TitleScene: SKScene{
         loadingText.fontSize = UI.fontSize.loadingPhase
         loadingPhase.addChild(loadingText)
         loadingPhase.zPosition = UI.zPosition.loadingPahse
-        addChild(loadingPhase)
+        //addChild(loadingPhase)
         loadAllGuideTexts()
-        
+        //MARK: set up messageViewControllers
         //MARK: set up loadAlert
+        setupLoadAlert()
+        
         //addChild(loadAlert)
         //loadAlert.isHidden = true
+        
+        //removeChildren(in: [loadingPhase])
+        if SharedVariable.needToGuide{
+            self.guide(textPosition: CGPoint.zero, key: .welcome)
+        }
+        
+        
+        
+        
+        isUserInteractionEnabled = true
         
     }
     ////m
@@ -391,39 +403,18 @@ class TitleScene: SKScene{
         currentGuide = .help
         //guide(textPosition: CGPoint.zero, key: .help)
         ////m
-        helpMessage.isHidden = false
+        UI.rootViewController?.present(helpMessage, animated: true, completion: nil)
         ////m
-        ////test
-        let text =
-"""
-afsdjfile
-jjfa;fij ej
-fka
-j;f aeij ejkfa;difj kakf jkefjajf
-j;id fkef jaewjfask;fjfkw e
-wfkfkfiewj fk fjask f;awe
-;  akfj;a fi
-i  a skfj ak f;asfkj
-"""
-        
-        let mvc = MessageViewController(title: "1234")
-        mvc.message = text
-        mvc.addActions([
-            //.init(title: "asdf", style: .cancel),
-            //.init(title: "default", style: .default),
-            //.init(title: "destructive", style: .destructive),
-            .init(title: "desteeeeeeeeee", style: .destructive){mvc.dismiss(animated: true, completion: nil)},
-            .init(title: "canele", style: .cancel){print("canele")}
-            
-            ])
-        UI.rootViewController?.present(mvc, animated: true, completion: nil)
-        ////test
+
     }
     fileprivate func reloadScene(){
         let scene = TitleScene()
         scene.scaleMode = .aspectFill
         guard let view = view else{return}
-        view.presentScene(scene)
+        UI.rootViewController?.present(UI.loadingVC, animated: false){
+            view.presentScene(scene)
+            UI.loadingVC.dismiss(animated: true, completion: nil)
+        }
     }
     fileprivate func option(){
         let alert = OptionMenuVC()
@@ -584,107 +575,101 @@ i  a skfj ak f;asfkj
     }
     fileprivate func loadAllGuideTexts(){
         self.isUserInteractionEnabled = false
-        let serialQueue = DispatchQueue(label: "com.Ranixculiva.ISREVERSI", qos: DispatchQoS.userInteractive)
         let gridSize = UI.gridSize
         let fontSize = UI.guideFontSize
         
-        serialQueue.async {
-            for aGuideKey in guideKey.allCases{
-                if aGuideKey == .logo{
-                    let logoText1 = UI.Texts.guide.logo.default_
-                    let label1 = SKMultilineLabel(text: logoText1, labelWidth: gridSize)
-                    label1.fontName = UI.guideFontName
-                    label1.fontColor = UI.guideFontColor
-                    label1.fontSize = fontSize
-                    label1.zPosition = UI.zPosition.guideLabel
-                    label1.alignment = .center
-                    label1.anchorPoint = CGPoint(x: 0.5,y: 0.5)
-                    label1.position = CGPoint.zero
-                    label1.name = aGuideKey.rawValue + ".default" + ".label"
-                    label1.isHidden = true
-                    self.addChild(label1)
-                    
-                    let logoText2 = UI.Texts.guide.logo.destructive
-                    let label2 = SKMultilineLabel(text: logoText2, labelWidth: gridSize)
-                    label2.fontName = UI.guideFontName
-                    label2.fontColor = UI.guideFontColor
-                    label2.fontSize = fontSize
-                    label2.zPosition = UI.zPosition.guideLabel
-                    label2.alignment = .center
-                    label2.anchorPoint = CGPoint(x: 0.5,y: 0.5)
-                    label2.position = CGPoint.zero
-                    label2.name = aGuideKey.rawValue + ".destructive" + ".label"
-                    label2.isHidden = true
-                    self.addChild(label2)
-                    continue
-                }
-                if aGuideKey == .help {
-                    //set up messageBox
-                    let helpGuideText = UI.Texts.guide.help
-                    let helpGuideTitle = UI.Texts.message.help.title
-                    let helpMessageActionsTitle = [
-                        UI.Texts.message.help.default_,
-                        UI.Texts.message.help.destructive
-                    ]
-                    let switchGuideFromHelpToLogo: () -> Void = {[unowned self] in
-                        if self.currentGuide == .help, SharedVariable.needToGuide{
-                            
-                            self.guideGesture.isHidden = false
-                            self.guideGesture.isPaused = false
-                            self.guideGesture.position = UI.logoSwitch.position
-                            let swipeGuideVector = CGVector(dx: (self.doesClickOnHelpMessageDefaultButton ? 1:-1)*UI.logoSwitch.frame.width/2, dy: 0)
-                            self.guideGesture.swipeGuide(by: swipeGuideVector)
-                            
-                            self.removeGuide(nodesToRecover: [], key: .help)
-                            if SharedVariable.needToGuide{
-                                self.currentGuide = .logo
-                                let lightRegionOfLogo = CGRect(origin: CGPoint(x: UI.logoSwitch.frame.minX, y: UI.logoSwitch.frame.minY), size: UI.logoSwitch.frame.size)
-                                //not com
-                                self.guideLitByEllipse(nodesToLight: [UI.logoSwitch], lightRegion: lightRegionOfLogo, key: .logo)
-                            }
+        for aGuideKey in guideKey.allCases{
+            if aGuideKey == .logo{
+                let logoText1 = UI.Texts.guide.logo.default_
+                let label1 = SKMultilineLabel(text: logoText1, labelWidth: gridSize)
+                label1.fontName = UI.guideFontName
+                label1.fontColor = UI.guideFontColor
+                label1.fontSize = fontSize
+                label1.zPosition = UI.zPosition.guideLabel
+                label1.alignment = .center
+                label1.anchorPoint = CGPoint(x: 0.5,y: 0.5)
+                label1.position = CGPoint.zero
+                label1.name = aGuideKey.rawValue + ".default" + ".label"
+                label1.isHidden = true
+                self.addChild(label1)
+                
+                let logoText2 = UI.Texts.guide.logo.destructive
+                let label2 = SKMultilineLabel(text: logoText2, labelWidth: gridSize)
+                label2.fontName = UI.guideFontName
+                label2.fontColor = UI.guideFontColor
+                label2.fontSize = fontSize
+                label2.zPosition = UI.zPosition.guideLabel
+                label2.alignment = .center
+                label2.anchorPoint = CGPoint(x: 0.5,y: 0.5)
+                label2.position = CGPoint.zero
+                label2.name = aGuideKey.rawValue + ".destructive" + ".label"
+                label2.isHidden = true
+                self.addChild(label2)
+                continue
+            }
+            if aGuideKey == .help {
+                //set up messageBox
+                //let helpGuideText = UI.Texts.guide.help
+                let helpGuideTitle = UI.Texts.message.help.title
+                let helpMessageActionsTitle = [
+                    UI.Texts.message.help.default_,
+                    UI.Texts.message.help.destructive
+                ]
+                let switchGuideFromHelpToLogo: () -> Void = {[unowned self] in
+                    if self.currentGuide == .help, SharedVariable.needToGuide{
+                        
+                        self.guideGesture.isHidden = false
+                        self.guideGesture.isPaused = false
+                        self.guideGesture.position = UI.logoSwitch.position
+                        let swipeGuideVector = CGVector(dx: (self.doesClickOnHelpMessageDefaultButton ? 1:-1)*UI.logoSwitch.frame.width/2, dy: 0)
+                        self.guideGesture.swipeGuide(by: swipeGuideVector)
+                        
+                        self.removeGuide(nodesToRecover: [], key: .help)
+                        if SharedVariable.needToGuide{
+                            self.currentGuide = .logo
+                            let lightRegionOfLogo = CGRect(origin: CGPoint(x: UI.logoSwitch.frame.minX, y: UI.logoSwitch.frame.minY), size: UI.logoSwitch.frame.size)
+                            //not com
+                            self.guideLitByEllipse(nodesToLight: [UI.logoSwitch], lightRegion: lightRegionOfLogo, key: .logo)
                         }
                     }
-                    
-                    let thanksHandler: () -> Void = {[unowned self] in
-                        self.doesClickOnHelpMessageDefaultButton = true
-                        switchGuideFromHelpToLogo()
-                        
-                    }
-                    let shutUpHandler: () -> Void = {[unowned self] in
-                        self.doesClickOnHelpMessageDefaultButton = false
-                        switchGuideFromHelpToLogo()
-                    }
-                    let helpMessageActions = [
-                        MessageAction(title: helpMessageActionsTitle[0], style: .default, handler: thanksHandler),
-                        MessageAction(title: helpMessageActionsTitle[1], style: .destructive, handler: shutUpHandler),
-                        ]
-                    self.helpMessage = MessageBox(title: helpGuideTitle, text: helpGuideText, actions: helpMessageActions)
-                    self.addChild(self.helpMessage)
-                    self.helpMessage.isHidden = true
-                    continue
+                }
+                
+                let thanksHandler: () -> Void = {[unowned self] in
+                    self.doesClickOnHelpMessageDefaultButton = true
+                    switchGuideFromHelpToLogo()
                     
                 }
-                let text = UI.Texts.guide.guide(aGuideKey)
-                let label = SKMultilineLabel(text: text, labelWidth: gridSize)
-                label.fontName = UI.guideFontName
-                label.fontColor = UI.guideFontColor
-                label.fontSize = fontSize
-                label.zPosition = UI.zPosition.guideLabel
-                label.alignment = .center
-                label.anchorPoint = CGPoint(x: 0.5,y: 0.5)
-                label.position = CGPoint.zero
-                label.name = aGuideKey.rawValue + ".label"
-                label.isHidden = true
-                self.addChild(label)
-            }
-            DispatchQueue.main.async{
-                self.removeChildren(in: [self.loadingPhase])
-                if SharedVariable.needToGuide{
-                    self.guide(textPosition: CGPoint.zero, key: .welcome)
+                let shutUpHandler: () -> Void = {[unowned self] in
+                    self.doesClickOnHelpMessageDefaultButton = false
+                    switchGuideFromHelpToLogo()
                 }
-                self.isUserInteractionEnabled = true
+                let helpMessageActions = [
+                    MessageAction(title: helpMessageActionsTitle[0], style: .default, handler: thanksHandler),
+                    MessageAction(title: helpMessageActionsTitle[1], style: .destructive, handler: shutUpHandler),
+                    ]
+                helpMessage = MessageViewController(title: helpGuideTitle, url: URL.html.help, actions: helpMessageActions)
+                //helpMessage = MessageViewController()
+                continue
+                
             }
+            let text = UI.Texts.guide.guide(aGuideKey)
+            let label = SKMultilineLabel(text: text, labelWidth: gridSize)
+            label.fontName = UI.guideFontName
+            label.fontColor = UI.guideFontColor
+            label.fontSize = fontSize
+            label.zPosition = UI.zPosition.guideLabel
+            label.alignment = .center
+            label.anchorPoint = CGPoint(x: 0.5,y: 0.5)
+            label.position = CGPoint.zero
+            label.name = aGuideKey.rawValue + ".label"
+            label.isHidden = true
+            self.addChild(label)
+            
+            
+            
+            
         }
+        
     }
     fileprivate func guide(textPosition: CGPoint, key: guideKey){
         let backgroundColor = UI.guideBackgroundColor
@@ -720,7 +705,12 @@ i  a skfj ak f;asfkj
         background.addChild(label)
     }
     //let loadAlert = MessageBox(title: UI.Texts.loadAlert.title, text: UI.Texts.loadAlert.text, actions: [MessageAction(title: UI.Texts.loadAlert.defaultAction, style: .default)], isWithScroll: false)
-    let loadAlert = MessageViewController(title: UI.Texts.loadAlert.title, message: UI.Texts.loadAlert.text, actions: [MessageAction(title: UI.Texts.loadAlert.defaultAction, style: .default)])
+    //let loadAlert = MessageViewController(title: UI.Texts.loadAlert.title, message: UI.Texts.loadAlert.text, actions: [MessageAction(title: UI.Texts.loadAlert.defaultAction, style: .default)])
+    fileprivate var loadAlert: MessageViewController!
+    fileprivate func setupLoadAlert(){
+        loadAlert = MessageViewController(title: UI.Texts.loadAlert.title, message: UI.Texts.loadAlert.text, actions: [MessageAction(title: UI.Texts.loadAlert.defaultAction, style: .default)])
+    }
+    
     fileprivate func continueTheLastGame(){
         if !SharedVariable.isThereGameToLoad{
             UI.rootViewController?.present(loadAlert, animated: true, completion: nil)

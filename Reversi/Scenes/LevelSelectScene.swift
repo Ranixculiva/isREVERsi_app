@@ -140,7 +140,9 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
         background.zPosition = UI.zPosition.background
         addChild(background)
         //MARK: - set up levelSelector
-        levelSelector = SelectButtons(spacing: UI.levelSelectorSpacing, leftButton: SKSpriteNode(color: .red, size: CGSize(width: 100, height: 100)), rightButton: SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 100)), isCyclic: false, upperBound: numberOfLevels - 1)
+        let levelSelectorLeftButton = SKSpriteNode(texture: SKTexture(image:  #imageLiteral(resourceName: "leftSelecButton")), size: UI.levelSelectorButtonSize)
+        let levelSelectorRightButton = SKSpriteNode(texture: SKTexture(image:  #imageLiteral(resourceName: "rightSelectButton")), size: UI.levelSelectorButtonSize)
+        levelSelector = SelectButtons(spacing: UI.levelSelectorSpacing, leftButton: levelSelectorLeftButton, rightButton: levelSelectorRightButton, isCyclic: false, upperBound: numberOfLevels - 1)
         levelSelector.name = "levelSelector"
         levelSelector.fetchValueDelegate = self
         levelSelector.zPosition = UI.zPosition.levelSelector
@@ -148,7 +150,10 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
         addChild(levelSelector)
         //MARK: - set up difficultySelector
         let difficultyOptions = ["COM 1", "COM 2", "COM 3"]
-        difficultySelector = TextOptionsWithSelectButtons(texts: difficultyOptions, spacing: UI.difficultySelectorSpacing, leftButton: SKSpriteNode(color: .red, size: CGSize(width: 100, height: 100)), rightButton: SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 100)), fontColor: isComputerWhite ? .white:.black)
+        
+        let difficultySelectorLeftButton = SKSpriteNode(texture: SKTexture(image:  #imageLiteral(resourceName: "leftSelecButton")), size: UI.difficultySelectorButtonSize)
+        let difficultySelectorRightButton = SKSpriteNode(texture: SKTexture(image:  #imageLiteral(resourceName: "rightSelectButton")), size: UI.difficultySelectorButtonSize)
+        difficultySelector = TextOptionsWithSelectButtons(texts: difficultyOptions, spacing: UI.difficultySelectorSpacing, leftButton: difficultySelectorLeftButton, rightButton: difficultySelectorRightButton, fontColor: isComputerWhite ? .white:.black)
         difficultySelector.fetchValueDelegate = self
         difficultySelector.name = "difficultySelector"
         difficultySelector.zPosition = UI.zPosition.difficultySelector
@@ -313,21 +318,24 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
             scene.withAbility = .translate
         }
         
-        UI.loadingVC.modalTransitionStyle = .crossDissolve
-        UI.rootViewController?.present(UI.loadingVC, animated: true, completion: nil)
-        run(SKAction.wait(forDuration: 0.3)){
+        UI.rootViewController?.present(UI.loadingVC, animated: true){
             view.presentScene(scene)
+            UI.loadingVC.dismiss(animated: true, completion: nil)
         }
         
     }
     fileprivate func toTitle(){
         if let view = view {
-            let transition:SKTransition = SKTransition.fade(withDuration: 1)
+//            let transition:SKTransition = SKTransition.fade(withDuration: 1)
             let scene = TitleScene()
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             //UI.logoSwitch.currentState = !isComputerWhite ? .white : .black
-            view.presentScene(scene, transition: transition)
+            UI.rootViewController?.present(UI.loadingVC, animated: false){
+                view.presentScene(scene)
+                UI.loadingVC.dismiss(animated: true, completion: nil)
+            }
+            //view.presentScene(scene, transition: transition)
         }
     }
 }

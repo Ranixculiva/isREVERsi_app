@@ -13,14 +13,14 @@ class OptionMenu: SKSpriteNode{
         case originalLanguageOption = "originalLanguageOption"
     }
     var savedVariables: [savedVariable: Any] = [:]
-    fileprivate var items: [SKNode] = [
-        LanguageOption(),
-        PurchaseButtons()
-    ]
+    fileprivate var items: [SKNode] = []
     convenience init() {
         let backgroundTexture = OptionMenu.drawBackground()
         self.init(texture: backgroundTexture)
-        
+        items = [
+            LanguageOption(),
+            PurchaseButtons()
+        ]
         let spacing = UI.optionMenuSpacing
         var itemOffsetY = spacing/2 - size.height/2
         for item in items.reversed() {

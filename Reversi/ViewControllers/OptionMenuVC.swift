@@ -55,17 +55,21 @@ class OptionMenuVC: UIViewController{
         let confirmButton = UIButton(frame: UI.confirmButtonFrame)
         confirmButton.setBackgroundImage(#imageLiteral(resourceName: "confirm"), for: .normal)
         confirmButton.addTarget(self, action: #selector(tapOnConfirmButton), for: .touchUpInside)
+        
         optionMenuView.insertSubview(confirmButton, at: 10)
         
         //MARK: save variables
         optionMenu.savedVariables[.originalLanguageOption] = SharedVariable.language
     }
     @objc func tapOnCloseButton(){
-        self.dismiss(animated: true, completion: nil)
-        delegate?.didTapOnButton?(type: .close, sender: optionMenu)
+        self.dismiss(animated: true){ [unowned self] in
+            self.delegate?.didTapOnButton?(type: .close, sender: self.optionMenu)
+        }
     }
     @objc func tapOnConfirmButton(){
-        self.dismiss(animated: true, completion: nil)
-        delegate?.didTapOnButton?(type: .confirm, sender: optionMenu)
+        self.dismiss(animated: true){[unowned self] in
+            self.delegate?.didTapOnButton?(type: .confirm, sender: self.optionMenu)
+        }
+        
     }
 }

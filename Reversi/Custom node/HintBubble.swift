@@ -79,12 +79,14 @@ class HintBubble: SKSpriteNode {
             fitInBounds()
         }
     }
-    fileprivate var labelNode = SKLabelNode()
+    fileprivate var labelNode: SKLabelNode!
     convenience init?(bubbleColor color: SKColor, bounds: CGRect? = nil) {
         self.init(texture: SKTexture(), color:SKColor.clear, size: CGSize())
+        labelNode = SKLabelNode()
         self.bounds = bounds
         self.bubbleColor = color
         self.text = ""
+        
         
         labelNode.fontColor = UIColor.black
         labelNode.fontSize = 30.0

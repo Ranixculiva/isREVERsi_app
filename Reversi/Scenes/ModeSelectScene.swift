@@ -34,7 +34,7 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         }
     }
     
-    fileprivate var numberOfModes = 4
+    fileprivate var numberOfModes = 2
     fileprivate var modeLabels: [SKLabelNode] = []
     fileprivate var modePictures: [SKSpriteNode] = []
     fileprivate var modeSelector: SelectButtons!
@@ -77,7 +77,9 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         addChild(background)
         ////m
         //MARK: - set up modeSelector
-        modeSelector = SelectButtons(spacing: UI.modeSelectorSpacing, leftButton: SKSpriteNode(color: .red, size: CGSize(width: 100, height: 100)), rightButton: SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 100)), isCyclic: false, upperBound: numberOfModes - 1)
+        let modeSelectorLeftButton = SKSpriteNode(texture: SKTexture(image: #imageLiteral(resourceName: "leftSelecButton")), size: UI.modeSelectorButtonSize)
+        let modeSelectorRightButton = SKSpriteNode(texture: SKTexture(image: #imageLiteral(resourceName: "rightSelectButton")), size: UI.modeSelectorButtonSize)
+        modeSelector = SelectButtons(spacing: UI.modeSelectorSpacing, leftButton: modeSelectorLeftButton, rightButton: modeSelectorRightButton, isCyclic: false, upperBound: numberOfModes - 1)
         modeSelector.fetchValueDelegate = self
         modeSelector.zPosition = UI.zPosition.modeSelector
         modeSelector.position = UI.modeSelectorPosition
@@ -220,12 +222,16 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
     }
     fileprivate func toTitle(){
         if let view = view {
-            let transition:SKTransition = SKTransition.fade(withDuration: 1)
+//            let transition:SKTransition = SKTransition.fade(withDuration: 1)
             let scene = TitleScene()
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             //UI.logoSwitch.currentState = .half
-            view.presentScene(scene, transition: transition)
+            UI.rootViewController?.present(UI.loadingVC, animated: false){
+                view.presentScene(scene)
+                UI.loadingVC.dismiss(animated: true, completion: nil)
+            }
+            //view.presentScene(scene, transition: transition)
         }
     }
     fileprivate func touchDownOnOffline(){

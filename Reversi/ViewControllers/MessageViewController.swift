@@ -8,6 +8,8 @@
 
 import SpriteKit
 import UIKit
+import WebKit
+
 class MessageBoxButton: UIButton{
     
     var touchablePath = UIBezierPath()
@@ -33,7 +35,7 @@ class MessageBoxButton: UIButton{
         case .cancel:
             self.setTitleColor(.darkGray, for: .normal)
         case .default:
-            self.setTitleColor(.blue, for: .normal)
+            self.setTitleColor(.black, for: .normal)
         case .destructive:
             self.setTitleColor(.red, for: .normal)
         }
@@ -87,12 +89,18 @@ class MessageAction{
     }
 }
 
-class MessageViewController: UIViewController{
+class MessageViewController: UIViewController, WKNavigationDelegate{
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        activityView?.stopAnimating()
+    }
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        activityView?.stopAnimating()
+    }
     override var title: String?{
         didSet{
             if !withoutUpdate{
                 setTitle()
-                setMessageBoxView()
+                resizing()
                 positioning()
                 setGradientBackground()
             }
@@ -102,7 +110,7 @@ class MessageViewController: UIViewController{
         didSet{
             if !withoutUpdate{
                 setMessage()
-                setMessageBoxView()
+                resizing()
                 positioning()
                 setGradientBackground()
             }
@@ -117,14 +125,20 @@ class MessageViewController: UIViewController{
     func addActions(_ actions: [MessageAction]){
         storedActions.append(contentsOf: actions)
         setButtons()
-        setMessageBoxView()
+        resizing()
         positioning()
         setGradientBackground()
     }
     fileprivate var titleNode: UILabel? = nil
     fileprivate var messageNode: UILabel? = nil
-    fileprivate let messageBoxView = UIView()
-    fileprivate let backgroundLayer = CAGradientLayer()
+    fileprivate var messageBoxView: UIView!
+    fileprivate func setupMessageBoxView(){
+        if messageBoxView != nil{
+            messageBoxView.removeFromSuperview()
+        }
+        messageBoxView = UIView()
+    }
+    fileprivate var backgroundLayer: CAGradientLayer? = nil
     override func viewDidLoad() {
         let blurEffect = UIBlurEffect(style: .dark)
         let blurView = UIVisualEffectView(effect: blurEffect)
@@ -148,7 +162,7 @@ class MessageViewController: UIViewController{
             titleNode?.textAlignment = .center
             titleNode?.textColor = .white
             titleNode?.sizeToFit()
-            messageBoxView.insertSubview(titleNode!
+            messageBoxView!.insertSubview(titleNode!
                 , at: 10)
         }
         else{
@@ -164,14 +178,14 @@ class MessageViewController: UIViewController{
             let w = UI.messageBoxSize.width/scale
             let messageW = w - 2*spacing
             messageNode = UILabel(frame: CGRect(x: 0, y: 0, width: messageW, height: 0))
-            messageNode?.lineBreakMode = .byCharWrapping
+            messageNode?.lineBreakMode = .byWordWrapping
             messageNode?.numberOfLines = 0
             messageNode?.text = message
             messageNode?.font = UIFont(name: UI.messageBoxTitleFontName, size: UI.scrollTextFontSize/scale)
             messageNode?.textAlignment = .center
             messageNode?.textColor = .black
             messageNode?.sizeToFit()
-            messageBoxView.insertSubview(messageNode!, at: 10)
+            messageBoxView!.insertSubview(messageNode!, at: 10)
             
         }
         else {
@@ -217,7 +231,7 @@ class MessageViewController: UIViewController{
         print("touchesjlksdkdkdk")
         self.dismiss(animated: true, completion: nil)
     }
-    fileprivate func setMessageBoxView(){
+    fileprivate func resizing(){
         if messageBoxView.superview != nil{
             messageBoxView.removeFromSuperview()
         }
@@ -243,24 +257,31 @@ class MessageViewController: UIViewController{
                 h += actionButtons.first!.frame.height
             }
         }
+        if let webView = webView{
+            webView.frame.size = CGSize(width: w - 2*spacing, height: UI.messageBoxSize.height/scale - h - spacing)
+            h = UI.messageBoxSize.height/scale
+        }
         let x = view.frame.width/2 - w/2
         let y = view.frame.height/2 - h/2
+        
         messageBoxView.frame = CGRect(x: x, y: y, width: w, height: h)
         view.insertSubview(messageBoxView, at: 1)
     }
     fileprivate func setGradientBackground(){
         //MARK: set up message box background
-        if backgroundLayer.superlayer != nil{
-            backgroundLayer.removeFromSuperlayer()
+        if backgroundLayer?.superlayer != nil{
+            backgroundLayer?.removeFromSuperlayer()
+            backgroundLayer = nil
         }
-        backgroundLayer.frame = messageBoxView.bounds
-            backgroundLayer.colors =
+        backgroundLayer = CAGradientLayer()
+        backgroundLayer?.frame = messageBoxView!.bounds
+            backgroundLayer?.colors =
                 [#colorLiteral(red: 0.3921568627, green: 0.5882352941, blue: 1, alpha: 1),#colorLiteral(red: 0.4352941176, green: 0.6823529412, blue: 0.9803921569, alpha: 1),#colorLiteral(red: 0.4784313725, green: 0.7764705882, blue: 0.937254902, alpha: 1)].map{$0.cgColor}
         
-        backgroundLayer.locations = [0,0.2,1]
-        backgroundLayer.startPoint = CGPoint(x: 0, y: 0)
-        backgroundLayer.endPoint = CGPoint(x: 0, y: 1)
-        messageBoxView.layer.insertSublayer(backgroundLayer, at: 0)
+        backgroundLayer?.locations = [0,0.2,1]
+        backgroundLayer?.startPoint = CGPoint(x: 0, y: 0)
+        backgroundLayer?.endPoint = CGPoint(x: 0, y: 1)
+        messageBoxView.layer.insertSublayer(backgroundLayer!, at: 0)
         //MARK: add lines
         if isActionButtonsDistributedVertically{
             for actionButton in actionButtons{
@@ -273,7 +294,7 @@ class MessageViewController: UIViewController{
                 line.path = mutablePath
                 line.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.2)
                 line.lineWidth = UI.gridSize/scale/6/20
-                backgroundLayer.insertSublayer(line, at: 3)
+                backgroundLayer?.insertSublayer(line, at: 3)
             }
         }
         else{
@@ -293,7 +314,7 @@ class MessageViewController: UIViewController{
                 line.path = mutablePath
                 line.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.2)
                 line.lineWidth = UI.gridSize/scale/6/20
-                backgroundLayer.insertSublayer(line, at: 3)
+                backgroundLayer?.insertSublayer(line, at: 3)
             }
         }
     }
@@ -314,6 +335,16 @@ class MessageViewController: UIViewController{
             messageNode.frame.origin = CGPoint(x: w/2 - messageW/2, y: y)
             y += messageNode.frame.height + spacing
         }
+        
+        //MARK: positioning and resize webView
+        if let webView = webView{
+            webView.frame.origin = CGPoint(x: w/2 - webView.frame.width/2, y: y)
+            y += webView.frame.height + spacing
+            
+            //MARK: positioning activity view
+            activityView!.frame.origin = webView.center +  messageBoxView.frame.origin
+        }
+        
         //MARK: positioning action button
         let maxActionButtonWidth = actionButtons.isEmpty ? 0 : w/CGFloat(actionButtons.count)
         if isActionButtonsDistributedVertically{
@@ -344,19 +375,65 @@ class MessageViewController: UIViewController{
                 actionButton.touchablePath = UIBezierPath(roundedRect: buttonFrame, byRoundingCorners: byRoundingCorners, cornerRadii: CGSize(width: UI.messageBoxCornerRadius/scale, height: UI.messageBoxCornerRadius/scale))
             }
         }
+        
     }
     fileprivate var withoutUpdate = true
     fileprivate var scale = UIScreen.main.scale
-    convenience init(title: String? = nil, message: String? = nil, actions: [MessageAction] = []) {
+    var url: URL? = nil{
+        didSet{
+            setWebView()
+            resizing()
+            positioning()
+            setGradientBackground()
+        }
+    }
+    fileprivate var webView: WKWebView?
+    fileprivate var activityView: UIActivityIndicatorView?
+    fileprivate func setActivityView(){
+        if activityView != nil{
+            activityView?.removeFromSuperview()
+        }
+        activityView = UIActivityIndicatorView()
+        view.insertSubview(activityView!, at: 100)
+        let acOrigin = view.center
+        activityView?.style = .whiteLarge
+        activityView?.color = .darkGray
+        activityView?.frame.origin = acOrigin
+        activityView?.hidesWhenStopped = true
+    }
+    fileprivate func setWebView(){
+        if webView?.superview != nil{
+            webView?.removeFromSuperview()
+        }
+        if let url = url{
+            webView = WKWebView(frame: CGRect(x: 10, y: 10, width: 100, height: 400))
+            let request = URLRequest(url: url)
+            webView?.load(request)
+            webView?.navigationDelegate = self
+            activityView?.startAnimating()
+            webView?.layer.cornerRadius = UI.messageBoxCornerRadius/scale/2
+            webView?.clipsToBounds = true
+            messageBoxView.insertSubview(webView!, at: 1)
+        }
+        else{
+            webView = nil
+        }
+        
+    }
+    convenience init(title: String? = nil, message: String? = nil, url: URL? = nil, actions: [MessageAction] = []) {
         self.init()
         self.title = title
         self.message = message
+        self.url = url
         withoutUpdate = false
+        setActivityView()
+        setupMessageBoxView()
         setTitle()
         setMessage()
+        setWebView()
         addActions(actions)
         setButtons()
-        setMessageBoxView()
+        resizing()
         positioning()
         setGradientBackground()
         print("con init")
@@ -372,5 +449,30 @@ class MessageViewController: UIViewController{
     }
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+    }
+}
+extension URL{
+//    fileprivate func htmlLocalizationURL() -> URL?{
+//        let path = Bundle.main.path(forResource: lang, ofType: "lproj")
+//        let path3 = Bundle.main.url(forResource: "help", withExtension: "html", subdirectory: nil, localization: SharedVariable.language.rawValue)
+//        let bundle = Bundle(path: path!)
+//    }
+    //FIXME: default lang
+    struct html{
+        fileprivate static var localization: String{
+            if SharedVariable.language == .defaultLang{
+                if let defaultLang = Bundle.main.preferredLocalizations.first{
+                    return defaultLang
+                }
+            }
+            else {
+                return SharedVariable.language.rawValue
+            }
+            return "en"
+        }
+        static var help: URL?{
+            return Bundle.main.url(forResource: "help", withExtension: "html", subdirectory: nil, localization: localization)
+        }
+        //static let help = URL(fileURLWithPath: Bundle.main.path(forResource: "help", ofType: "html")!)
     }
 }

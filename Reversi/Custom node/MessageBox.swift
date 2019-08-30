@@ -18,7 +18,7 @@ class MessageBox: SKSpriteNode {
             setUpButtons()
         }
     }
-    fileprivate var titleNode = SKLabelNode()
+    fileprivate var titleNode: SKLabelNode!
     var text = ""{
         didSet{
             textBoxWithoutScroll.removeFromParent()
@@ -258,7 +258,7 @@ class MessageBox: SKSpriteNode {
         
         //set up actionButtons
         var totalWidthOfActionButtons = CGFloat(0)
-        actionButtons.map{totalWidthOfActionButtons += $0.frame.width}
+        actionButtons.forEach{totalWidthOfActionButtons += $0.frame.width}
         let maxWidthOfActionButtons = actionButtons.map{$0.frame.width}.max() ?? 0
         isButtonDistributedVertically = true
         if !actionButtons.isEmpty, totalWidthOfActionButtons < UI.messageBoxSize.width - UI.messageBoxCornerRadius*2{
