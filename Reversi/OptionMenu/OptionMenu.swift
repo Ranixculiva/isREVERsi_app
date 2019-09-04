@@ -13,13 +13,15 @@ class OptionMenu: SKSpriteNode{
         case originalLanguageOption = "originalLanguageOption"
     }
     var savedVariables: [savedVariable: Any] = [:]
+    weak var VC: UIViewController? = nil
     fileprivate var items: [SKNode] = []
-    convenience init() {
+    convenience init(VC: UIViewController) {
         let backgroundTexture = OptionMenu.drawBackground()
         self.init(texture: backgroundTexture)
         items = [
             LanguageOption(),
-            PurchaseButtons()
+            PurchaseButtons(),
+            AboutOption(VCToPresentAboutWebPage: VC)
         ]
         let spacing = UI.optionMenuSpacing
         var itemOffsetY = spacing/2 - size.height/2

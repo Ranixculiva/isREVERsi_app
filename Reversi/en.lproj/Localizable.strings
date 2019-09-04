@@ -44,14 +44,14 @@
 "message.help.default" = "Thanks!";
 "message.help.destructive" = "Shut up!";
 //MARK: - undo
-"message.undo.title" = "Alert";
+"message.undo.title" = "ALERT";
 "message.undo.text" = "You will be unable to redo. Are you sure to undo to this move?";
 "message.undo.default" = "No! Let me think.";
 "message.undo.destructive" = "Cool, sweet!(cost 1 Flip)";
 "message.undo.destructive.withoutAds" = "Cool, sweet!";
 //MARK: - retry
 "message.retry.text" = "You will lose your current progress. Are you sure to start a new game?";
-"message.retry.title" = "Alert";
+"message.retry.title" = "ALERT";
 "message.retry.default" = "No! Let me think.";
 "message.retry.destructive" = "Cool, sweet!";
 //MARK: - earnFlips
@@ -59,6 +59,9 @@
 "message.earnFlips.title" = "WAKE UP!!";
 "message.earnFlips.default" = "Cool, sweet!";
 "message.earnFlips.destructive" = "Nope!";
+//MARK: - about
+"message.about.title" = "ABOUT";
+"message.about.default" = "OK!";
 //MARK: - in LevelSelectScene.swift
 "LEVEL1" = "Classic";
 "LEVEL2" = "Zephyrus";
@@ -73,9 +76,17 @@
 "noGameToLoad.title" = "TT";
 "noGameToLoad.text" = "There is no game to load.";
 "noGameToLoad.defaultAction" = "OK";
+"continueMessage.title" = "REMINDER";
+"continueMessage.text" =
+"Continue the last game?
+(If you start a new game, you will lose your progress in the last game).";
+"continueMessage.default" = "Yes, please.";
+"continueMessage.cancel" = "Maybe later, thanks.";
 //MARK: - in purchaseButtons.swift
 "purchase" = "BUY";
 "restore" = "RESTORE";
 "purchased" = "BOUGHT";
+//MAKR: - in AboutOption.swift
+"about" = "ABOUT";
 
 

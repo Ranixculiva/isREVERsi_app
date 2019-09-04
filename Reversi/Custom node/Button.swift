@@ -63,16 +63,17 @@ class Button: SKSpriteNode{
         }
     }
     fileprivate var labelNode = SKLabelNode()
-    convenience init?(buttonColor color: UIColor, cornerRadius: CGFloat){
+    convenience init?(buttonColor color: UIColor, cornerRadius: CGFloat, fontSize: CGFloat = 30.0){
         self.init(texture: SKTexture(), color:SKColor.clear, size: CGSize())
         self.buttonColor = color
         self.text = ""
         self.cornerRadius = cornerRadius
+        self.fontSize = fontSize
         self.texture = buttonTexture()
         self.size = (texture?.size())!
         
         labelNode.fontColor = UIColor.black
-        labelNode.fontSize = 30.0
+        labelNode.fontSize = fontSize
         labelNode.fontName = UI.buttonLabelFontName
         labelNode.verticalAlignmentMode = .center
         labelNode.horizontalAlignmentMode = .center
@@ -98,5 +99,10 @@ class Button: SKSpriteNode{
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return SKTexture(image: image!)
+    }
+    override func contains(_ p: CGPoint) -> Bool {
+        let buttonRect = self.frame
+        let buttonPath = UIBezierPath(roundedRect: buttonRect, cornerRadius: cornerRadius)
+        return buttonPath.contains(p)
     }
 }

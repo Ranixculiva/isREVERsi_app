@@ -482,6 +482,17 @@ class GameScene: SKScene {
         
         guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
         bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+        if !isAIMode{
+            UI.addPattern(to: bgCtx)
+        }
+        else {
+            if !isComputerWhite{
+                UI.addPattern(to: bgCtx, type: .white)
+            }
+            else {
+                UI.addPattern(to: bgCtx, type: .black)
+            }
+        }
         let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         background = SKSpriteNode(texture: SKTexture(image: backgroundImage!))
@@ -832,8 +843,12 @@ class GameScene: SKScene {
             if SharedVariable.flips < 1, SharedVariable.withAds{
                 print("you don't have enough Flips")
                 //self.earnFlipsMessage.isHidden = false
-                self.earnFlipsMessage.dismiss(animated: true, completion: nil)
-                return
+                if UI.rootViewController?.presentedViewController?.isBeingPresented == true{
+                    UI.rootViewController?.presentedViewController?.dismiss(animated: true)
+                }
+                UI.rootViewController?.present(self.earnFlipsMessage, animated: true
+                )
+                
             }
             else{
                 self.touchOnTheToppestReview(self.reviews[self.indexOfTheToppestReview])
@@ -841,7 +856,6 @@ class GameScene: SKScene {
                     SharedVariable.flips -= 1
                     UI.flipsIndicator.flips = SharedVariable.flips
                 }
-                return
             }
             
         }
@@ -881,8 +895,8 @@ class GameScene: SKScene {
                 scene.offline = self.offline
                 
                 scene.scaleMode = .aspectFill
-                view.presentScene(scene, transition: transition)
-                return
+                view.presentScene(scene)
+                //view.presentScene(scene, transition: transition)
             }
         }
         let retryGuideText = UI.Texts.message.retry.text
@@ -1326,7 +1340,7 @@ class GameScene: SKScene {
         if let rightAbilityMenu = rightAbilityMenu{addChild(rightAbilityMenu)}
     }
     fileprivate func undo(withTakingScreenshot: Bool = true, withAnimation: Bool = true){
-        NotificationCenter.default.post(name: .showGoogleAds, object: nil)
+        //NotificationCenter.default.post(name: .showGoogleAds, object: nil)
         if !isAIMode{
             isDecideTranslateVectorMode = false
             withAbility = .none
@@ -1712,6 +1726,10 @@ class GameScene: SKScene {
                 }
                 else {challenges[i].isCompleted = challenges[i].isCompleted}
             }
+            
+            if !challenges[i].canGetOneFlip, challenges[i].isCompleted{
+                fontColor[i] = fontColor[i].withAlphaComponent(0.5)
+            }
         }
         return fontColor
     }
@@ -1748,6 +1766,13 @@ class GameScene: SKScene {
         
         guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
         bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+        if !doesPlayerLose{
+            UI.addHappyPattern(to: bgCtx)
+        }
+        else{
+            UI.addSadPattern(to: bgCtx)
+        }
+        
         let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         let background = SKSpriteNode(texture: SKTexture(image: backgroundImage!))
@@ -1791,8 +1816,8 @@ class GameScene: SKScene {
         var accumulativeChallengeLabelHeight: CGFloat = 0.0
         if challenges.count != 0{
             for i in 0...challenges.count - 1{
-                
-                let challengeFlipLabel = SKLabelNode(text: "\(Unicode.circledNumber(0))")
+                var challengeFlipLabelNumber = (challenges[i].isCompleted && !challenges[i].canGetOneFlip) ? 1 : 0
+                let challengeFlipLabel = SKLabelNode(text: Unicode.circledNumber(challengeFlipLabelNumber))
                 challengeFlipLabel.fontColor = fontColor[i]
                 challengeFlipLabel.name = "challengeFilpLabel \(i)"
                 //challengeFlipLabel.verticalAlignmentMode = .center
@@ -2251,9 +2276,11 @@ class GameScene: SKScene {
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             UI.logoSwitch.currentState = LogoSwitch.state(rawValue: !isAIMode ? 1 : (!isComputerWhite ? 2 : 0))!
-            UI.rootViewController?.present(UI.loadingVC, animated: false){
+            UI.rootViewController?.present(UI.loadingVC, animated: true){
                 view.presentScene(scene)
-                UI.loadingVC.dismiss(animated: true, completion: nil)
+                scene.run(SKAction.wait(forDuration: 0.1)){
+                    UI.loadingVC.dismiss(animated: true, completion: nil)
+                }
             }
             //view.presentScene(scene, transition: transition)
         }
@@ -2550,6 +2577,14 @@ class GameScene: SKScene {
             
             guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
             bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+            if !isComputerWhite{
+                UI.addPattern(to: bgCtx, type: .white)
+            }
+            else{
+                UI.addPattern(to: bgCtx, type: .black)
+            }
+            
+            
             let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
             backgroundColorFromGrayToBlue.append(SKTexture(image: backgroundImage!))
@@ -2579,6 +2614,12 @@ class GameScene: SKScene {
             
             guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
             bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+            if !isComputerWhite{
+                UI.addPattern(to: bgCtx, type: .white)
+            }
+            else{
+                UI.addPattern(to: bgCtx, type: .black)
+            }
             let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
             backgroundColorFromBlueToGray.append(SKTexture(image: backgroundImage!))
@@ -2620,6 +2661,7 @@ class GameScene: SKScene {
                     stateIndicator.isHidden = true
                 }
                 else{
+                    doesPlayerLose = false
                     changeStateIndicator(imageNamed: "crown", width: UI.gridSize/2.5, height: UI.gridSize/4, leftColor: isWinnerWhite ? UIColor.white : UIColor.black, rightColor: isWinnerWhite ? UIColor.white : UIColor.black)
                 }
                 
@@ -3046,6 +3088,8 @@ class GameScene: SKScene {
             serialQueue.async {
                 self.cleanUpSavedFile()
                 self.save()
+                SharedVariable.isThereGameToLoad = true
+                SharedVariable.save()
             }
 
             self.isUserInteractionEnabled = true

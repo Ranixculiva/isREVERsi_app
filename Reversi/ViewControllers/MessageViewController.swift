@@ -38,6 +38,8 @@ class MessageBoxButton: UIButton{
             self.setTitleColor(.black, for: .normal)
         case .destructive:
             self.setTitleColor(.red, for: .normal)
+        @unknown default:
+            fatalError("actionSytleUnknown default")
         }
         self.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
         self.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
@@ -95,6 +97,21 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
     }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         activityView?.stopAnimating()
+    }
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let url = navigationAction.request.url{
+            switch url.scheme{
+            case "mailto":
+                if UIApplication.shared.canOpenURL(url){
+                    UIApplication.shared.open(url)
+                    decisionHandler(.cancel)
+                    return
+                }
+            default:
+                break
+            }
+        }
+        decisionHandler(.allow)
     }
     override var title: String?{
         didSet{
@@ -228,7 +245,6 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
         }
     }
     @objc func didTapOnButton(){
-        print("touchesjlksdkdkdk")
         self.dismiss(animated: true, completion: nil)
     }
     fileprivate func resizing(){

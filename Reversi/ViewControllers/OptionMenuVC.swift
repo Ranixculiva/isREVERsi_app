@@ -36,7 +36,7 @@ class OptionMenuVC: UIViewController{
         
         let optionMenuScene = SKScene(size: UI.rootSize)
         optionMenuScene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        optionMenu = OptionMenu()
+        optionMenu = OptionMenu(VC: self)
         optionMenuScene.addChild(optionMenu)
         optionMenuScene.backgroundColor = .clear
         let optionMenuView = SKView(frame: UIScreen.main.bounds)

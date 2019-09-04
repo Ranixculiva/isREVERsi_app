@@ -62,6 +62,9 @@
 "message.earnFlips.text" = "你没有足够的翻可以悔棋，要观看广告以赚取翻吗？";
 "message.earnFlips.default" = "那真是太棒了！";
 "message.earnFlips.destructive" = "不！我死也不看。";
+//MARK: - about
+"message.about.title" = "关于";
+"message.about.default" = "好!";
 //MARK: - in LevelSelectScene.swift
 "LEVEL1" = "经典";
 "LEVEL2" = "泽费罗斯";
@@ -76,11 +79,18 @@
 "noGameToLoad.title" = "TT";
 "noGameToLoad.text" = "没有可载入的游戏";
 "noGameToLoad.defaultAction" = "好吧";
+"continueMessage.title" = "提醒";
+"continueMessage.text" =
+"要继续上一次的游戏吗？
+（如果开始新的游戏，你会失去之前游戏的进度）";
+"continueMessage.default" = "好啊，谢谢！";
+"continueMessage.cancel" = "之后再说，谢谢！";
 //MARK: - in purchaseButtons.swift
 "purchase" = "购买";
 "restore" = "回复购买";
 "purchased" = "已购买";
-
+//MAKR: - in AboutOption.swift
+"about" = "关于";
 
 ////MARK: - back button
 //"back" = "返回";

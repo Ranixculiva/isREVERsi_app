@@ -117,11 +117,21 @@ class TestVC: UIViewController{
 //        //view5.titleLabel?.sizeToFit()
 //        view5.backgroundColor = .blue
 //        view5.sizeToFit()
-        let acv = UIActivityIndicatorView(frame: CGRect(x: 100, y: 100, width: 50, height: 50))
-        acv.style = .whiteLarge
-        acv.hidesWhenStopped = true
-        acv.startAnimating()
-        view.addSubview(acv)
+        let bounds = view.bounds
+        let W = bounds.width
+        let H = bounds.height
+        let b = CGFloat(10)
+        let B = CGFloat(20)
+        let bigView = UIView(frame: CGRect(x: b, y: b, width: W - 2*b, height: H-2*b))
+        bigView.backgroundColor = .green
+        let webView = WKWebView(frame: CGRect(x: B-b, y: B-b, width: W-2*B, height: H-2*B))
+        view.addSubview(bigView)
+        bigView.addSubview(webView)
+        let url = URL(string: "https://www.google.com.tw")!
+        let urlRe = URLRequest(url: url)
+        webView.load(urlRe)
+        webView.allowsBackForwardNavigationGestures = true
+        
         
         
     }
@@ -129,6 +139,7 @@ class TestVC: UIViewController{
         print("1")
     }
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.dismiss(animated: true, completion: nil)
+       // self.dismiss(animated: true, completion: nil)
     }
 }
+import WebKit

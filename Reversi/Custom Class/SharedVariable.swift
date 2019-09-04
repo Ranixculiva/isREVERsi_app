@@ -17,7 +17,7 @@ class SharedVariable{
     }
     //TODO: withAds = true
     static var isThereGameToLoad = false
-    static var withAds = false
+    static var withAds = true
     static var needToGuide = false
     static var flips = 0{
         didSet{
@@ -43,7 +43,7 @@ class SharedVariable{
         if let languageRawValue = UserDefaults.standard.value(forKey: key.language.rawValue) as! String?{
             language =  lang(rawValue: languageRawValue) ?? language
         }
-        withAds = KeychainWrapper.standard.bool(forKey: key.withAds.rawValue) ?? withAds
+        //withAds = KeychainWrapper.standard.bool(forKey: key.withAds.rawValue) ?? withAds
         flips = KeychainWrapper.standard.integer(forKey: key.flips.rawValue) ?? flips
         
     }

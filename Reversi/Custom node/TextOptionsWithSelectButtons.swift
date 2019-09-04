@@ -86,4 +86,11 @@ class TextOptionsWithSelectButtons: SKNode, FetchValueDelegate {
     fileprivate func showCurrentTextOption(value: Int){
         labels[value].isHidden = false
     }
+    override var frame: CGRect{
+        let x = leftButton.frame.minX
+        let y = leftButton.frame.minY
+        let w = rightButton.frame.maxX - leftButton.frame.minX
+        let h = max(leftButton.frame.maxY, rightButton.frame.maxY) - min(leftButton.frame.minY, rightButton.frame.minY)
+        return CGRect(x: x, y: y, width: w, height: h)
+    }
 }

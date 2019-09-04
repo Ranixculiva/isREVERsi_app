@@ -83,6 +83,8 @@ class TitleScene: SKScene{
     }
     var currentGuide = guideKey.welcome
     fileprivate func touchUpOnBackgroundGrids(){
+        
+        
         var scene = SKScene()
         switch UI.logoSwitch.currentState {
         case .black:
@@ -101,28 +103,38 @@ class TitleScene: SKScene{
             scene.gameSize = currentGameSize.rawValue
         }
         scene.scaleMode = .aspectFill
-        guard let view = view else{return}
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
-        view.ignoresSiblingOrder = true
+        
+        
+        if SharedVariable.isThereGameToLoad{
+            let continueMessage = MessageViewController(
+                title: UI.Texts.continueMessage.title,
+                message: UI.Texts.continueMessage.text,
+                actions: [
+                    MessageAction(
+                        title: UI.Texts.continueMessage.default,
+                        style: .default,
+                        handler: {self.continueTheLastGame()}),
+                    MessageAction(
+                        title: UI.Texts.continueMessage.cancel,
+                        style: .cancel,
+                        handler: {
+                            guard let view = self.view else{return}
+                            view.presentScene(scene)})
+                ]
+            )
+            UI.rootViewController?.present(continueMessage, animated: true)
+            
+        }
+        else{
+            guard let view = view else{return}
+            view.presentScene(scene)
+        }
+        
     }
     ////m
     fileprivate var helpMessage: MessageViewController!
     fileprivate var doesClickOnHelpMessageDefaultButton = true
-    ////m
-    override func didMove(to view: SKView) {
-        
-        anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        self.size = CGSize(width: view.frame.size.width * UIScreen.main.scale,height: view.frame.size.height * UIScreen.main.scale)
-        //backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
-        ////m
-        //set up guide gesture
-        guideGesture = GestureGuide(color: UI.gestureGuideStrokeColor)
-        addChild(guideGesture)
-        guideGesture.position.y = (-UI.gridSize/2 + UI.menuIconSize.height/2 + UI.getMenuIconPosition(indexFromLeft: 0, numberOfMenuIcon: 1).y)/2
-        guideGesture.zPosition = UI.zPosition.gestureGuide
-        guideGesture.isHidden = true
-        
-        
+    fileprivate func drawBackground(){
         //set up background
         UIGraphicsBeginImageContext(size)
         let bgCtx = UIGraphicsGetCurrentContext()
@@ -140,11 +152,34 @@ class TitleScene: SKScene{
         
         guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
         bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+        
+        //add pattern
+        UI.addPattern(to: bgCtx)
+        //UI.addHappyPattern(to: bgCtx)
+        
         let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         let background = SKSpriteNode(texture: SKTexture(image: backgroundImage!))
         background.zPosition = UI.zPosition.background
         addChild(background)
+    }
+    
+    ////m
+    override func didMove(to view: SKView) {
+        
+        anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        self.size = CGSize(width: view.frame.size.width * UIScreen.main.scale,height: view.frame.size.height * UIScreen.main.scale)
+        //backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
+        ////m
+        //set up guide gesture
+        guideGesture = GestureGuide(color: UI.gestureGuideStrokeColor)
+        addChild(guideGesture)
+        guideGesture.position.y = (-UI.gridSize/2 + UI.menuIconSize.height/2 + UI.getMenuIconPosition(indexFromLeft: 0, numberOfMenuIcon: 1).y)/2
+        guideGesture.zPosition = UI.zPosition.gestureGuide
+        guideGesture.isHidden = true
+        
+        drawBackground()
+        
         ///test gestureGuide
         //        let gestureGuide = GestureGuide(color: UI.gestureGuideStrokeColor)
         //        gestureGuide.zPosition = UI.zPosition.gestureGuide
@@ -295,28 +330,14 @@ class TitleScene: SKScene{
 //        addChild(scoreLabel)
         ////test scoreLabel
         
-        //MARK: set up loadingPhase
-        loadingPhase = SKSpriteNode(color: UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1), size: size)
-        let loadingText = SKLabelNode(text: UI.Texts.loading)
-        loadingText.fontName = UI.loadingTextFontName
-        loadingText.fontSize = UI.fontSize.loadingPhase
-        loadingPhase.addChild(loadingText)
-        loadingPhase.zPosition = UI.zPosition.loadingPahse
-        //addChild(loadingPhase)
+
         loadAllGuideTexts()
         //MARK: set up messageViewControllers
         //MARK: set up loadAlert
         setupLoadAlert()
-        
-        //addChild(loadAlert)
-        //loadAlert.isHidden = true
-        
-        //removeChildren(in: [loadingPhase])
         if SharedVariable.needToGuide{
             self.guide(textPosition: CGPoint.zero, key: .welcome)
         }
-        
-        
         
         
         isUserInteractionEnabled = true
@@ -725,7 +746,12 @@ class TitleScene: SKScene{
         
         
         //TODO: alert no game to load
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        UI.rootViewController?.present(UI.loadingVC, animated: true){
+            view.presentScene(scene)
+            scene.run(SKAction.wait(forDuration: 0.1)){
+                UI.loadingVC.dismiss(animated: true, completion: nil)
+            }
+        }
     }
     fileprivate func guideLitByRoundedRectangle(nodesToLight: [SKNode], lightRegion: CGRect, cornerRadius: CGFloat,key: guideKey){
         if nodesToLight.isEmpty{fatalError("empty nodeToLights")}

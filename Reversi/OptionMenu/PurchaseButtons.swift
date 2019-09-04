@@ -32,6 +32,7 @@ class PurchaseButtons: SKNode {
         self.isUserInteractionEnabled = true
         //MARK: set up purchased button
         purchasedButton = Button(buttonColor: UI.purchasedButtonColor, cornerRadius: UI.purchasedButtonCornerRadius)!
+        purchasedButton.fontColor = purchasedButton.fontColor?.withAlphaComponent(0.5)
         purchasedButton.fontSize = UI.purchasedButtonFontSize
         purchasedButton.zPosition = UI.zPosition.purchasedButton
         purchasedButton.text = UI.Texts.purchased
@@ -54,11 +55,11 @@ class PurchaseButtons: SKNode {
         
         //MARK: set up restore button
         restoreButton = Button(buttonColor: UI.restoreButtonColor, cornerRadius: UI.restoreButtonCornerRadius)!
-        restoreButton.position.x = 150
         restoreButton.isUserInteractionEnabled = false
         restoreButton.fontSize = UI.restoreButtonFontSize
         restoreButton.zPosition = UI.zPosition.restoreButton
         restoreButton.text = UI.Texts.restore
+        restoreButton.position.x = purchaseButton.frame.maxX + UI.purchaseButtonsSpacing + restoreButton.frame.width/2
         addChild(restoreButton)
         
         
@@ -87,11 +88,11 @@ class PurchaseButtons: SKNode {
     fileprivate var isRestoreButtonEnabled = false
     fileprivate func enableRestoreButton(){
         isRestoreButtonEnabled = true
-        restoreButton.alpha = 1
+        restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(1)
     }
     fileprivate func disableRestoreButton(){
         isRestoreButtonEnabled = false
-        restoreButton.alpha = 0.5
+        restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(0.5)
     }
     fileprivate func fetchProductInformation() {
         // First, let's check whether the user is allowed to make purchases. Proceed if they are allowed. Display an alert, otherwise.
@@ -136,18 +137,61 @@ class PurchaseButtons: SKNode {
         }
         print("purchaseButton has been pressed!")
     }
-    
+    fileprivate var origin = CGPoint.zero
+    fileprivate var hasMoved = false
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first{
-            let pos = touch.location(in: self)
-            let node = atPoint(pos)
-            if purchaseButton.nodesTouched.contains(node){
-                purchase()
+            hasMoved = false
+            origin = touch.location(in: self)
+            
+            
+            if purchaseButton.contains(origin), !purchaseButton.isHidden{
+                purchaseButton.fontColor = purchaseButton.fontColor?.withAlphaComponent(0.5)
             }
-            else if restoreButton.nodesTouched.contains(node){
-                restore()
+            else if restoreButton.contains(origin), isRestoreButtonEnabled, !restoreButton.isHidden{
+                restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(0.5)
+            }
+    
+        }
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first{
+            let pos = touch.location(in: self)
+            if (pos - origin).norm > 10{
+                hasMoved = true
+            }
+            if purchaseButton.contains(pos), !purchaseButton.isHidden{
+                purchaseButton.fontColor = purchaseButton.fontColor?.withAlphaComponent(0.5)
+                restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(1)
+            }
+            else if restoreButton.contains(pos), isRestoreButtonEnabled, !restoreButton.isHidden{
+                purchaseButton.fontColor = purchaseButton.fontColor?.withAlphaComponent(1)
+                restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(0.5)
+            }
+            else if !purchaseButton.isHidden, !restoreButton.isHidden{
+                purchaseButton.fontColor = purchaseButton.fontColor?.withAlphaComponent(1)
+                restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(1)
+            }
+            
+        }
+    }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let touch = touches.first{
+            purchaseButton.fontColor = purchaseButton.fontColor?.withAlphaComponent(1)
+            restoreButton.fontColor = restoreButton.fontColor?.withAlphaComponent(1)
+            let pos = touch.location(in: self)
+            if !hasMoved{
+                if purchaseButton.contains(pos), !purchaseButton.isHidden{
+                    purchase()
+                }
+                else if restoreButton.contains(pos), !restoreButton.isHidden{
+                    restore()
+                }
             }
         }
+    }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touchesBegan(touches, with: event)
     }
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

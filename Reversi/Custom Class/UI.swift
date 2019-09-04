@@ -246,6 +246,18 @@ class UI {
     static var difficultySelectorButtonSize: CGSize{
         return CGSize(width: fontSize.difficultySelector/2, height: fontSize.difficultySelector)
     }
+    static var backgroundPatternNumberOfColumns: CGFloat{
+        return floor(frameWidth/2/(gridSize/12))*2+1
+    }
+    static var backgroundPatternCellWidth: CGFloat{
+        return rootSize.width/backgroundPatternNumberOfColumns
+    }
+    static var backgroundPatternNumberOfRows: CGFloat{
+        return (rootSize.height/rootSize.width * 14).rounded()
+    }
+    static var backgroundPatternCellHeight: CGFloat{
+        return rootSize.height/backgroundPatternNumberOfRows
+    }
     //MARK: - fontName
     enum fontName: String{
         case PingFangSCSemibold = "PingFang-SC-Semibold"
@@ -276,7 +288,7 @@ class UI {
     }
     //MARK: in LevelSelectScene
     static var difficultySelectorFontName: String{
-        return (isLanguageEn ? fontName.ChalkboardSEBold:fontName.PingFangSCSemibold).rawValue
+        return fontName.ChalkboardSEBold.rawValue
     }
     static var levelLabelFontName: String{
         return (isLanguageEn ? fontName.ChalkboardSEBold:fontName.PingFangSCSemibold).rawValue
@@ -341,6 +353,16 @@ class UI {
     static var modeSelectorButtonSize: CGSize{
         return difficultySelectorButtonSize
     }
+    //MARK: - about button
+    static var aboutButtonColor: UIColor{
+        return .white
+    }
+    static var aboutButtonCornerRadius: CGFloat{
+        return loadButtonCornerRadius
+    }
+    static var aboutButtonFontSize: CGFloat{
+        return loadButtonFontSize
+    }
     //MARK: - purchased button
     static var purchasedButtonColor: UIColor{
         return .white
@@ -352,6 +374,9 @@ class UI {
         return UI.loadButtonFontSize
     }
     //MARK: - purchase button
+    static var purchaseButtonsSpacing: CGFloat{
+        return optionMenuSpacing
+    }
     static var purchaseButtonColor: UIColor{
         return .white
     }
@@ -551,6 +576,10 @@ class UI {
                 static var default_: String{return "message.earnFlips.default".localized()}
                 static var destructive: String{return "message.earnFlips.destructive".localized()}
             }
+            struct about{
+                static var title: String{return "message.about.title".localized()}
+                static var `default`: String{return "message.about.default".localized()}
+            }
         }
         //MARK: in LevelSelectScene.swift
         static func level(_ level: Int) -> String{
@@ -569,9 +598,169 @@ class UI {
             static var text: String{return "noGameToLoad.text".localized()}
             static var defaultAction: String{return "noGameToLoad.defaultAction".localized()}
         }
+        struct continueMessage{
+            static var title: String{
+                return "continueMessage.title".localized()
+            }
+            static var text: String{
+                return "continueMessage.text".localized()
+            }
+            static var `default`: String{
+                return "continueMessage.default".localized()
+            }
+            static var cancel: String{
+                return "continueMessage.cancel".localized()
+            }
+        }
         //MARK: in purchaseButtons.swift
         static var purchase: String{return "purchase".localized()}
         static var restore: String{return "restore".localized()}
         static var purchased: String{return "purchased".localized()}
+        //MARK: in aboutButton.swift
+        static var about: String{return "about".localized()}
+    }
+    
+    enum patternColorType{
+        case white, half, black
+    }
+    class func addPattern(to bgCtx: CGContext?, type: patternColorType = .half){
+        let patternsWidth = type == .half ? frameWidth/2 : frameWidth
+        let rightPartX = type == .half ? frameWidth/2 : 0
+        var drawPattern: CGPatternDrawPatternCallback
+        var callbacks: CGPatternCallbacks
+        var pattern: CGPattern!
+        var alpha = CGFloat(0.1)
+        let patternSpace = CGColorSpace(patternBaseSpace: nil)!
+        //left part
+        if type == .white || type == .half{
+            drawPattern = { _, context  in
+                let pattern = CGMutablePath()
+                let width = UI.backgroundPatternCellWidth
+                let height = UI.backgroundPatternCellHeight
+                let topVertex = CGPoint(x: width/2, y: height)
+                let rightVertex = CGPoint(x: width, y: height/2)
+                let bottomVertex = CGPoint(x: width/2, y: 0)
+                let leftVertex = CGPoint(x: 0, y: height/2)
+                pattern.addLines(between: [topVertex, rightVertex, bottomVertex, leftVertex, topVertex])
+                context.addPath(pattern)
+                context.setFillColor(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 1))
+                context.fillPath()
+            }
+            callbacks = CGPatternCallbacks(version: 0, drawPattern: drawPattern, releaseInfo: nil)
+            pattern = CGPattern(info: nil, bounds: CGRect(origin: .zero, size: CGSize(width: UI.backgroundPatternCellWidth, height: UI.backgroundPatternCellHeight)), matrix: .identity, xStep: UI.backgroundPatternCellWidth, yStep: UI.backgroundPatternCellHeight, tiling: .constantSpacing, isColored: true, callbacks: &callbacks)
+            alpha = CGFloat(0.1)
+            bgCtx?.setFillColorSpace(patternSpace)
+            bgCtx?.setFillPattern(pattern, colorComponents: &alpha)
+            bgCtx?.fill(CGRect(x: 0, y: 0, width: patternsWidth, height: frameHeight))
+        }
+        //right part
+        if type == .black || type == .half{
+            drawPattern = { _, context  in
+                let pattern = CGMutablePath()
+                let width = UI.backgroundPatternCellWidth
+                let height = UI.backgroundPatternCellHeight
+                let topVertex = CGPoint(x: width/2, y: height)
+                let rightVertex = CGPoint(x: width, y: height/2)
+                let bottomVertex = CGPoint(x: width/2, y: 0)
+                let leftVertex = CGPoint(x: 0, y: height/2)
+                pattern.addLines(between: [topVertex, rightVertex, bottomVertex, leftVertex, topVertex])
+                context.addPath(pattern)
+                context.setFillColor(#colorLiteral(red: 0, green: 0, blue: 0, alpha: 1))
+                context.fillPath()
+            }
+            callbacks = CGPatternCallbacks(version: 0, drawPattern: drawPattern, releaseInfo: nil)
+            pattern = CGPattern(info: nil, bounds: CGRect(origin: .zero, size: CGSize(width: UI.backgroundPatternCellWidth, height: UI.backgroundPatternCellHeight)), matrix: .identity, xStep: UI.backgroundPatternCellWidth, yStep: UI.backgroundPatternCellHeight, tiling: .constantSpacing, isColored: true, callbacks: &callbacks)
+            alpha = 0.05
+            bgCtx?.setFillColorSpace(patternSpace)
+            bgCtx?.setFillPattern(pattern, colorComponents: &alpha)
+            bgCtx?.fill(CGRect(x: rightPartX, y: 0, width: patternsWidth, height: frameHeight))
+        }
+    }
+    static var happyPatternCellWidth: CGFloat{
+        return backgroundPatternCellWidth*2
+    }
+    static var happyPatternCellHeight: CGFloat{
+        return happyPatternCellWidth
+    }
+    static var happyPatternCircleRadius: CGFloat{
+        return happyPatternCellWidth/4
+    }
+    class func addHappyPattern(to bgCtx: CGContext?){
+        var drawPattern: CGPatternDrawPatternCallback
+        var callbacks: CGPatternCallbacks
+        var pattern: CGPattern!
+        var alpha = CGFloat(0.1)
+        let patternSpace = CGColorSpace(patternBaseSpace: nil)!
+        //left part
+        drawPattern = { _, context  in
+            let width = UI.happyPatternCellWidth
+            let height = UI.happyPatternCellHeight
+            let radius = UI.happyPatternCircleRadius
+            let pattern = UIBezierPath(ovalIn: CGRect(x: width/2 - radius, y: height/2 - radius, width: 2*radius, height: 2*radius))
+            context.addPath(pattern.cgPath)
+            
+            context.saveGState()
+            pattern.addClip()
+            context.clip()
+            let bgColorSpace = CGColorSpaceCreateDeviceRGB()
+            let colors = [#colorLiteral(red: 1, green: 1, blue: 1, alpha: 0.75).cgColor,#colorLiteral(red: 1, green: 1, blue: 1, alpha: 0.25).cgColor,#colorLiteral(red: 1, green: 1, blue: 1, alpha: 0.1336151541).cgColor] as CFArray
+            let locations: [CGFloat] = [0,0.5,1]
+            let gradient = CGGradient(colorsSpace: bgColorSpace, colors: colors, locations: locations)!
+            context.drawLinearGradient(gradient, start: CGPoint(x: 0, y: height/2 - radius), end: CGPoint(x: 0, y: height/2 + radius), options: .drawsAfterEndLocation)
+            context.restoreGState()
+            //.setFillColor(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 1))
+            //context.fillPath()
+        }
+        callbacks = CGPatternCallbacks(version: 0, drawPattern: drawPattern, releaseInfo: nil)
+        pattern = CGPattern(info: nil, bounds: CGRect(origin: .zero, size: CGSize(width: UI.happyPatternCellWidth, height: UI.happyPatternCellHeight)), matrix: .identity, xStep: UI.happyPatternCellWidth, yStep: UI.happyPatternCellHeight, tiling: .constantSpacing, isColored: true, callbacks: &callbacks)
+        alpha = CGFloat(0.1)
+        bgCtx?.setFillColorSpace(patternSpace)
+        bgCtx?.setFillPattern(pattern, colorComponents: &alpha)
+        bgCtx?.fill(CGRect(x: 0, y: 0, width: frameWidth, height: frameHeight))
+        
+    }
+    static var sadPatternCellWidth: CGFloat{
+        return backgroundPatternCellWidth*2
+    }
+    static var sadPatternCellHeight: CGFloat{
+        return happyPatternCellWidth
+    }
+    static var sadPatternLineEndPoints: [CGPoint]{
+        let start = CGPoint(x: sadPatternLineWidth, y: sadPatternLineWidth)
+        let end = CGPoint(x: sadPatternCellWidth/2, y: sadPatternCellHeight - sadPatternLineWidth)
+        return [start, end]
+    }
+    static var sadPatternLineWidth: CGFloat{
+        return sadPatternCellWidth/20
+    }
+    class func addSadPattern(to bgCtx: CGContext?){
+        var drawPattern: CGPatternDrawPatternCallback
+        var callbacks: CGPatternCallbacks
+        var pattern: CGPattern!
+        var alpha = CGFloat(0.1)
+        let patternSpace = CGColorSpace(patternBaseSpace: nil)!
+        //left part
+        drawPattern = { _, context  in
+            context.setStrokeColor(UIColor.black.cgColor)
+            context.setLineWidth(UI.sadPatternLineWidth)
+            context.strokeLineSegments(between: UI.sadPatternLineEndPoints)
+        }
+        callbacks = CGPatternCallbacks(version: 0, drawPattern: drawPattern, releaseInfo: nil)
+        pattern = CGPattern(info: nil, bounds: CGRect(origin: .zero, size: CGSize(width: UI.sadPatternCellWidth, height: UI.sadPatternCellHeight)), matrix: .identity, xStep: UI.sadPatternCellWidth, yStep: UI.sadPatternCellHeight, tiling: .constantSpacing, isColored: true, callbacks: &callbacks)
+        alpha = CGFloat(0.1)
+        bgCtx?.setFillColorSpace(patternSpace)
+        bgCtx?.setFillPattern(pattern, colorComponents: &alpha)
+        bgCtx?.fill(CGRect(x: 0, y: 0, width: frameWidth, height: frameHeight))
+        
+    }
+    class func addLinearGradient(to bgCtx: CGContext?, colors: [UIColor], locations: [CGFloat], start: CGPoint, end: CGPoint){
+        let bgColorSpace = CGColorSpaceCreateDeviceRGB()
+        
+        let bgColors = colors as CFArray
+        
+        let bgColorsLocations: [CGFloat] = locations
+        
+        guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
+        bgCtx?.drawLinearGradient(bgGradient, start: start, end: end, options: .drawsAfterEndLocation)
     }
 }

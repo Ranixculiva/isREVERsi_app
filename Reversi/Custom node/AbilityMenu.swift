@@ -187,7 +187,7 @@ class AbilityMenu: SKSpriteNode{
             touchOrigin = pos
             let node = atPoint(pos)
             if let node = node as? SKSpriteNode{
-                if let itemNumber = itemSpriteNodes.index(of: node){
+                if let itemNumber = itemSpriteNodes.firstIndex(of: node){
                     currentItemNumber = itemNumber
                     node.alpha = 0.5
                 }
@@ -203,7 +203,7 @@ class AbilityMenu: SKSpriteNode{
             let node = atPoint(pos)
             itemSpriteNodes[currentItemNumber].alpha = isActive ? 1:0.5
             if let node = node as? SKSpriteNode{
-                if let itemNumber = itemSpriteNodes.index(of: node){
+                if let itemNumber = itemSpriteNodes.firstIndex(of: node){
                     currentItemNumber = itemNumber
                     node.alpha = 0.5
                 }
@@ -217,7 +217,7 @@ class AbilityMenu: SKSpriteNode{
             let node = atPoint(pos)
             itemSpriteNodes[currentItemNumber].alpha = isActive ? 1:0.5
             if let node = node as? SKSpriteNode{
-                if let itemNumber = itemSpriteNodes.index(of: node){
+                if let itemNumber = itemSpriteNodes.firstIndex(of: node){
                     if currentItemNumber == itemNumber, !hasEverMovedMoreThanTenPx{
                         if isActive{handler(abilities[itemNumber])}
                         self.collapseAnimation()

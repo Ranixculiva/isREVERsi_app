@@ -46,10 +46,14 @@
 		D35473B922214DA200178015 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D35473B722214DA200178015 /* InfoPlist.strings */; };
 		D354FA6921C967D7009BF321 /* saveUtility.swift in Sources */ = {isa = PBXBuildFile; fileRef = D354FA6821C967D7009BF321 /* saveUtility.swift */; };
 		D3562D112232E36D00E94049 /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3562D102232E36D00E94049 /* Button.swift */; };
+		D360963D231FC93F00457C17 /* about.html in Resources */ = {isa = PBXBuildFile; fileRef = D360963F231FC93F00457C17 /* about.html */; };
+		D3609642231FD4A400457C17 /* termsAndConditions.html in Resources */ = {isa = PBXBuildFile; fileRef = D3609644231FD4A400457C17 /* termsAndConditions.html */; };
+		D3609647231FD4B400457C17 /* PrivacyPolicy.html in Resources */ = {isa = PBXBuildFile; fileRef = D3609649231FD4B400457C17 /* PrivacyPolicy.html */; };
 		D362569A22047198005206B8 /* background.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D362569922047198005206B8 /* background.mp3 */; };
 		D362569C22047740005206B8 /* musicPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D362569B22047740005206B8 /* musicPlayer.swift */; };
 		D36256A0220488A2005206B8 /* HintBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = D362569F220488A2005206B8 /* HintBubble.swift */; };
 		D36271E92212F20D00E2790F /* negative-circled-number.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D36271E82212F20D00E2790F /* negative-circled-number.ttf */; };
+		D36599B3231E3C7F00E6AA95 /* AboutOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36599B2231E3C7F00E6AA95 /* AboutOption.swift */; };
 		D365CFBB222840EE00A71444 /* FlipsIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D365CFBA222840EE00A71444 /* FlipsIndicator.swift */; };
 		D36866052225A69200236572 /* SharedVariable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36866042225A69200236572 /* SharedVariable.swift */; };
 		D36AC69B219C0EBC00069D17 /* extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36AC69A219C0EBC00069D17 /* extension.swift */; };
@@ -125,10 +129,20 @@
 		D35473BB22214DAF00178015 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D354FA6821C967D7009BF321 /* saveUtility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = saveUtility.swift; sourceTree = "<group>"; };
 		D3562D102232E36D00E94049 /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
+		D360963E231FC93F00457C17 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hans"; path = "zh-Hans.lproj/about.html"; sourceTree = "<group>"; };
+		D3609640231FC94600457C17 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hant"; path = "zh-Hant.lproj/about.html"; sourceTree = "<group>"; };
+		D3609641231FC94700457C17 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/about.html; sourceTree = "<group>"; };
+		D3609643231FD4A400457C17 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hant"; path = "zh-Hant.lproj/termsAndConditions.html"; sourceTree = "<group>"; };
+		D3609645231FD4A600457C17 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hans"; path = "zh-Hans.lproj/termsAndConditions.html"; sourceTree = "<group>"; };
+		D3609646231FD4AC00457C17 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/termsAndConditions.html; sourceTree = "<group>"; };
+		D3609648231FD4B400457C17 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hant"; path = "zh-Hant.lproj/PrivacyPolicy.html"; sourceTree = "<group>"; };
+		D360964A231FD4BA00457C17 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = "zh-Hans"; path = "zh-Hans.lproj/PrivacyPolicy.html"; sourceTree = "<group>"; };
+		D360964B231FD4BE00457C17 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = en; path = en.lproj/PrivacyPolicy.html; sourceTree = "<group>"; };
 		D362569922047198005206B8 /* background.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = background.mp3; sourceTree = "<group>"; };
 		D362569B22047740005206B8 /* musicPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = musicPlayer.swift; sourceTree = "<group>"; };
 		D362569F220488A2005206B8 /* HintBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintBubble.swift; sourceTree = "<group>"; };
 		D36271E82212F20D00E2790F /* negative-circled-number.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "negative-circled-number.ttf"; sourceTree = "<group>"; };
+		D36599B2231E3C7F00E6AA95 /* AboutOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutOption.swift; sourceTree = "<group>"; };
 		D365CFBA222840EE00A71444 /* FlipsIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipsIndicator.swift; sourceTree = "<group>"; };
 		D36866042225A69200236572 /* SharedVariable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedVariable.swift; sourceTree = "<group>"; };
 		D36AC69A219C0EBC00069D17 /* extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension.swift; sourceTree = "<group>"; };
@@ -236,6 +250,9 @@
 			isa = PBXGroup;
 			children = (
 				D325EE0323143A6400F01883 /* help.html */,
+				D360963F231FC93F00457C17 /* about.html */,
+				D3609644231FD4A400457C17 /* termsAndConditions.html */,
+				D3609649231FD4B400457C17 /* PrivacyPolicy.html */,
 			);
 			path = html;
 			sourceTree = "<group>";
@@ -274,9 +291,10 @@
 		D342BC3A22E590F700A10EDF /* OptionMenu */ = {
 			isa = PBXGroup;
 			children = (
+				D342BC3F22E5913B00A10EDF /* OptionMenu.swift */,
 				D342BC3D22E5912C00A10EDF /* LanguageOption.swift */,
 				D342BC4122E5915900A10EDF /* PurchaseButtons.swift */,
-				D342BC3F22E5913B00A10EDF /* OptionMenu.swift */,
+				D36599B2231E3C7F00E6AA95 /* AboutOption.swift */,
 			);
 			path = OptionMenu;
 			sourceTree = "<group>";
@@ -423,6 +441,7 @@
 				TargetAttributes = {
 					D31D04C92196BE5700B95A99 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1020;
 						SystemCapabilities = {
 							com.apple.DataProtection = {
 								enabled = 0;
@@ -462,6 +481,9 @@
 				D31D04D92196BE5700B95A99 /* Main.storyboard in Resources */,
 				D325EE0123143A6400F01883 /* help.html in Resources */,
 				D335829C2301270100618366 /* abilityHint.sks in Resources */,
+				D3609647231FD4B400457C17 /* PrivacyPolicy.html in Resources */,
+				D3609642231FD4A400457C17 /* termsAndConditions.html in Resources */,
+				D360963D231FC93F00457C17 /* about.html in Resources */,
 				D31D04D02196BE5700B95A99 /* GameScene.sks in Resources */,
 				D36271E92212F20D00E2790F /* negative-circled-number.ttf in Resources */,
 				D31D04DB2196BE5A00B95A99 /* Assets.xcassets in Resources */,
@@ -570,6 +592,7 @@
 				D3B5584921EB164400F96AE8 /* CustomSlider.swift in Sources */,
 				D36AC69B219C0EBC00069D17 /* extension.swift in Sources */,
 				D342BC3122E565E200A10EDF /* AppExtensions.swift in Sources */,
+				D36599B3231E3C7F00E6AA95 /* AboutOption.swift in Sources */,
 				D3B8EF732214642D003F78B4 /* UI.swift in Sources */,
 				D3CF0A7A224F687900F5FCA1 /* ScrollTextBox.swift in Sources */,
 				D342BC3C22E5911000A10EDF /* OptionMenuVC.swift in Sources */,
@@ -632,6 +655,36 @@
 				D35473BB22214DAF00178015 /* en */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		D360963F231FC93F00457C17 /* about.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D360963E231FC93F00457C17 /* zh-Hans */,
+				D3609640231FC94600457C17 /* zh-Hant */,
+				D3609641231FC94700457C17 /* en */,
+			);
+			name = about.html;
+			sourceTree = "<group>";
+		};
+		D3609644231FD4A400457C17 /* termsAndConditions.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D3609643231FD4A400457C17 /* zh-Hant */,
+				D3609645231FD4A600457C17 /* zh-Hans */,
+				D3609646231FD4AC00457C17 /* en */,
+			);
+			name = termsAndConditions.html;
+			sourceTree = "<group>";
+		};
+		D3609649231FD4B400457C17 /* PrivacyPolicy.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D3609648231FD4B400457C17 /* zh-Hant */,
+				D360964A231FD4BA00457C17 /* zh-Hans */,
+				D360964B231FD4BE00457C17 /* en */,
+			);
+			name = PrivacyPolicy.html;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -764,7 +817,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = F7JRK5LAD9;
 				INFOPLIST_FILE = "$(SRCROOT)/Reversi/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -772,7 +825,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.Ranixculiva.isREVERsi1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -786,7 +839,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = F7JRK5LAD9;
 				INFOPLIST_FILE = "$(SRCROOT)/Reversi/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -794,7 +847,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.Ranixculiva.isREVERsi1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

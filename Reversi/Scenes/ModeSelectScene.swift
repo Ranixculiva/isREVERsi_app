@@ -70,6 +70,8 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         
         guard let bgGradient = CGGradient(colorsSpace: bgColorSpace, colors: bgColors, locations: bgColorsLocations) else {fatalError("cannot set up background gradient.")}
         bgCtx?.drawLinearGradient(bgGradient, start: CGPoint(x: 0, y: size.height), end: CGPoint(x: 0, y: 0), options: .drawsAfterEndLocation)
+        
+        UI.addPattern(to: bgCtx)
         let backgroundImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         let background = SKSpriteNode(texture: SKTexture(image: backgroundImage!))
@@ -227,9 +229,11 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             //UI.logoSwitch.currentState = .half
-            UI.rootViewController?.present(UI.loadingVC, animated: false){
+            UI.rootViewController?.present(UI.loadingVC, animated: true){
                 view.presentScene(scene)
-                UI.loadingVC.dismiss(animated: true, completion: nil)
+                scene.run(SKAction.wait(forDuration: 0.1)){
+                    UI.loadingVC.dismiss(animated: true, completion: nil)
+                }
             }
             //view.presentScene(scene, transition: transition)
         }
