@@ -109,7 +109,12 @@ class SelectButtons: SKNode {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    deinit{
+        MusicPlayer.removePreparedMusic(music: .sfx(.goUp))
+        MusicPlayer.removePreparedMusic(music: .sfx(.goDown))
+    }
     fileprivate func increase(){
+        MusicPlayer.play(music: .sfx(.goUp))
         if isCyclic || value + 1 <= upperBound{
             value += 1
             if value > upperBound{
@@ -120,6 +125,7 @@ class SelectButtons: SKNode {
         print("increased value = ", value)
     }
     fileprivate func decrease(){
+        MusicPlayer.play(music: .sfx(.goDown))
         if isCyclic || value - 1 >= lowerBound{
             value -= 1
             if value < lowerBound{

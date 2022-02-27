@@ -8,19 +8,42 @@
 
 import UIKit
 import SpriteKit
+
+
+class HoleView: UIImageView{
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isUserInteractionEnabled = true
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let hole = UIBezierPath(ovalIn: CGRect(origin: self.center, size: CGSize(width: 100, height: 100)))
+        
+        
+        return hole.contains(point)
+    }
+    override init(image: UIImage?) {
+        super.init(image: image)
+    }
+    
+}
+
 class TestVC: UIViewController{
 
 
 //    @objc func touchUpInsideTheCloseButton(){
 //        self.dismiss(animated: true, completion: {})
 //    }
-//    override func loadView() {
-//        self.view = SKView()
-//
-//    }
+    override func loadView() {
+        self.view = HoleView(frame: UIScreen.main.bounds)
+    }
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         self.modalTransitionStyle = .crossDissolve
+        self.modalPresentationStyle = .overCurrentContext
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -117,29 +140,60 @@ class TestVC: UIViewController{
 //        //view5.titleLabel?.sizeToFit()
 //        view5.backgroundColor = .blue
 //        view5.sizeToFit()
-        let bounds = view.bounds
-        let W = bounds.width
-        let H = bounds.height
-        let b = CGFloat(10)
-        let B = CGFloat(20)
-        let bigView = UIView(frame: CGRect(x: b, y: b, width: W - 2*b, height: H-2*b))
-        bigView.backgroundColor = .green
-        let webView = WKWebView(frame: CGRect(x: B-b, y: B-b, width: W-2*B, height: H-2*B))
-        view.addSubview(bigView)
-        bigView.addSubview(webView)
-        let url = URL(string: "https://www.google.com.tw")!
-        let urlRe = URLRequest(url: url)
-        webView.load(urlRe)
-        webView.allowsBackForwardNavigationGestures = true
+//        let bounds = view.bounds
+//        let W = bounds.width
+//        let H = bounds.height
+//        let b = CGFloat(10)
+//        let B = CGFloat(20)
+//        let bigView = UIView(frame: CGRect(x: b, y: b, width: W - 2*b, height: H-2*b))
+//        bigView.backgroundColor = .green
+//        let webView = WKWebView(frame: CGRect(x: B-b, y: B-b, width: W-2*B, height: H-2*B))
+//        view.addSubview(bigView)
+//        bigView.addSubview(webView)
+//        let url = URL(string: "https://www.google.com.tw")!
+//        let urlRe = URLRequest(url: url)
+//        webView.load(urlRe)
+//        webView.allowsBackForwardNavigationGestures = true
         
+        UIGraphicsBeginImageContext(view!.frame.size)
+        let context = UIGraphicsGetCurrentContext()
+        context?.addPath(UIBezierPath(rect: view!.bounds).cgPath)
+        context?.addPath(UIBezierPath(ovalIn: CGRect(origin: view!.center, size: CGSize(width: 100, height: 100))).cgPath)
+        context?.setFillColor(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 0.8470588326).cgColor)
+        context?.fillPath(using: .evenOdd)
+
+
+        let image = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        let imageView = HoleView(image: image)
+        view.addSubview(imageView)
         
+        view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0.45)
         
     }
     @objc func didTapButton1(){
         print("1")
     }
+    weak var delegate: TouchDelegate? = nil
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
        // self.dismiss(animated: true, completion: nil)
+        delegate?.touchesEnded(touches, with: event)
+    }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        delegate?.touchesBegan(touches, with: event)
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        delegate?.touchesMoved(touches, with: event)
+    }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        delegate?.touchesCancelled(touches, with: event)
     }
 }
+protocol TouchDelegate: AnyObject {
+    func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)
+    func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)
+    func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?)
+    func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)
+}
+extension SKScene: TouchDelegate{}
 import WebKit

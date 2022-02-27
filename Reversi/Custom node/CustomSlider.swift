@@ -70,8 +70,7 @@ class CustomSlider: SKSpriteNode {
     }
     class func drawSlider(count: Int, barColor: SKColor, sliderColor: SKColor, barLength: CGFloat,barWidth: CGFloat, sliderPosition: CGFloat) -> SKTexture?{
         let size = CGSize(width: barLength + barWidth, height: barWidth)
-        UIGraphicsBeginImageContext(size)
-        
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         guard let context = UIGraphicsGetCurrentContext() else {
             return nil
         }
@@ -106,14 +105,17 @@ class CustomSlider: SKSpriteNode {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first{
             state = .begin
-            let integerLength = (barLength + barWidth) / CGFloat(count)
+            //let integerLength = (barLength + barWidth) / CGFloat(count)
             isActive = true
             originalPosition = touch.location(in: self).x + size.width * 0.5
             //if not click on the slider, then...
-            if floor(value) != floor(originalPosition / integerLength){
-                value = originalPosition / integerLength - 0.5
+            //if floor(value) != floor(originalPosition / integerLength){
+            if floor(value) != floor(originalPosition*CGFloat(count)/(barLength + barWidth)){
+                //value = originalPosition / integerLength - 0.5
+                value = originalPosition*CGFloat(count)/(barLength + barWidth) - 0.5
             }
-            else {value = floor(originalPosition / integerLength)}
+            //else {value = floor(originalPosition / integerLength)}
+            else {value = floor(originalPosition*CGFloat(count)/(barLength + barWidth))}
             originalValue = value
             originalPosition = originalPosition - size.width * 0.5
             NotificationCenter.default.post(name: NSNotification.Name(notificationName), object: nil)
@@ -124,17 +126,17 @@ class CustomSlider: SKSpriteNode {
             state = .move
             let offset = touch.location(in: self).x - originalPosition
 
-            let integerLength = (barLength + barWidth) / CGFloat(count)
+            //let integerLength = (barLength + barWidth) / CGFloat(count)
 
-            let valueOffset = offset / integerLength
-
+            //let valueOffset = offset / integerLength
+            let valueOffset = offset*CGFloat(count)/(barLength + barWidth)
             value = originalValue + valueOffset
 
             NotificationCenter.default.post(name: NSNotification.Name(notificationName), object: nil)
         }
     }
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first{
+        if touches.first != nil{
             state = .end
             isActive = false
             //set value to the nearest integer.
@@ -143,7 +145,7 @@ class CustomSlider: SKSpriteNode {
         }
     }
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first{
+        if touches.first != nil{
             state = .cancel
             isActive = false
             value = floor(value + 0.5)

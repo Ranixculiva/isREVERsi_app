@@ -621,8 +621,8 @@ struct Reversi: Codable, CustomStringConvertible{
         return score
     }
     mutating func translate(dx: Int = Reversi.translateDx, dy: Int = Reversi.translateDy){
-        var isColorWhiteCopy = isColorWhite
-        var gameBoardCopy = gameBoard
+        let isColorWhiteCopy = isColorWhite
+        let gameBoardCopy = gameBoard
         for row in 0...n-1{
             for col in 0...n-1{
                 let referenceRow = ((row - dy)%n + n)%n
@@ -824,7 +824,13 @@ struct Reversi: Codable, CustomStringConvertible{
         }
         guard let scoreMax = posVSscore.values.max() else {return nil}
         return posVSscore.filter{$0.value == scoreMax}.keys.randomElement()
-    }//TODO: Clear bug when with ability
+    }
+    
+    
+    
+    
+    
+    //TODO: Clear bug when with ability
     public mutating func bestSolutionOrigin(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool, weight: Weight = Weight()) -> chessBoardPos?{
         let currentCondition = self.currentCondition
         let abilityCoolDown = getAbilityCoolDown(isWhite: isColorWhiteNow)
@@ -1203,5 +1209,196 @@ struct Reversi: Codable, CustomStringConvertible{
 //        let max = firstStepMinLastScore.values.max()
 //        return firstStepMinLastScore.filter({$0.value == max}).keys.randomElement()
 //    }
+    public mutating func bestSolutionNew(isWhite: Bool, searchDepth: UInt = 1, stopFinding: inout Bool, weight: Weight = Weight()) -> chessBoardPos?{
+        
+        let currentCondition = self.currentCondition
+        let abilityCoolDown = getAbilityCoolDown(isWhite: isColorWhiteNow)
+        if abilityCoolDown == 0, Reversi.withAbility == .translate, currentCondition == .translate{
+            return nil
+        }
+        
+        //MARK: func alphaBetaMinMaxScore
+        func alphaBetaMinMaxScore(isMaximizer: Bool, alpha: Int? = nil, beta: Int? = nil, game: Reversi, depth: UInt) -> Int{
+            if searchDepth == 0{
+                return game.evaluation(weight: weight)
+            }
+
+            //MARK: initiate all stacks
+            var gameStack: [Reversi] = [game]
+            
+            var numberOfChildrenStack: [Int] = []
+            var isMaximizerStack: [Bool] = [isMaximizer]
+            var alphaStack: [Int?] = [alpha]
+            var betaStack: [Int?] = [beta]
+            var scoreStack: [Int?] = [nil]
+            
+            var depthStack: [UInt] = [depth]
+            
+            
+            
+            
+            var needToCleanUpStack = false
+            //MARK: loop
+            while !gameStack.isEmpty {
+                
+                let currentGame = gameStack.popLast()!
+                
+                //var currentScore: Int? = nil
+                
+                
+                var currentAlpha = alphaStack.last!
+                var currentBeta = betaStack.last!
+                
+                let currentDepth = depthStack.last!
+
+                
+                
+                
+                //MARK: clean up stack, update node score, alpha, beta.
+                if needToCleanUpStack{
+                    needToCleanUpStack = false
+                    gameStack.removeLast(numberOfChildrenStack.last!-1)
+                    let numberOfLoop = depthStack[depthStack.count-1 -  numberOfChildrenStack.last!] - currentDepth
+                    for i in 1...numberOfLoop{
+                        let numberOfChildren = numberOfChildrenStack.popLast()!
+                        let scoreToCalculate = scoreStack.suffix(numberOfChildren).map{$0!}
+                        scoreStack.removeLast(numberOfChildren+1)
+                        depthStack.removeLast(numberOfChildren+1)
+                        let isCurrentMaximizer = isMaximizerStack.popLast()!
+                        
+                        
+                        
+                        
+                        if isCurrentMaximizer{
+                            let score = scoreToCalculate.max()
+                            scoreStack.append(score)
+                        }
+                        else{
+                            let score = scoreToCalculate.min()
+                            scoreStack.append(score)
+                        }
+                        
+                        if i > 1{
+                            let score = scoreStack.last!
+                            currentAlpha = alphaStack.last!
+                            currentBeta = betaStack.last!
+                            alphaStack.removeLast(numberOfChildren)
+                            betaStack.removeLast(numberOfChildren)
+                            if isCurrentMaximizer{
+                                currentAlpha = currentAlpha == nil ? score : max(currentAlpha!, score!)
+                                //MARK: update alpha
+                                alphaStack[alphaStack.count-1] = currentAlpha
+                            }
+                            else{
+                                currentBeta = currentBeta == nil ? score : min(currentBeta!, score!)
+                                //MARK: update beta
+                                betaStack[betaStack.count-1] = currentBeta
+                            }
+                        }
+                        
+                    }
+                    
+                    //MARK: update alpha beta
+                    
+                }
+                else{
+                    //depthStack.removeLast(1)
+                    //MARK: append children to stacks.
+                    let abilityCoolDown = game.getAbilityCoolDown(isWhite: game.isColorWhiteNow)
+                    let needToBreak = abilityCoolDown == 0 && Reversi.withAbility == .translate && game.currentCondition == .translate
+                    let availableSteps = currentGame.availableSteps(isWhite: currentGame.isColorWhiteNow)
+                    
+                    var numberOfNode = 1
+                    
+                    for (i, step) in availableSteps.enumerated(){
+                        if stopFinding {return -1}
+                        
+                        numberOfNode = i + 1
+                        
+                        
+                       //MARK: append to game stack
+                        var currentGameTest = currentGame
+                        currentGameTest.play(Row: step.row, Col: step.col, isComputerWhite: isColorWhiteNow)
+                        gameStack.append(currentGameTest)
+                        
+                        
+                        
+                        
+                        //MARK: append to depthStack
+                        depthStack.append(currentDepth - 1)
+                        //MARK: leaf node
+                        if currentDepth-1 == 0 || currentGameTest.isEnd(){
+                            needToCleanUpStack = true
+                            let score = currentGameTest.evaluation(weight: weight)
+                            if isMaximizerStack.last!{
+                                currentAlpha = currentAlpha == nil ? score : max(currentAlpha!, score)
+                                //MARK: update alpha
+                                alphaStack[alphaStack.count-1] = currentAlpha
+                                
+                            }
+                            else{
+                                currentBeta = currentBeta == nil ? score : min(currentBeta!, score)
+                                //MARK: update beta
+                                betaStack[betaStack.count-1] = currentBeta
+                            }
+                            scoreStack.append(score)
+                        }
+                        //MARK: not leaf node
+                        else{
+                            
+                            //MARK: append to isMaximizerStack
+                           let isCurrentTestMaximizer = currentGameTest.isColorWhiteNow == isColorWhiteNow
+                        isMaximizerStack.append(isCurrentTestMaximizer)
+                            //MARK: append to alphaStack
+                            alphaStack.append(currentAlpha)
+                            //MARK: append to betaStack
+                            betaStack.append(currentBeta)
+                        }
+                        
+                        
+                        //MARK: alpha beta pruning
+                        if let currentAlpha = currentAlpha{
+                            if let currentBeta = currentBeta{
+                                if currentAlpha >= currentBeta{
+                                    break
+                                }
+                            }
+                        }
+                        //MARK: if translate, no need to unpack(still count one depth)
+                        if needToBreak{
+                            break
+                        }
+                    }
+                    
+                    //MARK: append to numberOfNodeStack
+                    numberOfChildrenStack.append(numberOfNode)
+                }
+                
+            }
+            
+            return scoreStack.first!!
+            
+        }
+        
+        
+        
+        var posVSscore: [chessBoardPos : Int] = [:]
+        for step in self.availableSteps(isWhite: isColorWhiteNow){
+            var game = self
+            game.play(Row: step.row, Col: step.col, isComputerWhite: isColorWhiteNow)
+            let isMaximizer = (game.isColorWhiteNow == isColorWhiteNow)
+            posVSscore[chessBoardPos(step)] = alphaBetaMinMaxScore(isMaximizer: isMaximizer, game: game, depth: searchDepth-1)
+            if stopFinding {return nil}
+        }
+        guard let scoreMax = posVSscore.values.max() else {return nil}
+        return posVSscore.filter{$0.value == scoreMax}.keys.randomElement()
+        
+        
+        
+    }
+    
+    
+    
+    
 }
 

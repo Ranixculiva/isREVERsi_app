@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D335829F230181F600618366 /* GameRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D335829E230181F600618366 /* GameRecorder.swift */; };
-		D33635EC2307CB6600ED4E0C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33635EB2307CB6600ED4E0C /* main.swift */; };
-		D3A2143423004C2A005E8A1D /* main00000000000.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A2143323004C2A005E8A1D /* main00000000000.swift */; };
+		D33635EC2307CB6600ED4E0C /* main000000.swift in Sources */ = {isa = PBXBuildFile; fileRef = D33635EB2307CB6600ED4E0C /* main000000.swift */; };
+		D3A2143423004C2A005E8A1D /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A2143323004C2A005E8A1D /* main.swift */; };
 		D3A2143B23004C59005E8A1D /* chessBoardPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A2143A23004C59005E8A1D /* chessBoardPosition.swift */; };
 		D3A2143D23004C64005E8A1D /* extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A2143C23004C64005E8A1D /* extension.swift */; };
 		D3A2143F23004C6C005E8A1D /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A2143E23004C6C005E8A1D /* Player.swift */; };
@@ -34,12 +34,12 @@
 /* Begin PBXFileReference section */
 		D335829E230181F600618366 /* GameRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameRecorder.swift; sourceTree = "<group>"; };
 		D33635EA2307A11E00ED4E0C /* res4.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = res4.rtf; sourceTree = "<group>"; };
-		D33635EB2307CB6600ED4E0C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		D33635EB2307CB6600ED4E0C /* main000000.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main000000.swift; sourceTree = "<group>"; };
 		D33799952307007100D3F863 /* res3.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = res3.rtf; sourceTree = "<group>"; };
 		D367927423045CE20064C05F /* results.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = results.rtf; sourceTree = "<group>"; };
 		D3679275230460EC0064C05F /* result2.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = result2.rtf; sourceTree = "<group>"; };
 		D3A2143023004C2A005E8A1D /* AITrainingCommandLineVersion */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = AITrainingCommandLineVersion; sourceTree = BUILT_PRODUCTS_DIR; };
-		D3A2143323004C2A005E8A1D /* main00000000000.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main00000000000.swift; sourceTree = "<group>"; };
+		D3A2143323004C2A005E8A1D /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D3A2143A23004C59005E8A1D /* chessBoardPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = chessBoardPosition.swift; sourceTree = "<group>"; };
 		D3A2143C23004C64005E8A1D /* extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension.swift; sourceTree = "<group>"; };
 		D3A2143E23004C6C005E8A1D /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
@@ -83,7 +83,7 @@
 		D3A2143223004C2A005E8A1D /* AITrainingCommandLineVersion */ = {
 			isa = PBXGroup;
 			children = (
-				D3A2143323004C2A005E8A1D /* main00000000000.swift */,
+				D3A2143323004C2A005E8A1D /* main.swift */,
 				D3A2143A23004C59005E8A1D /* chessBoardPosition.swift */,
 				D3A2143C23004C64005E8A1D /* extension.swift */,
 				D3A2143E23004C6C005E8A1D /* Player.swift */,
@@ -92,7 +92,7 @@
 				D3A2144423004E6E005E8A1D /* main0000.swift */,
 				D3A214462300842C005E8A1D /* mainBK.swift */,
 				D335829E230181F600618366 /* GameRecorder.swift */,
-				D33635EB2307CB6600ED4E0C /* main.swift */,
+				D33635EB2307CB6600ED4E0C /* main000000.swift */,
 			);
 			path = AITrainingCommandLineVersion;
 			sourceTree = "<group>";
@@ -161,8 +161,8 @@
 				D3A2143B23004C59005E8A1D /* chessBoardPosition.swift in Sources */,
 				D3A2144323004C80005E8A1D /* weight.swift in Sources */,
 				D335829F230181F600618366 /* GameRecorder.swift in Sources */,
-				D33635EC2307CB6600ED4E0C /* main.swift in Sources */,
-				D3A2143423004C2A005E8A1D /* main00000000000.swift in Sources */,
+				D33635EC2307CB6600ED4E0C /* main000000.swift in Sources */,
+				D3A2143423004C2A005E8A1D /* main.swift in Sources */,
 				D3A2144123004C77005E8A1D /* Reversi.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

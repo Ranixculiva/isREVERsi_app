@@ -22,7 +22,7 @@ class GestureGuide: SKSpriteNode{
         self.isOnTouch = isOnTouch
     }
     func gestureGuideTexture(innerCircleRadiusRatio: CGFloat = 0.5) -> SKTexture{
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         let bounds = CGRect(x: strokeWidth/2, y: strokeWidth/2, width: size.width - strokeWidth, height: size.height - strokeWidth)
         context.setLineWidth(strokeWidth)

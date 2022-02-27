@@ -542,7 +542,7 @@ public struct Reversi: Codable, CustomStringConvertible{
             translate()
             setAbilityCoolDown(isWhite: isColorWhiteNow, duration: 3)
             self.isColorWhiteNow = !self.isColorWhiteNow
-            print("translate")
+            //print("translate")
             turn += 1
         }
         else if self.fillColoredNumber(Row: row, Col: col, isWhite: self.isColorWhiteNow){

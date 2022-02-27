@@ -57,13 +57,42 @@ import SpriteKit
 //}
 //print("done")
 class A{
-    
+    enum a: Equatable {
+        static func == (lhs: A.a, rhs: A.a) -> Bool {
+            switch (lhs,rhs){
+            case (.c(let c1), .c(let c2)):
+                return c1 == c2
+            case (.b(let b1), .b(let b2)):
+                switch(b1,b2){
+                case (.c(let c1),.c(let c2)):
+                    return c1 == c2
+                case (.d,.d):
+                    return true
+                default:
+                    return false
+                }
+            default:
+                return false
+            }
+            
+        }
+        
+        case c(C)
+        case b(B)
+        
+        
+        enum B{
+            case c(C)
+            case d
+            enum C{
+                case d
+                case e
+            }
+        }
+        enum C{
+            case d
+            case e
+        }
+    }
 }
-var a: A!
-a = A()
-print(type(of: a))
-for i in 0...10{
-    var a = A()
-}
-print("done")
-
+print(A.a.b(.d) == A.a.b(.d))

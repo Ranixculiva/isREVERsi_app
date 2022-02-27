@@ -10,17 +10,23 @@ import UIKit
 import SpriteKit
 import GameplayKit
 import GoogleMobileAds
+import AVFoundation
+
 
 class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBasedVideoAdDelegate {
-    fileprivate let rewardBasedVideoAdUnitID = "ca-app-pub-3940256099942544/1712485313"
-    fileprivate let interstitialAdUnitID = "ca-app-pub-3940256099942544/4411468910"
+    fileprivate let rewardBasedVideoAdUnitID = "ca-app-pub-5566504586304400/2641675987"
+    fileprivate let interstitialAdUnitID = "ca-app-pub-5566504586304400/9620171398"
     var adRequestInProgress = false
     var rewardBasedVideo: GADRewardBasedVideoAd?
     func rewardBasedVideoAd(_ rewardBasedVideoAd: GADRewardBasedVideoAd, didRewardUserWith reward: GADAdReward) {
-        SharedVariable.flips += 1
+        SharedVariable.flips += [1,1,1,1,1,2,2,2,3].randomElement()!
     }
     func loadRewardedVideoAd(){
         if !adRequestInProgress && rewardBasedVideo?.isReady == false && SharedVariable.withAds {
+            //let request = GADRequest()
+            //request.testDevices = [ "8cff8799ea0549832397a370ff232f85" ]
+            //rewardBasedVideo?.load(request,
+            //                       withAdUnitID: rewardBasedVideoAdUnitID)
             rewardBasedVideo?.load(GADRequest(),
                                    withAdUnitID: rewardBasedVideoAdUnitID)
             adRequestInProgress = true
@@ -48,7 +54,7 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
     }
     
     func rewardBasedVideoAdDidOpen(_ rewardBasedVideoAd: GADRewardBasedVideoAd) {
-        musicPlayer.savePlayersState()
+        MusicPlayer.savePlayersState()
         print("Opened reward based video ad.")
     }
     
@@ -57,7 +63,7 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
     }
     
     func rewardBasedVideoAdDidClose(_ rewardBasedVideoAd: GADRewardBasedVideoAd) {
-        musicPlayer.restorePlayersState()
+        MusicPlayer.restorePlayersState()
         loadRewardedVideoAd()
         print("Reward based video ad is closed.")
         NotificationCenter.default.post(name: .rewardBasedVideoAdDidClose, object: nil)
@@ -111,29 +117,60 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
     func createAndLoadInterstitial() -> GADInterstitial {
         let interstitial = GADInterstitial(adUnitID: interstitialAdUnitID)
         interstitial.delegate = self
+        //let request = GADRequest()
+        //request.testDevices = [ "8cff8799ea0549832397a370ff232f85" ]
+        //interstitial.load(request)
         interstitial.load(GADRequest())
         return interstitial
     }
     func interstitialDidDismissScreen(_ ad: GADInterstitial) {
         interstitial = createAndLoadInterstitial()
-        musicPlayer.restorePlayersState()
+        MusicPlayer.restorePlayersState()
     }
     func interstitialWillPresentScreen(_ ad: GADInterstitial){
-        musicPlayer.savePlayersState()
+        MusicPlayer.savePlayersState()
     }
-
+    @objc func handleInterruption(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+        else { return }
+        switch type {
+        case .began:
+            MusicPlayer.savePlayersState()
+        case .ended:
+            MusicPlayer.restorePlayersState()
+        @unknown default:
+            break
+        }
+    }
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        interstitial = createAndLoadInterstitial()
+        GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = [ "8cff8799ea0549832397a370ff232f85" ]
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: nil)
         
-        rewardBasedVideo = GADRewardBasedVideoAd.sharedInstance()
-        rewardBasedVideo?.delegate = self
-        rewardBasedVideo?.load(GADRequest(), withAdUnitID: rewardBasedVideoAdUnitID)
         
         if SharedVariable.withAds{
+            interstitial = createAndLoadInterstitial()
+            
+            rewardBasedVideo = GADRewardBasedVideoAd.sharedInstance()
+            rewardBasedVideo?.delegate = self
+            
+            loadRewardedVideoAd()
+            
+            
             NotificationCenter.default.addObserver(self, selector: #selector(showAds), name: .showGoogleAds, object: nil)
             NotificationCenter.default.addObserver(self, selector: #selector(showRewardedVideoAd), name: .showRewardedVideos, object: nil)
+            bannerView = GADBannerView(adSize: kGADAdSizeBanner, origin: .zero)
+            bannerView?.adUnitID = "ca-app-pub-5566504586304400/1823840108"
+            bannerView?.rootViewController = self
+            //let request = GADRequest()
+            //request.testDevices = [ "8cff8799ea0549832397a370ff232f85" ]
+            //bannerView?.load(request)
+            bannerView?.load(GADRequest())
+            bannerView?.delegate = self
+        
         }
         
         
@@ -160,8 +197,8 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
             
             
             view.ignoresSiblingOrder = true
-            view.showsFPS = true
-            view.showsNodeCount = true
+//            view.showsFPS = true
+//            view.showsNodeCount = true
         }
 //        print(UIApplication.shared.delegate?.window??.safeAreaInsets.top)
 //        //TODO: prepare SharedVariable
@@ -203,4 +240,6 @@ class GameViewController: UIViewController, GADInterstitialDelegate, GADRewardBa
         NotificationCenter.default.removeObserver(self, name: .showGoogleAds, object: nil)
         NotificationCenter.default.removeObserver(self, name: .showRewardedVideos, object: nil)
     }
+    var bannerView: GADBannerView?
 }
+extension GameViewController: GADBannerViewDelegate{}

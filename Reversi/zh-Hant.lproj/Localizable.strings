@@ -18,7 +18,7 @@
 "help" = "說明";
 "option" = "選項";
 "state" = "狀態";
-"resign" = "投降";
+"resign" = "狀態";
 "back" = "返回";
 "share" = "分享";
 //MARK: guide
@@ -35,7 +35,7 @@
 ❀貨幣:
 ➥在isREVERsi中,我們使用｢翻｣作為貨幣單位,可以在完成挑戰時獲得,可以用於購買一些道具｡";
 ////m
-"guide.hint" = "在不明白的圖示上按住不放就會出現文字提示喔！";
+"guide.hint" = "在不明白的圖示上按住不放有時會出現文字提示喔！";
 "guide.logo.default" = "現在在標示上有黑白兩色，這代表的是兩人玩。若想要與電腦對戰，請在標示上滑動，選擇黑或白。現在請先選擇白色。";
 "guide.logo.destructive" = "現在在標示上有黑白兩色，這代表的是兩人玩。若想要與電腦對戰，請在標示上滑動，選擇黑或白。現在請先選擇黑色。";
 ////m
@@ -45,7 +45,7 @@
 //MARK: - help
 "message.help.title" = "說明";
 "message.help.default" = "謝謝!";
-"message.help.destructive" = "別吵!";
+"message.help.destructive" = "簡單!";
 //MARK: - undo
 "message.undo.title" = "警告";
 "message.undo.text" = "在此之後的紀錄將會消失。你確定要回到這一步嗎？";
@@ -70,11 +70,11 @@
 "LEVEL2" = "澤費羅斯";
 //MARK: - in ModeSelectScene.swift
 "ONLINE" = "線上遊玩";
-"OFFLINE" = "離線遊玩";
-"OFFLINEPARTY" = "離線派對";
+"OFFLINE" = "兩人玩";
+"OFFLINEPARTY" = "派對";
 "ONLINEPARTY" = "線上派對";
 //MARK: - in TitleScene.swift
-"loadGame" = "載入遊戲";
+"loadGame" = "繼續遊玩";
 "Loading..." = "載入中...";
 "noGameToLoad.title" = "TT";
 "noGameToLoad.text" = "沒有可載入的遊戲";
@@ -86,8 +86,13 @@
 "continueMessage.default" = "好啊，謝謝！";
 "continueMessage.cancel" = "之後再說，謝謝！";
 //MARK: - in purchaseButtons.swift
+"detail" = "去除廣告和悔棋限制";
 "purchase" = "購買";
 "restore" = "回復購買";
 "purchased" = "已購買";
 //MAKR: - in AboutOption.swift
 "about" = "關於";
+//MARK: - in TutorialOption.swift
+"tutorial" = "教學模式：";
+"on" = "開";
+"off" = "關";

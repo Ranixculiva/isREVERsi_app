@@ -46,27 +46,43 @@ class OptionMenuVC: UIViewController{
         view.insertSubview(optionMenuView, at: 1)
         
         //MARK: set up close button and action
-        let closeButton = UIButton(frame: UI.closeButtonFrame)
+        let closeButtonFrame = CGRect(
+            x: UI.frameWidth/2 - optionMenu.size.width/2 + UI.optionMenuSpacing/2,
+            y: UI.frameHeight/2 - optionMenu.size.height/2 + UI.optionMenuSpacing/2,
+            width: UI.closeButtonWidth,
+            height: UI.closeButtonHeight)
+        let closeButton = UIButton(frame: closeButtonFrame)
         closeButton.setBackgroundImage(#imageLiteral(resourceName: "close"), for: .normal)
         closeButton.addTarget(self, action: #selector(tapOnCloseButton), for: .touchUpInside)
         optionMenuView.insertSubview(closeButton, at: 10)
         
         //MARK: set up confirm button and action
-        let confirmButton = UIButton(frame: UI.confirmButtonFrame)
+        let confirmButtonFrame = CGRect(
+            x: UI.frameWidth/2 + optionMenu.size.width/2 - UI.optionMenuSpacing/2 - UI.confirmButtonWidth,
+            y: UI.frameHeight/2 - optionMenu.size.height/2 + UI.optionMenuSpacing/2,
+            width: UI.confirmButtonWidth,
+            height: UI.confirmButtonHeight)
+        let confirmButton = UIButton(frame: confirmButtonFrame)
         confirmButton.setBackgroundImage(#imageLiteral(resourceName: "confirm"), for: .normal)
         confirmButton.addTarget(self, action: #selector(tapOnConfirmButton), for: .touchUpInside)
         
         optionMenuView.insertSubview(confirmButton, at: 10)
         
         //MARK: save variables
+        optionMenu.savedVariables[.originalNeedToGuide] = SharedVariable.needToGuide
         optionMenu.savedVariables[.originalLanguageOption] = SharedVariable.language
+        optionMenu.savedVariables[.originalVolumeOption] = SharedVariable.bgmVolumeRatio
     }
     @objc func tapOnCloseButton(){
+        SharedVariable.needToGuide = optionMenu.savedVariables[.originalNeedToGuide]! as! Bool
+        SharedVariable.language = optionMenu.savedVariables[.originalLanguageOption]! as! SharedVariable.lang
+        SharedVariable.bgmVolumeRatio = optionMenu.savedVariables[.originalVolumeOption]! as! Float
         self.dismiss(animated: true){ [unowned self] in
             self.delegate?.didTapOnButton?(type: .close, sender: self.optionMenu)
         }
     }
     @objc func tapOnConfirmButton(){
+        SharedVariable.save()
         self.dismiss(animated: true){[unowned self] in
             self.delegate?.didTapOnButton?(type: .confirm, sender: self.optionMenu)
         }

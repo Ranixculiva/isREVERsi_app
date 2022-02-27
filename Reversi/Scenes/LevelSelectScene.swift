@@ -31,9 +31,9 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
         case .easy:
             return UInt(2)
         case .normal:
-            return UInt(4)
+            return gameSize == 8 ? UInt(3) : UInt(4)
         case .hard:
-            return UInt(4)
+            return gameSize == 8 ? UInt(3) : UInt(4)
         }
     }
     var currentLevel = 0
@@ -60,35 +60,8 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
     fileprivate func drawLevelPicture(_ level: Int, difficulty: Challenge.difficultyType = .easy) -> UIImage{
         let levelPictureSize = UI.levelPictureSize
         //MARK: draw a rounded frame for the picture
-        UIGraphicsBeginImageContext(levelPictureSize)
+        UIGraphicsBeginImageContextWithOptions(levelPictureSize, false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()
-        //draw corner according to the number of completed chanllenges.
-        let theCompletedNumbers = Challenge.getTheNumberOfCompletedChallenge(gameSize: gameSize, isColorWhite: !isComputerWhite, level: level+1, difficulty: difficulty)
-        if theCompletedNumbers > 0{
-            let rect = CGRect(x: levelPictureSize.width/2, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
-            let copper = UIColor(red: 184/255, green: 115/255, blue: 51/255, alpha: 1)
-            copper.setFill()
-            context?.fill(rect)
-            
-        }
-        if theCompletedNumbers > 1{
-            let rect = CGRect(x: 0, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
-            let silver = UIColor(red: 192/255, green: 192/255, blue: 192/255, alpha: 1)
-            silver.setFill()
-            context?.fill(rect)
-        }
-        if theCompletedNumbers > 2{
-            let rect = CGRect(x: levelPictureSize.width/2, y: 0, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
-            let gold = UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)
-            gold.setFill()
-            context?.fill(rect)
-        }
-        //            if theCompletedNumbers > 3{
-        //                let rect = CGRect(x: levelPictureSize.width/2, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
-        //                let copper = UIColor(red: 184/255, green: 115/255, blue: 51/255, alpha: 1)
-        //
-        //                context?.stroke(rect)
-        //            }
         
         
         
@@ -107,18 +80,79 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
         return levelImage
     }
     fileprivate func updateLevelPictures(_ difficulty: Challenge.difficultyType){
-        for i in 0...numberOfLevels - 1{
-            let levelImage = drawLevelPicture(i, difficulty: difficulty)
-            levelPictures[i].texture = SKTexture(image: levelImage)
+        for level in 0...numberOfLevels - 1{
+            let levelPicture = levelPictures[level]
+            levelPicture.removeAllChildren()
+            //draw corner according to the number of completed chanllenges.
+            let theCompletedNumbers = Challenge.getTheNumberOfCompletedChallenge(gameSize: gameSize, isColorWhite: !isComputerWhite, level: level+1, difficulty: difficulty)
+            if theCompletedNumbers > 0{
+                let image = #imageLiteral(resourceName: "crown_copper")
+                let width = 5/4*UI.levelPictureRoundedCornerRadius*sqrt(2)
+                let height = width
+                let crown = SKSpriteNode(texture: SKTexture(image: image), size: CGSize(width: width, height: height))
+                crown.anchorPoint = CGPoint(x: 0.5, y: 0)
+                let x = levelPicture.frame.width/2 - UI.levelPictureRoundedCornerRadius/2
+                let y = -levelPicture.frame.width/2 +  UI.levelPictureRoundedCornerRadius/2
+                crown.position = CGPoint(x: x, y: y)
+                crown.zRotation = -3/4*CGFloat.pi
+                crown.zPosition = 1
+                levelPicture.addChild(crown)
+//                let rect = CGRect(x: levelPictureSize.width/2, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+//                let copper = UIColor(red: 184/255, green: 115/255, blue: 51/255, alpha: 1)
+//                copper.setFill()
+//                context?.fill(rect)
+                
+            }
+            if theCompletedNumbers > 1{
+                let image = #imageLiteral(resourceName: "crown_silver")
+                let width = 5/4*UI.levelPictureRoundedCornerRadius*sqrt(2)
+                let height = width
+                let crown = SKSpriteNode(texture: SKTexture(image: image), size: CGSize(width: width, height: height))
+                crown.anchorPoint = CGPoint(x: 0.5, y: 0)
+                let x = -levelPicture.frame.width/2 + UI.levelPictureRoundedCornerRadius/2
+                let y = -levelPicture.frame.width/2 +  UI.levelPictureRoundedCornerRadius/2
+                crown.position = CGPoint(x: x, y: y)
+                crown.zRotation = 3/4*CGFloat.pi
+                crown.zPosition = 1
+                levelPicture.addChild(crown)
+//                let rect = CGRect(x: 0, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+//                let silver = UIColor(red: 192/255, green: 192/255, blue: 192/255, alpha: 1)
+//                silver.setFill()
+//                context?.fill(rect)
+            }
+            if theCompletedNumbers > 2{
+                let image = #imageLiteral(resourceName: "crown_gold")
+                let width = 5/4*UI.levelPictureRoundedCornerRadius*sqrt(2)
+                let height = width
+                let crown = SKSpriteNode(texture: SKTexture(image: image), size: CGSize(width: width, height: height))
+                crown.anchorPoint = CGPoint(x: 0.5, y: 0)
+                let x = levelPicture.frame.width/2 - UI.levelPictureRoundedCornerRadius/2
+                let y = levelPicture.frame.width/2 -  UI.levelPictureRoundedCornerRadius/2
+                crown.position = CGPoint(x: x, y: y)
+                crown.zRotation = -1/4*CGFloat.pi
+                crown.zPosition = 1
+                levelPicture.addChild(crown)
+//                let rect = CGRect(x: levelPictureSize.width/2, y: 0, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+//                let gold = UIColor(red: 255/255, green: 215/255, blue: 0/255, alpha: 1)
+//                gold.setFill()
+//                context?.fill(rect)
+            }
+            //            if theCompletedNumbers > 3{
+            //                let rect = CGRect(x: levelPictureSize.width/2, y: levelPictureSize.height/2, width: levelPictureSize.width/2, height: levelPictureSize.height/2)
+            //                let copper = UIColor(red: 184/255, green: 115/255, blue: 51/255, alpha: 1)
+            //
+            //                context?.stroke(rect)
+            //            }
+            
         }
     }
     override func didMove(to view: SKView) {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        self.size = CGSize(width: view.frame.size.width * UIScreen.main.scale,height: view.frame.size.height * UIScreen.main.scale)
+        self.size = UI.rootSize
         //backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
         ////m
         //set up background
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let bgCtx = UIGraphicsGetCurrentContext()
         let bgColorSpace = CGColorSpaceCreateDeviceRGB()
         
@@ -200,11 +234,28 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
             levelPictures.append(levelPicture)
             addChild(levelPicture)
         }
+        updateLevelPictures(difficulty)
         //MARK: - set up logo
         UI.logoSwitch.isUserInteractionEnabled = false
         UI.addLogoSwitch(to: self)
+
+        //MARK: - set up gameSizeLabel
+        let gameSizeLabel = SKLabelNode(text: "\(gameSize)X\(gameSize)")
+        gameSizeLabel.fontName = UI.fontName.ChalkboardSEBold.rawValue
+        gameSizeLabel.fontSize = UI.levelLabelFontSize
+        gameSizeLabel.fontColor = !isComputerWhite ? .white: .black
+        gameSizeLabel.verticalAlignmentMode = .center
+        gameSizeLabel.position = CGPoint(x: 0, y: UI.logoSwitch.frame.minY/2 + levelLabels[0].frame.maxY/2)
+        addChild(gameSizeLabel)
     }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        ////test
+        //let VC = GetUnlimitedUndosAndNoAdsVC()
+        //UI.rootViewController?.present(VC, animated: true, completion: nil)
+        ////test
+        
+        
+        
         guard let touch = touches.first else{return}
         let pos = touch.location(in: self)
         touchOrigin = pos
@@ -319,12 +370,12 @@ class LevelSelectScene: SKScene, FetchValueDelegate {
         if currentLevel == 1{
             scene.withAbility = .translate
         }
-        
         UI.rootViewController?.present(UI.loadingVC, animated: true){
             view.presentScene(scene)
-            UI.loadingVC.dismiss(animated: true, completion: nil)
+            scene.run(SKAction.wait(forDuration: 0.1)){
+                UI.loadingVC.dismiss(animated: true, completion: nil)
+            }
         }
-        
     }
     fileprivate func toTitle(){
         if let view = view {

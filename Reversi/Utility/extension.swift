@@ -7,6 +7,11 @@
 //
 
 import SpriteKit
+
+func print(_ items: Any..., separator: String = " ", terminator: String = "\n") {
+    //Swift.print(items[0], separator:separator, terminator: terminator)
+}
+
 extension NSNotification.Name{
     static let showRewardedVideos = Notification.Name("showRewardedVideos")
     static let showGoogleAds = Notification.Name("showGoogleAds")
@@ -53,7 +58,7 @@ extension String {
         return NSLocalizedString(self, tableName: nil, bundle: bundle!, value: "", comment: "")
     }
     func localized(_ lang: SharedVariable.lang = SharedVariable.language) -> String {
-        if lang == .defaultLang {
+        if lang == .`default` {
             return NSLocalizedString(self, comment: "")
         }
         return self.localized(lang.rawValue)
@@ -270,10 +275,22 @@ extension SKAction{
     open class func changeFontColor(to toColor: UIColor) -> SKAction{
         let customAction = SKAction.customAction(withDuration: 0) {
             node, elapsedTime in
-            if var label = node as? fontColorizable {
+            if let label = node as? fontColorizable {
                 label.fontColor = toColor
             }
         }
         return customAction
+    }
+}
+extension UIImage{
+    func resize(to: CGSize, half: Bool = true) -> UIImage{
+        //UIGraphicsBeginImageContext(to)
+        //let scale = UIScreen.main.scale
+        //UIGraphicsBeginImageContext(CGSize(width: to.width*scale, height: to.height*scale))
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: to.width, height: to.height), false, half ? 2 : UIScreen.main.scale)
+        self.draw(in: CGRect(origin: .zero, size: to))
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image!
     }
 }

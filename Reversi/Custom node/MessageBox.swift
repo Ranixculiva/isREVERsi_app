@@ -123,7 +123,7 @@ class MessageBox: SKSpriteNode {
         let maxButtonHeight = actionButtons.map{$0.frame.height}.max() ?? 0
         let height = maxButtonHeight + UI.messageBoxCornerRadius*2
         let width = isButtonDistributedVertically ? size.width : size.width/CGFloat(buttonCount)
-        UIGraphicsBeginImageContext(CGSize(width: width, height: height))
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: width, height: height), false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         let clipBoundsX = isButtonDistributedVertically ? 0 : -width*CGFloat(index)
         let clipBoundsY = isButtonDistributedVertically ? -size.height + height*CGFloat(buttonCount - index) : -size.height + height
@@ -174,7 +174,7 @@ class MessageBox: SKSpriteNode {
         }
     }
     fileprivate func messageBoxTexture() -> SKTexture{
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         let bounds = CGRect(x: 0, y: 0, width: size.width, height: size.height)
         let roundedRect = UIBezierPath(roundedRect: bounds, cornerRadius: UI.messageBoxCornerRadius)

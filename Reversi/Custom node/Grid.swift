@@ -55,7 +55,7 @@ class Grid:SKSpriteNode {
     class func gridTexture(blockSize:CGFloat,rows:Int,cols:Int,color: SKColor,lineWidth: CGFloat) -> SKTexture? {
         // Add 1 to the height and width to ensure the borders are within the sprite
         let size = CGSize(width: CGFloat(cols)*blockSize+lineWidth, height: CGFloat(rows)*blockSize+lineWidth)
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         
         guard let context = UIGraphicsGetCurrentContext() else {
             return nil

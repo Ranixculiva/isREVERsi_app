@@ -25,7 +25,7 @@ class MessageBoxButton: UIButton{
         self.init(frame: .zero)
         self.action = action
         self.setTitle(action.title, for: .normal)
-        self.titleLabel?.font = UIFont(name: UI.messageBoxActionButtonFontName, size: UI.messageBoxActionButtonFontSize/UIScreen.main.scale)
+        self.titleLabel?.font = UIFont(name: UI.messageBoxActionButtonFontName, size: UI.messageBoxActionButtonFontSize)
         self.titleLabel?.lineBreakMode = .byWordWrapping
         self.titleLabel?.numberOfLines = 0
         self.titleLabel?.sizeToFit()
@@ -103,7 +103,11 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
             switch url.scheme{
             case "mailto":
                 if UIApplication.shared.canOpenURL(url){
-                    UIApplication.shared.open(url)
+                    if #available(iOS 10.0, *) {
+                        UIApplication.shared.open(url)
+                    } else {
+                        UIApplication.shared.openURL(url)
+                    }
                     decisionHandler(.cancel)
                     return
                 }
@@ -146,6 +150,13 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
         positioning()
         setGradientBackground()
     }
+    func changeTheLastActionTitle(withText: String){
+        storedActions.last?.title = withText
+        setButtons()
+        resizing()
+        positioning()
+        setGradientBackground()
+    }
     fileprivate var titleNode: UILabel? = nil
     fileprivate var messageNode: UILabel? = nil
     fileprivate var messageBoxView: UIView!
@@ -168,14 +179,14 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
             titleNode?.removeFromSuperview()
         }
         if let title = title{
-            let spacing = UI.messageBoxCornerRadius/scale
-            let w = UI.messageBoxSize.width/scale
+            let spacing = UI.messageBoxCornerRadius
+            let w = UI.messageBoxSize.width
             let titleW = w - 2*spacing
             titleNode = UILabel(frame: CGRect(x: 0, y: 0, width: titleW, height: 0))
             titleNode?.lineBreakMode = .byWordWrapping
             titleNode?.numberOfLines = 0
             titleNode?.text = title
-            titleNode?.font = UIFont(name: UI.messageBoxTitleFontName, size: UI.messageBoxTitleFontSize/scale)
+            titleNode?.font = UIFont(name: UI.messageBoxTitleFontName, size: UI.messageBoxTitleFontSize)
             titleNode?.textAlignment = .center
             titleNode?.textColor = .white
             titleNode?.sizeToFit()
@@ -191,14 +202,14 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
             messageNode?.removeFromSuperview()
         }
         if let message = message{
-            let spacing = UI.messageBoxCornerRadius/scale
-            let w = UI.messageBoxSize.width/scale
+            let spacing = UI.messageBoxCornerRadius
+            let w = UI.messageBoxSize.width
             let messageW = w - 2*spacing
             messageNode = UILabel(frame: CGRect(x: 0, y: 0, width: messageW, height: 0))
             messageNode?.lineBreakMode = .byWordWrapping
             messageNode?.numberOfLines = 0
             messageNode?.text = message
-            messageNode?.font = UIFont(name: UI.messageBoxTitleFontName, size: UI.scrollTextFontSize/scale)
+            messageNode?.font = UIFont(name: UI.messageBoxTitleFontName, size: UI.scrollTextFontSize)
             messageNode?.textAlignment = .center
             messageNode?.textColor = .black
             messageNode?.sizeToFit()
@@ -214,8 +225,8 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
             actionButton.removeFromSuperview()
         }
         actionButtons = []
-        let spacing = UI.messageBoxCornerRadius/scale
-        let w = UI.messageBoxSize.width/scale - 2*spacing
+        let spacing = UI.messageBoxCornerRadius
+        let w = UI.messageBoxSize.width - 2*spacing
         isActionButtonsDistributedVertically = false
         for action in actions{
             let actionButton = MessageBoxButton(action: action)
@@ -251,11 +262,11 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
         if messageBoxView.superview != nil{
             messageBoxView.removeFromSuperview()
         }
-        messageBoxView.layer.cornerRadius = UI.messageBoxCornerRadius/scale
+        messageBoxView.layer.cornerRadius = UI.messageBoxCornerRadius
         messageBoxView.clipsToBounds = true
         //MARK: set up messageBox.frame
-        let w = UI.messageBoxSize.width/scale
-        let spacing = UI.messageBoxCornerRadius/scale
+        let w = UI.messageBoxSize.width
+        let spacing = UI.messageBoxCornerRadius
         var h = spacing
         if let titleNode = titleNode{
             h += titleNode.frame.height + spacing
@@ -274,8 +285,8 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
             }
         }
         if let webView = webView{
-            webView.frame.size = CGSize(width: w - 2*spacing, height: UI.messageBoxSize.height/scale - h - spacing)
-            h = UI.messageBoxSize.height/scale
+            webView.frame.size = CGSize(width: w - 2*spacing, height: UI.messageBoxSize.height - h - spacing)
+            h = UI.messageBoxSize.height
         }
         let x = view.frame.width/2 - w/2
         let y = view.frame.height/2 - h/2
@@ -309,7 +320,7 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
                 mutablePath.addLine(to: endPoint)
                 line.path = mutablePath
                 line.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.2)
-                line.lineWidth = UI.gridSize/scale/6/20
+                line.lineWidth = UI.gridSize/6/20
                 backgroundLayer?.insertSublayer(line, at: 3)
             }
         }
@@ -329,16 +340,16 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
                 mutablePath.addLine(to: endPoint)
                 line.path = mutablePath
                 line.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0.2)
-                line.lineWidth = UI.gridSize/scale/6/20
+                line.lineWidth = UI.gridSize/6/20
                 backgroundLayer?.insertSublayer(line, at: 3)
             }
         }
     }
     fileprivate func positioning(){
-        let spacing = UI.messageBoxCornerRadius/scale
+        let spacing = UI.messageBoxCornerRadius
         
         var y = spacing
-        let w = UI.messageBoxSize.width/scale
+        let w = UI.messageBoxSize.width
         //MARK: positioning titleNode
         if let titleNode = titleNode{
             let titleW = titleNode.frame.width
@@ -369,7 +380,7 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
                 y += actionButton.frame.height
                 let buttonFrame = CGRect(origin: .zero, size: actionButton.frame.size)
                 if i == actionButtons.count - 1{
-                    actionButton.touchablePath = UIBezierPath(roundedRect: buttonFrame, byRoundingCorners: [.bottomLeft, .bottomRight], cornerRadii: CGSize(width: UI.messageBoxCornerRadius/scale, height: UI.messageBoxCornerRadius/scale) )
+                    actionButton.touchablePath = UIBezierPath(roundedRect: buttonFrame, byRoundingCorners: [.bottomLeft, .bottomRight], cornerRadii: CGSize(width: UI.messageBoxCornerRadius, height: UI.messageBoxCornerRadius) )
                 }
                 else{
                     actionButton.touchablePath = UIBezierPath(rect: buttonFrame)
@@ -388,13 +399,12 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
                 if i == 0{
                     byRoundingCorners.formUnion(.bottomLeft)
                 }
-                actionButton.touchablePath = UIBezierPath(roundedRect: buttonFrame, byRoundingCorners: byRoundingCorners, cornerRadii: CGSize(width: UI.messageBoxCornerRadius/scale, height: UI.messageBoxCornerRadius/scale))
+                actionButton.touchablePath = UIBezierPath(roundedRect: buttonFrame, byRoundingCorners: byRoundingCorners, cornerRadii: CGSize(width: UI.messageBoxCornerRadius, height: UI.messageBoxCornerRadius))
             }
         }
         
     }
     fileprivate var withoutUpdate = true
-    fileprivate var scale = UIScreen.main.scale
     var url: URL? = nil{
         didSet{
             setWebView()
@@ -423,13 +433,14 @@ class MessageViewController: UIViewController, WKNavigationDelegate{
         }
         if let url = url{
             webView = WKWebView(frame: CGRect(x: 10, y: 10, width: 100, height: 400))
-            let request = URLRequest(url: url)
-            webView?.load(request)
+            messageBoxView.insertSubview(webView!, at: 1)
+            //let request = URLRequest(url: url)
+            //webView?.load(request)
+            webView?.loadFileURL(url, allowingReadAccessTo: url)
             webView?.navigationDelegate = self
             activityView?.startAnimating()
-            webView?.layer.cornerRadius = UI.messageBoxCornerRadius/scale/2
+            webView?.layer.cornerRadius = UI.messageBoxCornerRadius/2
             webView?.clipsToBounds = true
-            messageBoxView.insertSubview(webView!, at: 1)
         }
         else{
             webView = nil
@@ -475,19 +486,8 @@ extension URL{
 //    }
     //FIXME: default lang
     struct html{
-        fileprivate static var localization: String{
-            if SharedVariable.language == .defaultLang{
-                if let defaultLang = Bundle.main.preferredLocalizations.first{
-                    return defaultLang
-                }
-            }
-            else {
-                return SharedVariable.language.rawValue
-            }
-            return "en"
-        }
         static var help: URL?{
-            return Bundle.main.url(forResource: "help", withExtension: "html", subdirectory: nil, localization: localization)
+            return Bundle.main.url(forResource: "help", withExtension: "html", subdirectory: nil, localization: SharedVariable.localization)
         }
         //static let help = URL(fileURLWithPath: Bundle.main.path(forResource: "help", ofType: "html")!)
     }

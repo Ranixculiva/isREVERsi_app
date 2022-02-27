@@ -44,7 +44,8 @@ class AbilityMenu: SKSpriteNode{
         let width = UI.abilityMenuWidth
         let height = UI.abilityMenuSpace + (UI.abilityMenuItemWidth + UI.abilityMenuSpace)*CGFloat(numberOfItems)
         let size = CGSize(width: width, height: height)
-        UIGraphicsBeginImageContext(size)
+        
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         
         let backgroundBounds = CGRect(origin: CGPoint.zero, size: size)
@@ -66,7 +67,7 @@ class AbilityMenu: SKSpriteNode{
         for (index, imageName) in imageNames.enumerated(){
             let itemSize = CGSize(width: UI.abilityMenuItemWidth, height: UI.abilityMenuItemWidth)
             let itemBounds = CGRect(origin: CGPoint.zero, size: itemSize)
-            UIGraphicsBeginImageContext(itemSize)
+            UIGraphicsBeginImageContextWithOptions(itemSize, false, UIScreen.main.scale)
             let roundedItemBounds = UIBezierPath(roundedRect: itemBounds, cornerRadius: UI.abilityMenuItemRoundedCornerRadius)
             let itemContext = UIGraphicsGetCurrentContext()!
             ///clips
@@ -103,7 +104,7 @@ class AbilityMenu: SKSpriteNode{
         for i in 1...numberOfFrames{
             
             
-            UIGraphicsBeginImageContext(size)
+            UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
             let context = UIGraphicsGetCurrentContext()!
             let boundsSize = CGSize(width: width, height: height * CGFloat(i)/CGFloat(numberOfFrames))
             let backgroundBoundsOriginY = size.height - boundsSize.height

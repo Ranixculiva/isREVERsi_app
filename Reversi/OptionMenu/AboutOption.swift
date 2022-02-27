@@ -72,6 +72,6 @@ class AboutOption: Button{
 
 extension URL.html{
     static var about: URL?{
-        return Bundle.main.url(forResource: "about", withExtension: "html")
+        return Bundle.main.url(forResource: "about", withExtension: "html", subdirectory: nil, localization: SharedVariable.localization)
     }
 }

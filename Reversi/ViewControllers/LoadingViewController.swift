@@ -22,7 +22,7 @@ class LoadingViewController: UIViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         loadingLabel.text = UI.Texts.loading
-        loadingLabel.font = UIFont(name: UI.loadingTextFontName, size: UI.loadingPhaseFontSize/UIScreen.main.scale)
+        loadingLabel.font = UIFont(name: UI.loadingTextFontName, size: UI.loadingPhaseFontSize)
         loadingLabel.sizeToFit()
         loadingLabel.frame.origin = view.center - CGPoint(x: loadingLabel.frame.width/2, y: loadingLabel.frame.height/2)
     }
@@ -41,8 +41,9 @@ class LoadingViewController: UIViewController {
         loadingLabel = UILabel()
         //FIXME: texts loading not update when change language
         loadingLabel.text = UI.Texts.loading
+        loadingLabel.textAlignment = .center
         loadingLabel.textColor = .white
-        loadingLabel.font = UIFont(name: UI.loadingTextFontName, size: UI.loadingPhaseFontSize/UIScreen.main.scale)
+        loadingLabel.font = UIFont(name: UI.loadingTextFontName, size: UI.loadingPhaseFontSize)
         loadingLabel.sizeToFit()
         loadingLabel.frame.origin = view.center - CGPoint(x: loadingLabel.frame.width/2, y: loadingLabel.frame.height/2)
         view.insertSubview(loadingLabel, at: 10)

@@ -22,11 +22,24 @@ class UI {
         UI.logoSwitch.removeFromParent()
         to.addChild(UI.logoSwitch)
     }
+    class func topMostController() -> UIViewController? {
+        guard let window = UIApplication.shared.keyWindow, let rootViewController = window.rootViewController else {
+            return nil
+        }
+        
+        var topController = rootViewController
+        
+        while let newTopController = topController.presentedViewController {
+            topController = newTopController
+        }
+        
+        return topController
+    }
     weak static var rootViewController: UIViewController? = nil
     static func loadUIEssentials(){
         guard let rootView =  rootViewController?.view else{fatalError("cannot get rootView")}
-        frameWidth = rootView.frame.width * UIScreen.main.scale
-        frameHeight = rootView.frame.height * UIScreen.main.scale
+        frameWidth = rootView.frame.width
+        frameHeight = rootView.frame.height
         if #available(iOS 11.0, *) {
             safeInsets = UIApplication.shared.delegate?.window??.safeAreaInsets ?? safeInsets
         }
@@ -38,13 +51,13 @@ class UI {
         return CGSize(width: frameWidth, height: frameHeight)
     }
     static var logoPosition: CGPoint{
-        let scale = UIScreen.main.scale
-        let y = (frameHeight/2 - safeInsets.top*scale + gridSize/2)/2
+        let y = (frameHeight/2 - safeInsets.top + gridSize/2)/2
         return CGPoint(x: 0, y: y)
     }
     static var logoSize: CGSize{
         guard let logoImage = UIImage(named: "Logo") else{fatalError("cannot find image Logo")}
-        return CGSize(width: 4/6 * UI.gridSize, height: logoImage.size.height * (4/6 * UI.gridSize) /  logoImage.size.width)
+        //return CGSize(width: 4/6 * UI.gridSize, height: logoImage.size.height * (4/6 * UI.gridSize) /  logoImage.size.width)
+        return CGSize(width: 5/6 * UI.gridSize, height: logoImage.size.height * (5/6 * UI.gridSize) /  logoImage.size.width)
     }
     static var hintBubbleColor: UIColor{
         return SKColor(red: 1, green: 1, blue: 1, alpha: 0.5)
@@ -79,15 +92,14 @@ class UI {
         return menuIconSize.width / 2
     }
     static var menuIconSize: CGSize{
-        return  CGSize(width: UI.gridSize / 8, height: UI.gridSize / 8)
+        return  CGSize(width: Int(UI.gridSize / 16)*2, height: Int(UI.gridSize / 16)*2)
     }
     static func getMenuIconPosition(indexFromLeft: Int, numberOfMenuIcon: Int) -> CGPoint{
-        let scale = UIScreen.main.scale
         if numberOfMenuIcon == 0 {fatalError("wrong number of menu icon")}
-        let y = -frameHeight/2 + safeInsets.bottom*scale + 10 * UIScreen.main.scale + menuIconSize.height/2
+        let y = -frameHeight/2 + safeInsets.bottom + 10 + menuIconSize.height/2
         if numberOfMenuIcon == 1{return CGPoint(x: 0, y: y)}
-        let interval = (frameWidth - safeInsets.right*scale - safeInsets.left*scale -  20 * UIScreen.main.scale - menuIconSize.width) / CGFloat(numberOfMenuIcon - 1)
-        let x = interval * CGFloat(indexFromLeft) - frameWidth / 2 + safeInsets.left*scale + 10 * UIScreen.main.scale + menuIconSize.width/2
+        let interval = (frameWidth - safeInsets.right - safeInsets.left -  20 - menuIconSize.width) / CGFloat(numberOfMenuIcon - 1)
+        let x = interval * CGFloat(indexFromLeft) - frameWidth / 2 + safeInsets.left + 10 + menuIconSize.width/2
         
         return CGPoint(x: x, y: y)
     }
@@ -100,15 +112,15 @@ class UI {
         var gridSideLength = frameHeight / 2
         
         if gridSideLength > frameWidth{
-            gridSideLength = frameWidth - 50 * UIScreen.main.scale
+            gridSideLength = frameWidth - 50
         }
         return gridSideLength
     }
     static var challengeLabelFontSize: CGFloat{
-        return menuIconHintLabelFontSize * 1.6
+        return menuIconHintLabelFontSize * 1.4
     }
     static var challengeFlipLabelFontSize: CGFloat{
-        return menuIconHintLabelFontSize * 1.6
+        return menuIconHintLabelFontSize * 1.4
     }
     static var guideFontSize: CGFloat{
         return menuIconHintLabelFontSize * 1.2
@@ -120,9 +132,8 @@ class UI {
         return UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
     }
     static var flipsPosition: CGPoint{
-        let scale = UIScreen.main.scale
         let x = frameWidth/4
-        let y = (frameHeight/2 - safeInsets.top*scale + logoPosition.y + logoSize.height/2)/2
+        let y = (frameHeight/2 - safeInsets.top + logoPosition.y + logoSize.height/2)/2
         return CGPoint(x: x, y: y)
     }
     static var flipsFontSize: CGFloat{
@@ -132,7 +143,7 @@ class UI {
         return flipsFontSize
     }
     static var flipNumberPosition: CGPoint{
-        return CGPoint(x: flipsPosition.x + flipsFontSize/2 + 10*UIScreen.main.scale, y: flipsPosition.y)
+        return CGPoint(x: flipsPosition.x + flipsFontSize/2 + 10, y: flipsPosition.y)
     }
     ////m
     static var gestureGuideSize: CGSize{
@@ -192,7 +203,7 @@ class UI {
     }
     //left back
     static var backFromUndoPosition: CGPoint{
-        return CGPoint(x: -frameWidth/2 + safeInsets.left + 10*UIScreen.main.scale, y: flipsPosition.y)
+        return CGPoint(x: -frameWidth/2 + safeInsets.left + 10, y: flipsPosition.y)
     }
     static var backFromUndoButtonColor: UIColor{
         return UIColor(red: 1, green: 1, blue: 1, alpha: 0.5)
@@ -270,8 +281,8 @@ class UI {
     }
     
     static var isLanguageEn: Bool{
-        let languageCode = Locale.current.languageCode ?? "en"
-        return SharedVariable.language == .en || (SharedVariable.language == .defaultLang && languageCode == "en")
+        let languageCode = SharedVariable.localization
+        return SharedVariable.language == .en || (SharedVariable.language == .`default` && languageCode == "en")
     }
     //MARK: in GameScene
     static var chessFontName = fontName.negativeCircledNumber.rawValue
@@ -280,6 +291,9 @@ class UI {
         return (isLanguageEn ? fontName.ChalkboardSERegular : fontName.PingFangSCRegular).rawValue
     }
     //MARK: in TitleScene
+    static var playButtonSize: CGSize{
+        return CGSize(width: UI.gridSize/3, height: UI.gridSize/3)
+    }
     static var loadingTextFontName: String{
         return (isLanguageEn ? fontName.ChalkboardSERegular : fontName.PingFangSCRegular).rawValue
     }
@@ -363,6 +377,35 @@ class UI {
     static var aboutButtonFontSize: CGFloat{
         return loadButtonFontSize
     }
+    //MARK: - detail label
+    static var detailFontSize: CGFloat{
+        return loadButtonFontSize
+    }
+    static var detailFontColor: UIColor{
+        return .black
+    }
+    static var detailFontName: String{
+        return (isLanguageEn ? fontName.ChalkboardSEBold : fontName.PingFangSCSemibold).rawValue
+    }
+    //MARK: - tutorial button
+    static var tutorialButtonColor: UIColor{
+        return .white
+    }
+    static var tutorialButtonCornerRadius: CGFloat{
+        return loadButtonCornerRadius
+    }
+    static var tutorialButtonFontSize: CGFloat{
+        return loadButtonFontSize
+    }
+    static var tutorialOptionFontSize: CGFloat{
+        return tutorialButtonFontSize
+    }
+    static var tutorialOptionFontColor: UIColor{
+        return .black
+    }
+    static var tutorialOptionFontName: String{
+        return (isLanguageEn ? fontName.ChalkboardSEBold : fontName.PingFangSCSemibold).rawValue
+    }
     //MARK: - purchased button
     static var purchasedButtonColor: UIColor{
         return .white
@@ -417,33 +460,38 @@ class UI {
         return CGSize(width: languageOptionFontSize/2, height: languageOptionFontSize)
     }
     //MARK: - closeButton in option menu
-    static var closeButtonFrame: CGRect{
-        
-        let scale = UIScreen.main.scale
-        let viewH = rootSize.height/scale
-        let viewW = rootSize.width/scale
-        let gridSize = UI.gridSize/scale
-        let spacing = gridSize/24
-        let y = viewH/2 - gridSize/2 + spacing
-        let w = gridSize/10
-        let h = gridSize/10
-        let x = viewW/2 - gridSize/2 + spacing
-        return CGRect(x: x, y: y, width: w, height: h)
+    static var closeButtonWidth: CGFloat{
+        return gridSize/10
     }
+    static var closeButtonHeight: CGFloat{
+        return gridSize/10
+    }
+    
+//    static var closeButtonFrame: CGRect{
+//        let gridSize = UI.gridSize
+//        let spacing = gridSize/24
+//        let y = frameHeight/2 - gridSize/2 + spacing
+//        let w = gridSize/10
+//        let h = gridSize/10
+//        let x = frameWidth/2 - gridSize/2 + spacing
+//        return CGRect(x: x, y: y, width: w, height: h)
+//    }
     //MARK: - confirmButton in option menu
-    static var confirmButtonFrame: CGRect{
-        
-        let scale = UIScreen.main.scale
-        let viewH = rootSize.height/scale
-        let viewW = rootSize.width/scale
-        let gridSize = UI.gridSize/scale
-        let spacing = gridSize/24
-        let y = viewH/2 - gridSize/2 + spacing
-        let w = gridSize/10
-        let h = gridSize/10
-        let x = viewW/2 + gridSize/2 - w - spacing
-        return CGRect(x: x, y: y, width: w, height: h)
+    static var confirmButtonWidth: CGFloat{
+        return gridSize/10
     }
+    static var confirmButtonHeight: CGFloat{
+        return gridSize/10
+    }
+//    static var confirmButtonFrame: CGRect{
+//        let gridSize = UI.gridSize
+//        let spacing = gridSize/24
+//        let y = frameHeight/2 - gridSize/2 + spacing
+//        let w = gridSize/10
+//        let h = gridSize/10
+//        let x = frameWidth/2 + gridSize/2 - w - spacing
+//        return CGRect(x: x, y: y, width: w, height: h)
+//    }
     //MARK: - loading view controller
     static let loadingVC = LoadingViewController()
     //MARK: - fontSize
@@ -488,6 +536,7 @@ class UI {
         flips:                    CGFloat(10),//110 globally
         flipNumber:               CGFloat(10),//110 globally
         //MARK: in GameScene
+        scoreLabel:               CGFloat(1),
         chessBoardBackground:     CGFloat(-1),
         chessBoard:               CGFloat(-0.5),
         grid:                     CGFloat(1),
@@ -508,6 +557,7 @@ class UI {
         challengeLabel:           CGFloat(9),
         flashlight:               CGFloat(150),
         //MARK: in TitleScene
+        playButton:               CGFloat(100),
         loadButton:               CGFloat(0),
         backgroundGrid:           CGFloat(9),
         backgroundGridBackground: CGFloat(8),
@@ -562,7 +612,7 @@ class UI {
                 static var title: String{return "message.undo.title".localized()}
                 static var destructive: String{return "message.undo.destructive".localized()}
                 static var destructiveWithoutAds: String{return "message.undo.destructive.withoutAds".localized()}
-                static var default_: String{return "message.undo.default".localized()}
+                static var `default`: String{return "message.undo.default".localized()}
             }
             struct retry {
                 static var text: String{return "message.retry.text".localized()}
@@ -613,11 +663,16 @@ class UI {
             }
         }
         //MARK: in purchaseButtons.swift
+        static var detail: String{return "detail".localized()}
         static var purchase: String{return "purchase".localized()}
         static var restore: String{return "restore".localized()}
         static var purchased: String{return "purchased".localized()}
         //MARK: in aboutButton.swift
         static var about: String{return "about".localized()}
+        //MARK: in tutorialOption.swift
+        static var tutorial: String{return "tutorial".localized()}
+        static var on: String{return "on".localized()}
+        static var off: String{return "off".localized()}
     }
     
     enum patternColorType{

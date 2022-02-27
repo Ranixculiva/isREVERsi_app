@@ -118,8 +118,12 @@ extension StoreObserver: SKPaymentTransactionObserver {
 	/// Called when there are transactions in the payment queue.
 	func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
 		for transaction in transactions {
+            if transaction.transactionState != .purchasing{
+                Utilities.purchaseInProgress = false
+            }
 			switch transaction.transactionState {
-			case .purchasing: break
+			case .purchasing:
+                Utilities.purchaseInProgress = true
 			// Do not block your UI. Allow the user to continue using your app.
 			case .deferred: print(Messages.deferred)
 			// The purchase was successful.

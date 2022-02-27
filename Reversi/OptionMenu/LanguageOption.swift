@@ -23,7 +23,7 @@ class LanguageOption: TextOptionsWithSelectButtons{
         }
     }
     convenience init() {
-        let languages = ["繁體中文","简体中文","English"]
+        let languages = ["繁體中文","简体中文","ENGLISH"]
         let fontNames = [UI.fontName.PingFangSCSemibold.rawValue,UI.fontName.PingFangSCSemibold.rawValue,
         UI.fontName.ChalkboardSEBold.rawValue]
         let leftButton = SKSpriteNode(texture: SKTexture(image: #imageLiteral(resourceName: "leftSelecButton")), size: UI.languageOptionButtonSize)
@@ -31,7 +31,7 @@ class LanguageOption: TextOptionsWithSelectButtons{
         self.init(texts: languages, spacing: UI.languageOptionSpacing, leftButton: leftButton, rightButton: rightButton, isCyclic: true, fontNames: fontNames, fontSize:  UI.languageOptionFontSize, fontColor: UI.languageOptionFontColor)
         selectButtons.fetchValueDelegate = self
         switch SharedVariable.language {
-        case .defaultLang:
+        case .default:
             if let defaultLang = Bundle.main.preferredLocalizations.first{
                 if defaultLang == SharedVariable.lang.zhHant.rawValue{
                     value = 0

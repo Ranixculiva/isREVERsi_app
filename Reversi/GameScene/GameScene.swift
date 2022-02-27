@@ -7,6 +7,7 @@
 //
 import SpriteKit
 import GameplayKit
+import GoogleMobileAds
 ///TODO: change background music and record effect sound.
 ///TODO: resign
 ///TODO: change alert.
@@ -18,7 +19,16 @@ import GameplayKit
 ///FIXME: messageBox's closure
 class GameScene: SKScene {
     deinit {
-        musicPlayer.stop(music: .bgm)
+        if let GVC = UI.rootViewController as! GameViewController?{
+            GVC.bannerView?.removeFromSuperview()
+        }
+        MusicPlayer.removePreparedMusic(music: .bgm(.game))
+        MusicPlayer.removePreparedMusic(music: .sfx(.flip))
+        MusicPlayer.removePreparedMusic(music: .sfx(.shake))
+        MusicPlayer.removePreparedMusic(music: .sfx(.putChess))
+        MusicPlayer.removePreparedMusic(music: .sfx(.win))
+        MusicPlayer.removePreparedMusic(music: .sfx(.lose))
+        MusicPlayer.removePreparedMusic(music: .sfx(.wind))
         print("GameScene deinit")
         NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name(notificationCenterName.reviewSlider.rawValue), object: nil)
@@ -61,7 +71,8 @@ class GameScene: SKScene {
     fileprivate var whiteScore_label: ScoreLabel!
     fileprivate var stateIndicator: SKCropNode!
     fileprivate var stateHint: HintBubble!
-    fileprivate var chessBoard: SKSpriteNode!
+    fileprivate lazy var computerLabel = SKLabelNode()
+    //fileprivate var chessBoard: SKSpriteNode!
     fileprivate var stateIndicatorColorLeft : SKSpriteNode!
     fileprivate var stateIndicatorColorRight: SKSpriteNode!
     fileprivate var stateLabel: SKLabelNode!
@@ -256,7 +267,8 @@ class GameScene: SKScene {
         
         nowAt = Game.count - 1
         isColorWhiteNow = Game[nowAt].isColorWhiteNow
-        imagesOfReview = saveUtility.loadImages(scale: UIScreen.main.scale) ?? imagesOfReview
+        //imagesOfReview = saveUtility.loadImages(scale: UIScreen.main.scale) ?? imagesOfReview
+        imagesOfReview = saveUtility.loadImages(scale: 1) ?? imagesOfReview
         guard let filenamesOfImages = UserDefaults.standard.value(forKey: "filenamesOfImages") as! [String]? else {return}
         if filenamesOfImages.count == 0 || imagesOfReview.count == 0 {return}
         for i in 0...imagesOfReview.count - 1{
@@ -307,7 +319,9 @@ class GameScene: SKScene {
         }
     }
     //fileprivate let loadingVC = LoadingViewController()
+    var doPlayMusicInDidMove = true
     override func didMove(to view: SKView) {
+        
         
         winImage = UIImage()
         screenshot = SKSpriteNode()
@@ -455,7 +469,12 @@ class GameScene: SKScene {
         //self.backgroundColor = UIColor.white
         
         //MARK: play background music
-        musicPlayer.play(music: .bgm)
+        if !doPlayMusicInDidMove{
+            MusicPlayer.preparePlayer(music: .bgm(.game))
+        }
+        else{
+            MusicPlayer.play(music: .bgm(.game))
+        }
         
         
         
@@ -464,9 +483,14 @@ class GameScene: SKScene {
         //view.isMultipleTouchEnabled = false
         
         self.size = CGSize(width: UI.frameWidth, height: UI.frameHeight)
+        
+        
+        
+        
+        
         ////m
         //set up background
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let bgCtx = UIGraphicsGetCurrentContext()
         let bgColorSpace = CGColorSpaceCreateDeviceRGB()
         
@@ -526,8 +550,8 @@ class GameScene: SKScene {
         }
         UI.flipsIndicator.flips = SharedVariable.flips
         UI.addFlipsIndicator(to: self)
-        chessBoard = SKSpriteNode(color: #colorLiteral(red: 0.5176470588, green: 0.7647058824, blue: 0.3019607843, alpha: 1), size: CGSize(width: UI.gridSize, height: UI.gridSize))
-        chessBoard.zPosition = UI.zPosition.chessBoard
+//        chessBoard = SKSpriteNode(color: #colorLiteral(red: 0.5176470588, green: 0.7647058824, blue: 0.3019607843, alpha: 1), size: CGSize(width: UI.gridSize, height: UI.gridSize))
+//        chessBoard.zPosition = UI.zPosition.chessBoard
         //        chessBoard.yScale = (scene!.size.height * 1/2) / chessBoard.mapSize.height
         //        chessBoard.xScale = chessBoard.yScale
         //
@@ -669,6 +693,7 @@ class GameScene: SKScene {
         blackScore_label.fontSize = needToArrangeUpDown && !isComputerWhite ? UI.secondaryScoreFontSize:UI.primaryScoreFontSize
         blackScore_label.score = Game[nowAt].getBlackScore()
         blackScore_label.anchorPoint.y = needToArrangeUpDown && !isComputerWhite ? 0:1
+        blackScore_label.zPosition = UI.zPosition.scoreLabel
         blackScore_label.position = UI.blackScorePosition
         blackScore_label.position.y *= needToArrangeUpDown && !isComputerWhite ? -1:1
         
@@ -676,10 +701,26 @@ class GameScene: SKScene {
         whiteScore_label.fontSize = needToArrangeUpDown && isComputerWhite ? UI.secondaryScoreFontSize:UI.primaryScoreFontSize
         whiteScore_label.score = Game[nowAt].getWhiteScore()
         whiteScore_label.anchorPoint.y = needToArrangeUpDown && isComputerWhite ?  0:1
+        whiteScore_label.zPosition = UI.zPosition.scoreLabel
         whiteScore_label.position = UI.whiteScorePosition
         whiteScore_label.position.y *= needToArrangeUpDown && isComputerWhite ? -1:1
         
         updateAbilityCoolDownStateOnScoreLabels()
+        
+        
+        //MARK: initialize computer label
+        if isAIMode{
+            computerLabel.text = "COM\(difficulty.rawValue+1)"
+            addChild(computerLabel)
+            computerLabel.zPosition = UI.zPosition.scoreLabel
+            computerLabel.position.x = isComputerWhite ? blackScore_label.position.x : whiteScore_label.position.x
+            computerLabel.position.y = !isComputerWhite ? blackScore_label.position.y : whiteScore_label.position.y
+            computerLabel.fontSize = UI.secondaryScoreFontSize
+            computerLabel.fontColor = isComputerWhite ? .white : .black
+            computerLabel.fontName = UI.fontName.ChalkboardSEBold.rawValue
+            computerLabel.verticalAlignmentMode = .bottom
+            
+        }
         
         //MARK: initialize an abilityMenu
         let abilityMenuHandler: (_ ability: Reversi.ability) -> Void = {[unowned self] in
@@ -794,9 +835,17 @@ class GameScene: SKScene {
         addChild(stateHint)
         
         //MARK: set up abilityIndicator
-        abilityIndicator = SKSpriteNode()
-        abilityIndicator = SKSpriteNode(imageNamed: "translate")
-        abilityIndicator.size = UI.menuIconSize
+        UIGraphicsBeginImageContextWithOptions(UI.menuIconSize, false, UIScreen.main.scale)
+        let abilityCtx = UIGraphicsGetCurrentContext()
+        let roundedRect = UIBezierPath(roundedRect: CGRect(origin: .zero, size: UI.menuIconSize), cornerRadius: UI.abilityMenuRoundedCornerRadius)
+        abilityCtx?.saveGState()
+        roundedRect.addClip()
+        let translateImg = #imageLiteral(resourceName: "translate")
+        translateImg.draw(in: CGRect(origin: .zero, size: UI.menuIconSize))
+        abilityCtx?.restoreGState()
+        let abilityImg = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        abilityIndicator = SKSpriteNode(texture: SKTexture(image: abilityImg), size: UI.menuIconSize)
         abilityIndicator.position = stateIndicator.position
         abilityIndicator.isHidden = true
         abilityIndicator.zPosition = UI.zPosition.stateIndicator
@@ -813,6 +862,24 @@ class GameScene: SKScene {
         self.showBoard(self.nowAt)
         Game[nowAt].showBoard(isWhite: isColorWhiteNow)
         
+        //MARK: - set up bannerView
+        if SharedVariable.withAds{
+            if let GVC = UI.rootViewController as! GameViewController?{
+                if let bannerView = GVC.bannerView{
+                    view.addSubview(bannerView)
+                    let x = CGFloat.zero//frame.width/2 - bannerView.frame.width/2
+                    let minY = min(UI.flipsIndicator.frame.minY, backNode.frame.minY)
+                    let topY = (frame.height/2 - minY)
+                    let bottomY = frame.height/2 - max(-UI.whiteScorePosition.y + UI.secondaryScoreFontSize,  chessBoardBackground.frame.maxY,
+                        3/5*frame.height/2)
+                    let spacing = (bottomY - topY)/20
+                    bannerView.frame.origin = CGPoint(x: x, y: topY + spacing)
+                    let adSize = GADAdSizeFromCGSize(CGSize(width: frame.width, height: (bottomY - topY) - 2*spacing))
+                    bannerView.adSize = adSize
+                }
+                
+            }
+        }
         
         //MARK: set up notificationCenter
         let notificationCenter = NotificationCenter.default
@@ -821,7 +888,7 @@ class GameScene: SKScene {
         notificationCenter.addObserver(self, selector: #selector(self.rewardBasedVideoAdDidClose), name: .rewardBasedVideoAdDidClose, object: nil)
         
         //MARK: set up help message box
-        let helpGuideText = UI.Texts.guide.help
+        //let helpGuideText = UI.Texts.guide.help
         let helpGuideTitle = UI.Texts.message.help.title
         let helpMessageActionsTitle = [
             UI.Texts.message.help.default_,
@@ -846,8 +913,7 @@ class GameScene: SKScene {
                 if UI.rootViewController?.presentedViewController?.isBeingPresented == true{
                     UI.rootViewController?.presentedViewController?.dismiss(animated: true)
                 }
-                UI.rootViewController?.present(self.earnFlipsMessage, animated: true
-                )
+                 UI.rootViewController?.present(self.earnFlipsMessage,animated: true)
                 
             }
             else{
@@ -863,7 +929,7 @@ class GameScene: SKScene {
         let undoGuideTitle = UI.Texts.message.undo.title
         let undoDestructiveText = SharedVariable.withAds ? UI.Texts.message.undo.destructive : UI.Texts.message.undo.destructiveWithoutAds
         let undoMessageActionsTitle = [
-            UI.Texts.message.undo.default_,
+            UI.Texts.message.undo.default,
             undoDestructiveText
         ]
         let undoMessageActions = [
@@ -882,7 +948,7 @@ class GameScene: SKScene {
             //remove all saved data
             self.cleanUpSavedFile()
             if let view = self.view {
-                let transition:SKTransition = SKTransition.fade(withDuration: 1)
+                //let transition:SKTransition = SKTransition.fade(withDuration: 1)
                 let scene = GameScene(fileNamed: "GameScene")!
                 scene.gameSize = self.gameSize
                 scene.isAIMode = self.isAIMode
@@ -893,7 +959,9 @@ class GameScene: SKScene {
                 scene.withAbility =  self.withAbility
                 scene.canPlayerUseAbility = self.canPlayerUseAbility
                 scene.offline = self.offline
-                
+                if SharedVariable.withAds{
+                    scene.doPlayMusicInDidMove = false
+                }
                 scene.scaleMode = .aspectFill
                 view.presentScene(scene)
                 //view.presentScene(scene, transition: transition)
@@ -1017,8 +1085,15 @@ class GameScene: SKScene {
         brighterFilterRow.isHidden = false
     }
     fileprivate func updateAbilityCoolDownStateOnScoreLabels(withUpdate: Bool = true){
-        whiteScore_label.currentNumber = 3 - Game[nowAt].getAbilityCoolDown(isWhite: true)
-        blackScore_label.currentNumber = 3 - Game[nowAt].getAbilityCoolDown(isWhite: false)
+        if nowAt < 4, canPlayerUseAbility{
+            whiteScore_label.currentNumber = 0
+            blackScore_label.currentNumber = 0
+        }
+        else{
+            whiteScore_label.currentNumber = 3 - Game[nowAt].getAbilityCoolDown(isWhite: true)
+            blackScore_label.currentNumber = 3 - Game[nowAt].getAbilityCoolDown(isWhite: false)
+        }
+        
         if withUpdate{
             whiteScore_label.update()
             blackScore_label.update()
@@ -1051,7 +1126,6 @@ class GameScene: SKScene {
         }
         else{
             if Game[nowAt].fillColoredNumber(Row: row, Col: col, isWhite: isColorWhiteNow){
-                
                 isColorWhiteNow = !isColorWhiteNow
                 
 //                //change grid color
@@ -1128,12 +1202,16 @@ class GameScene: SKScene {
                 nodes.append(labels[i / gameSize][i % gameSize] as SKNode)
                 
             }
-            nodes.append(chessBoard! as SKNode)
+//            nodes.append(chessBoard! as SKNode)
             nodes.append(chessBoardBackground)
             
-            grid.shake(duration: 0.6, amplitudeX:10.0 * UIScreen.main.scale, numberOfShakes: 4)
+            grid.shake(duration: 0.6, amplitudeX:10.0, numberOfShakes: 4)
+            grid.run(SKAction.run {
+                MusicPlayer.reset(music: .sfx(.shake))
+                MusicPlayer.play(music: .sfx(.shake))
+            })
             for node in nodes{
-                node.shake(duration: 0.6, amplitudeX: 10.0 * UIScreen.main.scale, numberOfShakes: 4)
+                node.shake(duration: 0.6, amplitudeX: 10.0, numberOfShakes: 4)
             }
             self.isUserInteractionEnabled = false
             waitTimeToSetIsUserInteractionEnabledToTrue = 0.7
@@ -1154,7 +1232,7 @@ class GameScene: SKScene {
         //remove all saved data
         self.cleanUpSavedFile()
         if let view = self.view {
-            let transition:SKTransition = SKTransition.fade(withDuration: 1)
+            
             let scene = GameScene(fileNamed: "GameScene")!
             scene.gameSize = self.gameSize
             scene.isAIMode = self.isAIMode
@@ -1168,8 +1246,13 @@ class GameScene: SKScene {
             
             scene.scaleMode = .aspectFill
             scene.cleanUpSavedFile()
-            view.presentScene(scene, transition: transition)
-            scene.save()
+            if SharedVariable.withAds{
+                scene.doPlayMusicInDidMove = false
+            }
+            DispatchQueue.main.async {
+                view.presentScene(scene)
+            }
+            
             
             
             
@@ -1209,7 +1292,7 @@ class GameScene: SKScene {
 //        alert.addAction(UIAlertAction(title: actionDestructiveTitle, style: .destructive, handler: handler))
 //        UIApplication.getPresentedViewController()!.present(alert, animated: true){}
 //
-        UI.rootViewController?.present(retryMessage, animated: true)
+        UI.topMostController()?.present(retryMessage, animated: true)
         //retryMessage.isHidden = false
         //if retryMessage.parent == nil { addChild(retryMessage)}
         
@@ -1234,7 +1317,7 @@ class GameScene: SKScene {
     }
     //get the scale of i-th review should be; offset is the base position; base is index
     fileprivate func scaleOfReview(_ i: Int, base: Int, offset: CGFloat = 0) -> CGFloat{
-        return UIScreen.main.scale * 3/5 * yOfReview((xOfReview(i,base: base) + offset) * CGFloat.pi / 2 / scene!.size.width)
+        return 3/5 * yOfReview((xOfReview(i,base: base) + offset) * CGFloat.pi / 2 / scene!.size.width)
     }
     fileprivate func zPositionOfReview(_ i: Int) -> CGFloat{
         return UI.zPosition.reviewBase + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
@@ -1250,9 +1333,13 @@ class GameScene: SKScene {
     fileprivate func takeScreenShot(isWhite: Bool){
         ///take the first screenshot
         guard let bounds = self.scene!.view?.bounds else{fatalError("cannot get bounds of view")}
-        UIGraphicsBeginImageContextWithOptions(bounds.size, false, UIScreen.main.scale)
-        //UIGraphicsBeginImageContext(bounds.size)
-        
+    
+        if Game[nowAt].isEnd(){
+            UIGraphicsBeginImageContextWithOptions(bounds.size, false, UIScreen.main.scale)
+        }
+        else{
+            UIGraphicsBeginImageContext(bounds.size)
+        }
         guard let context = UIGraphicsGetCurrentContext() else { return }
         let roundedRaius = safeAreaInsets.bottom > 20 ? 40:safeAreaInsets.bottom
         let roundedBounds = UIBezierPath(roundedRect: bounds, cornerRadius: CGFloat(roundedRaius))
@@ -1279,11 +1366,11 @@ class GameScene: SKScene {
         print("showReview")
         if withAnimation{
             for i in 0...reviews.count - 1{
-                reviews[i].setScale(UIScreen.main.scale)
+                reviews[i].setScale(1)
                 reviews[i].position = CGPoint(x:  xOfReview(i), y: 0.0)
                 reviews[i].zPosition = UI.zPosition.reviewBase + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
                 addChild(reviews[i])
-                let scaleAnimation = SKAction.scale(to: UIScreen.main.scale * 3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width), duration: 0.1)
+                let scaleAnimation = SKAction.scale(to: 3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width), duration: 0.1)
                 waitTimeToSetIsUserInteractionEnabledToTrue = 0.1
                 isUserInteractionEnabled = false
                 reviews[i].run(scaleAnimation){self.isUserInteractionEnabled = true
@@ -1296,7 +1383,7 @@ class GameScene: SKScene {
                 
                 reviews[i].position = CGPoint(x:  xOfReview(i), y: 0.0)
                 reviews[i].zPosition = UI.zPosition.reviewBase + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
-                reviews[i].setScale(UIScreen.main.scale * 3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width))
+                reviews[i].setScale(3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width))
                 addChild(reviews[i])
                 self.isReviewMode = true
             }
@@ -1319,7 +1406,8 @@ class GameScene: SKScene {
         addChild(stateHint)
         addChild(stateLabel)
         addChild(abilityIndicator)
-        addChild(chessBoard)
+        addChild(computerLabel)
+//        addChild(chessBoard)
         addChild(retryNode)
         addChild(toTitleNode)
         addChild(undoNode)
@@ -1601,7 +1689,7 @@ class GameScene: SKScene {
         else{
             for i in 0...reviews.count - 1{
                 reviews[i].position.x = xOfReview(i) + offset
-                reviews[i].setScale(3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width) * UIScreen.main.scale)
+                reviews[i].setScale(3/5 * yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width))
                 reviews[i].zPosition = UI.zPosition.reviewBase + yOfReview(reviews[i].position.x * CGFloat.pi / 2 / scene!.size.width)
             }
             
@@ -1639,7 +1727,7 @@ class GameScene: SKScene {
         //let offset = -reviews[indexOfTheToppestReview].position.x
         for i in 0...reviews.count - 1{
             reviews[i].position.x = xOfReview(i, base: indexOfTheToppestReview)
-            reviews[i].setScale(UIScreen.main.scale * 3/5 * yOfReview(xOfReview(i, base: indexOfTheToppestReview) * CGFloat.pi / 2 / scene!.size.width))
+            reviews[i].setScale(3/5 * yOfReview(xOfReview(i, base: indexOfTheToppestReview) * CGFloat.pi / 2 / scene!.size.width))
         }
         if changeReviewSliderValue {reviewSlider.value = CGFloat(indexOfTheToppestReview)}
         //        self.isUserInteractionEnabled = false
@@ -1685,7 +1773,7 @@ class GameScene: SKScene {
             if #available(iOS 9.0, *) {
                 activityVC.excludedActivityTypes?.append(.openInIBooks)
             }
-            activityVC.popoverPresentationController?.sourceRect = CGRect(x: size.width/2/UIScreen.main.scale - screenshot.position.x/UIScreen.main.scale, y: size.height/2/UIScreen.main.scale, width: 0, height: 0)
+            activityVC.popoverPresentationController?.sourceRect = CGRect(x: max(10, size.width/2 + screenshot.position.x), y: size.height/2, width: 0, height: 0)
             // This line remove the arrow of the popover to show in iPad
             //activityVC.popoverPresentationController?.permittedArrowDirections = .down
             top.present(activityVC, animated: true, completion: nil)
@@ -1735,7 +1823,7 @@ class GameScene: SKScene {
     }
     
     fileprivate func showResult() {
-        var fontColor = updateTheStateOfChallenge()
+        let fontColor = updateTheStateOfChallenge()
         isReviewMode = false
         isResultMode = true
         
@@ -1743,7 +1831,7 @@ class GameScene: SKScene {
         
         //MARK: set up the background
         ////m
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let bgCtx = UIGraphicsGetCurrentContext()
         let bgColorSpace = CGColorSpaceCreateDeviceRGB()
         
@@ -1816,7 +1904,7 @@ class GameScene: SKScene {
         var accumulativeChallengeLabelHeight: CGFloat = 0.0
         if challenges.count != 0{
             for i in 0...challenges.count - 1{
-                var challengeFlipLabelNumber = (challenges[i].isCompleted && !challenges[i].canGetOneFlip) ? 1 : 0
+                let challengeFlipLabelNumber = (challenges[i].isCompleted && !challenges[i].canGetOneFlip) ? 1 : 0
                 let challengeFlipLabel = SKLabelNode(text: Unicode.circledNumber(challengeFlipLabelNumber))
                 challengeFlipLabel.fontColor = fontColor[i]
                 challengeFlipLabel.name = "challengeFilpLabel \(i)"
@@ -1988,6 +2076,17 @@ class GameScene: SKScene {
                     Challenge.saveSharedChallenge()
                     SharedVariable.isThereGameToLoad = false
                     SharedVariable.save()
+                    
+                    if Challenge.areAllChallengesCompleted, SharedVariable.withAds{
+                        KeychainWrapper.standard.set(false, forKey: SharedVariable.key.withAds.rawValue)
+                        SharedVariable.withAds = false
+                        if let GVC = UI.rootViewController as! GameViewController?{
+                            GVC.bannerView?.removeFromSuperview()
+                        }
+                        let VC = GetUnlimitedUndosAndNoAdsVC()
+                        UI.rootViewController?.present(VC, animated: true, completion: nil)
+                    }
+                    
                 }
                 ]))
         }
@@ -1996,6 +2095,7 @@ class GameScene: SKScene {
             SharedVariable.save()
         }
         waitTimeToSetIsUserInteractionEnabledToTrue = animationWaitTime
+        
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -2271,15 +2371,19 @@ class GameScene: SKScene {
     }
     fileprivate func toTitle() {
         if let view = view {
+            
 //            let transition:SKTransition = SKTransition.fade(withDuration: 1)
             let scene = TitleScene()
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             UI.logoSwitch.currentState = LogoSwitch.state(rawValue: !isAIMode ? 1 : (!isComputerWhite ? 2 : 0))!
             UI.rootViewController?.present(UI.loadingVC, animated: true){
+                
                 view.presentScene(scene)
                 scene.run(SKAction.wait(forDuration: 0.1)){
-                    UI.loadingVC.dismiss(animated: true, completion: nil)
+                    UI.loadingVC.dismiss(animated: true){
+                        NotificationCenter.default.post(name: .showGoogleAds, object: nil)
+                    }
                 }
             }
             //view.presentScene(scene, transition: transition)
@@ -2329,8 +2433,7 @@ class GameScene: SKScene {
 //                        alert.addAction(UIAlertAction(title: actionDefaultTitle, style: .default, handler: handler))
 //                        alert.addAction(UIAlertAction(title: actionDestructiveTitle, style: .destructive, handler: handler))
 //                        UIApplication.getPresentedViewController()!.present(alert, animated: true){}
-                        
-                        UI.rootViewController?.present(undoMessage, animated: true, completion: nil)
+                        UI.topMostController()?.present(undoMessage,animated: true)
                         //undoMessage.isHidden = false
                         
                         
@@ -2344,7 +2447,7 @@ class GameScene: SKScene {
                             //reviews[i].zPosition = 4.0 + yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width)
                             let moveToBestPosition = SKAction.group([
                                 SKAction.moveTo(x: xOfReview(i, base: index), duration: 0.2),
-                                SKAction.scale(to:UIScreen.main.scale * 3/5 * yOfReview(xOfReview(i, base: index) * CGFloat.pi / 2 / scene!.size.width), duration: 0.2),
+                                SKAction.scale(to:3/5 * yOfReview(xOfReview(i, base: index) * CGFloat.pi / 2 / scene!.size.width), duration: 0.2),
                                 SKAction.moveZPositionTo(to: 4.0 + yOfReview((reviews[i].position.x + offset) * CGFloat.pi / 2 / scene!.size.width), withDuration: 0.2),
                                 ])
                             reviews[i].run(moveToBestPosition){
@@ -2564,7 +2667,7 @@ class GameScene: SKScene {
         for i in 0...numberOfAtlas{
             let finalColorWeight = CGFloat(i)/CGFloat(numberOfAtlas)
             //let initalColorWeight = 1 - finalColorWeight
-            UIGraphicsBeginImageContext(size)
+            UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
             let bgCtx = UIGraphicsGetCurrentContext()
             let bgColorSpace = CGColorSpaceCreateDeviceRGB()
             let bgStartColor = initialBgStartColor.blend(colorToBlend: finalBgStartColor, weightOfColorToBlend: finalColorWeight)
@@ -2601,7 +2704,7 @@ class GameScene: SKScene {
         for i in 0...numberOfAtlas{
             let finalColorWeight = CGFloat(i)/CGFloat(numberOfAtlas)
             //let initalColorWeight = 1 - finalColorWeight
-            UIGraphicsBeginImageContext(size)
+            UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
             let bgCtx = UIGraphicsGetCurrentContext()
             let bgColorSpace = CGColorSpaceCreateDeviceRGB()
             let bgStartColor = initialBgStartColor.blend(colorToBlend: finalBgStartColor, weightOfColorToBlend: finalColorWeight)
@@ -2657,10 +2760,12 @@ class GameScene: SKScene {
             
             if let isWinnerWhite = isWinnerWhite{
                 if isWinnerWhite == isComputerWhite, isAIMode{
+                    MusicPlayer.play(music: .sfx(.lose))
                     doesPlayerLose = true
                     stateIndicator.isHidden = true
                 }
                 else{
+                    MusicPlayer.play(music: .sfx(.win))
                     doesPlayerLose = false
                     changeStateIndicator(imageNamed: "crown", width: UI.gridSize/2.5, height: UI.gridSize/4, leftColor: isWinnerWhite ? UIColor.white : UIColor.black, rightColor: isWinnerWhite ? UIColor.white : UIColor.black)
                 }
@@ -2796,7 +2901,24 @@ class GameScene: SKScene {
                 let scoreLabel = isToPresentColorWhite ? whiteScore_label!:blackScore_label!
                 let secondaryScoreLabel = !isToPresentColorWhite ? whiteScore_label!:blackScore_label!
                 //isThereAFlipBackAnimation = false
-                
+                //MARK: play put chess sound
+                self.run(SKAction.run{
+                    MusicPlayer.play(music: .sfx(.putChess))
+                })
+                //MARK: play flip back sound
+                if isThereAFlipBackAnimation{
+                    self.run(SKAction.run{
+                        MusicPlayer.play(music: .sfx(.wind))
+                    })
+                }
+                //MARK: play flip go sound
+                self.run(SKAction.wait(forDuration: isThereAFlipBackAnimation ? 1.2 : 0.6)) {
+                    MusicPlayer.play(music: .sfx(.wind))
+                }
+                //MARK: play flip sound
+                self.run(SKAction.wait(forDuration: isThereAFlipBackAnimation ? 0.6 : 0)) {
+                    MusicPlayer.play(music: .sfx(.flip))
+                }
                 for row in 0...gameSize - 1{
                     if labels[row].count != gameSize {fatalError("wrong columns of labels")}
                     for col in 0...gameSize - 1{
@@ -3056,7 +3178,7 @@ class GameScene: SKScene {
         self.isReviewMode = false
         
         let animation = SKAction.group([
-            SKAction.scale(to: UIScreen.main.scale, duration: 0.2),
+            SKAction.scale(to: 1, duration: 0.2),
             SKAction.move(to: CGPoint.zero, duration: 0.2),
             SKAction.moveZPositionTo(to: UI.zPosition.reviewBase + 1.1, withDuration: 0.2)
             ])
@@ -3174,16 +3296,46 @@ class GameScene: SKScene {
         timingToSetIsUserInteractionEnabledToTrue = Date().timeIntervalSinceReferenceDate +  waitTimeToSetIsUserInteractionEnabledToTrue
     }
     override func didFinishUpdate() {
+        if UI.rootViewController?.presentedViewController == UI.loadingVC || UI.rootViewController?.presentingViewController == UI.loadingVC{
+            UI.loadingVC.dismiss(animated: true, completion: nil)
+        }
+        
+        
         self.isUserInteractionEnabled = true
         waitTimeToSetIsUserInteractionEnabledToTrue = -1
     }
     fileprivate func help(){
-        UI.rootViewController?.present(helpMessage, animated: true, completion: nil)
+        UI.topMostController()?.present(helpMessage,animated: true)
         //helpMessage.isHidden = false
     }
     fileprivate func option(){
-        
-        
-        
+        let alert = OptionMenuVC()
+        alert.delegate = self
+        UI.rootViewController?.present(alert, animated: true, completion: nil)
+    }
+}
+extension GameScene: optionMenuDelegate{
+    func didTapOnButton(type: OptionMenuVC.type, sender: OptionMenu) {
+        func reloadGame(){
+            guard let view = view else{return}
+            guard let scene = GameScene(fileNamed: "GameScene") else {fatalError("cannot open GameScene.")}
+            scene.needToLoad = SharedVariable.isThereGameToLoad
+            UI.rootViewController?.present(UI.loadingVC, animated: true){
+                view.presentScene(scene)
+                scene.run(SKAction.wait(forDuration: 0.1)){
+                    UI.loadingVC.dismiss(animated: true, completion: nil)
+                }
+            }
+        }
+        switch type {
+        case .close:
+            let undoDestructiveText = SharedVariable.withAds ? UI.Texts.message.undo.destructive : UI.Texts.message.undo.destructiveWithoutAds
+            undoMessage.changeTheLastActionTitle(withText: undoDestructiveText)
+            if let GVC = UI.rootViewController as! GameViewController?, !SharedVariable.withAds{
+                GVC.bannerView?.removeFromSuperview()
+            }
+        case .confirm:
+            reloadGame()
+        }
     }
 }

@@ -127,7 +127,7 @@ class ScrollTextBox: SKSpriteNode {
         let barWidth = insets.right * 0.6
         var barHeight = mask.frame.height
         if textNode.frame.height > mask.frame.height, mask.frame.height > 0 {barHeight *= (mask.frame.height)/textNode.frame.height}
-        UIGraphicsBeginImageContext(CGSize(width: barWidth, height: barHeight))
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: barWidth, height: barHeight), false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         let bounds = CGRect(x: 0, y: 0, width: barWidth, height: barHeight)
         let roundedRect = UIBezierPath(roundedRect: bounds, cornerRadius: barWidth/2)
@@ -140,7 +140,7 @@ class ScrollTextBox: SKSpriteNode {
         
     }
     fileprivate func scrollTextTexture() -> SKTexture{
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         let bounds = CGRect(x: 0, y: 0, width: size.width, height: size.height)
         let roundedRect = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius)

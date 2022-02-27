@@ -21,7 +21,7 @@ import UIKit
 class Utilities {
 
 	// MARK: - Properties
-
+    static var purchaseInProgress = false
 	/// Indicates whether the user has initiated a restore.
 	var restoreWasCalled: Bool
 
@@ -59,7 +59,7 @@ class Utilities {
 	#if os (iOS) || os (tvOS)
 	/// - returns: An alert with a given title and message.
 	func alert(_ title: String, message: String) -> UIAlertController {
-		let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+		let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
 		let action = UIAlertAction(title: NSLocalizedString(Messages.okButton, comment: Messages.emptyString),
 								   style: .default, handler: nil)
 		alertController.addAction(action)

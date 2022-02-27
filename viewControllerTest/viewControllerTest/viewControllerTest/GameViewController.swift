@@ -9,6 +9,15 @@
 import UIKit
 import SpriteKit
 import GameplayKit
+extension UIImage{
+    func resizeUIImage(to: CGSize, half: Bool = false) -> UIImage{
+        UIGraphicsBeginImageContextWithOptions(to, false, 2)
+        self.draw(in: CGRect(origin: .zero, size: to))
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image!
+    }
+}
 class UI{
     static let width = 100
 }

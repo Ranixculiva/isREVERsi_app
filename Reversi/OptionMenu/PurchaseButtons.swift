@@ -16,12 +16,13 @@
 
 import SpriteKit
 class PurchaseButtons: SKNode {
+    fileprivate var unlimitedUndosAndNoAds: SKSpriteNode!
     fileprivate var purchaseButton: Button!
     fileprivate var restoreButton: Button!
     fileprivate var purchasedButton: Button!
     fileprivate var IAP_utility: Utilities!
     override var frame: CGRect{
-        let height = max(purchaseButton.frame.height,restoreButton.frame.height,purchasedButton.frame.height)
+        let height = max(purchaseButton.frame.height,restoreButton.frame.height,purchasedButton.frame.height)*2 + UI.optionMenuSpacing/2
         let width = max(purchaseButton.frame.width,restoreButton.frame.width,purchasedButton.frame.width)
         
         return CGRect(x: -width/2, y: -height/2, width: width, height: height)
@@ -40,12 +41,20 @@ class PurchaseButtons: SKNode {
         //MARk: set up purchase button
         purchaseButton = Button(buttonColor: UI.purchaseButtonColor, cornerRadius: UI.purchaseButtonCornerRadius)!
         purchaseButton.fontSize = UI.purchaseButtonFontSize
-        purchaseButton.position.x = -150
+        //purchaseButton.position.x = -150
         purchaseButton.zPosition = UI.zPosition.purchaseButton
         purchaseButton.text = UI.Texts.purchase
         purchaseButton.isUserInteractionEnabled = false
         addChild(purchaseButton)
         
+        let detailLabel = SKLabelNode(text: UI.Texts.detail)
+        detailLabel.fontColor = UI.detailFontColor
+        detailLabel.fontSize = UI.detailFontSize
+        detailLabel.fontName = UI.detailFontName
+        addChild(detailLabel)
+        detailLabel.horizontalAlignmentMode = .center
+        detailLabel.verticalAlignmentMode = .center
+        detailLabel.position.y = UI.optionMenuSpacing/4 + purchaseButton.frame.height/2
 //        //MARK: set up purchase button
 //        purchaseButton = SKSpriteNode(color: .red, size: CGSize(width: 100, height: 50))
 //        purchaseButton.zPosition = 1
@@ -61,6 +70,21 @@ class PurchaseButtons: SKNode {
         restoreButton.text = UI.Texts.restore
         restoreButton.position.x = purchaseButton.frame.maxX + UI.purchaseButtonsSpacing + restoreButton.frame.width/2
         addChild(restoreButton)
+        
+        //MARK: set up unlimited undos and no ads image
+        unlimitedUndosAndNoAds = SKSpriteNode(texture: SKTexture(image: #imageLiteral(resourceName: "UndoAndNoAds")), size: CGSize(width: restoreButton.frame.height, height: restoreButton.frame.height))
+        
+        addChild(unlimitedUndosAndNoAds)
+        unlimitedUndosAndNoAds.zPosition = 2
+        
+        unlimitedUndosAndNoAds.position.x = -UI.gridSize/2 +  UI.optionMenuSpacing + unlimitedUndosAndNoAds.frame.width/2
+        restoreButton.position.x = UI.gridSize/2 -  UI.optionMenuSpacing - restoreButton.frame.width/2
+        restoreButton.position.y = -UI.optionMenuSpacing/4 - restoreButton.frame.height/2
+        purchaseButton.position.x = unlimitedUndosAndNoAds.frame.maxX/2
+        purchaseButton.position.y = -UI.optionMenuSpacing/4 - purchaseButton.frame.height/2
+        detailLabel.position.x = purchaseButton.frame.minX/2 + restoreButton.frame.maxX/2
+        
+        
         
         
 //        restoreButton = SKSpriteNode(color: .blue, size: CGSize(width: 100, height: 50))
@@ -84,6 +108,7 @@ class PurchaseButtons: SKNode {
         StoreObserver.shared.delegate = self
         if StoreObserver.shared.isAuthorizedForPayments {
             enableRestoreButton()}
+        fetchProductInformation()
     }
     fileprivate var isRestoreButtonEnabled = false
     fileprivate func enableRestoreButton(){
@@ -130,10 +155,12 @@ class PurchaseButtons: SKNode {
         UIApplication.getPresentedViewController()?.present(alertController, animated: true, completion: nil)
     }
     fileprivate func purchase() {
-        // Fetch product information.
-        fetchProductInformation()
+        
+        
         if let product = StoreManager.shared.getAvailableProducts().first{
-            StoreObserver.shared.buy(product)
+            if !Utilities.purchaseInProgress{
+                StoreObserver.shared.buy(product)
+            }
         }
         print("purchaseButton has been pressed!")
     }
@@ -202,6 +229,9 @@ class PurchaseButtons: SKNode {
     fileprivate func handleRestoredSucceededTransaction() {
         IAP_utility.restoreWasCalled = true
         handlePurchasedSucceededTransaction()
+        
+        // Fetch product information.
+        fetchProductInformation()
     }
     fileprivate func handlePurchasedSucceededTransaction() {
         purchasedButton.isHidden = false
@@ -209,6 +239,9 @@ class PurchaseButtons: SKNode {
         restoreButton.isHidden = true
         SharedVariable.withAds = false
         KeychainWrapper.standard.set(false, forKey: SharedVariable.key.withAds.rawValue)
+        
+        // Fetch product information.
+        fetchProductInformation()
     }
     
     

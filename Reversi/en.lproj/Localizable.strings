@@ -8,7 +8,7 @@
 //MARK: - in Challenge.swift
 "win" = "win the game.";
 "getPoints" = "get %d points.";
-"winTheComputerByPoints" = "win the computer by %d points.";
+"winTheComputerByPoints" = "beat the computer by %d points.";
 
 //MARK: - in GameScene.swift
 //MARK: menu icon
@@ -18,11 +18,11 @@
 "help" = "help";
 "option" = "option";
 "state" = "state";
-"resign" = "resign";
+"resign" = "state";
 "back" = "back";
 "share" = "share";
 //MARK: guide
-"guide.welcome" = "Welcome to isREVERsi. Its game rule is similar to Othello, but we focus on the total number of \"flips\".";
+"guide.welcome" = "Welcome to isREVERsi. The game rule is similar to Othello, but we focus on the total number of \"flips\".";
 "guide.help" =
 "❀Summary:
 ➥The way you play isREVERsi is the way you play Othello, but different way to calculate score. isREVERsi counts total flips of your discs while Othello counts total number of your discs.
@@ -33,16 +33,16 @@
 ❀Currency:
 ➥In isREVERsi, we use \"Flips\" as our currency. You can earn it by completing challenges.";
 
-"guide.hint" = "Holding where you are confused will give you some hints";
-"guide.logo.default" = "There are two colors, black and white on the logo. It means that you're now in two-player mode. Please swipe the logo to make it whole white and then you will be on the white side against a computer.";
-"guide.logo.destructive" = "There are two colors, black and white on the logo. It means that you're now in two-player mode. Please swipe the logo to make it whole black and then you will be on the black side against a computer.";
-"guide.gameboard.swipe" = "Swipe it to choose the size of the game board. Now please choose 4X4.";
+"guide.hint" = "Hold it when you get confused, you may get some hints.";
+"guide.logo.default" = "There are two colors in the logo: black and white. This means that you are now in two-player mode. Please swipe on the logo to choose the white color and play against a computer.";
+"guide.logo.destructive" = "There are two colors in the logo: black and white. This means that you are now in two-player mode. Please swipe the logo to choose the black color and play against a computer.";
+"guide.gameboard.swipe" = "Swipe on it to choose the size of the game board. Now please choose 4X4.";
 "guide.gameboard.tap" = "Tap it to get into level select.";
 //MARK: message
 //MARK: - help
 "message.help.title" = "HELP";
 "message.help.default" = "Thanks!";
-"message.help.destructive" = "Shut up!";
+"message.help.destructive" = "Easy!";
 //MARK: - undo
 "message.undo.title" = "ALERT";
 "message.undo.text" = "You will be unable to redo. Are you sure to undo to this move?";
@@ -67,11 +67,11 @@
 "LEVEL2" = "Zephyrus";
 //MARK: - in ModeSelectScene.swift
 "ONLINE" = "Online";
-"OFFLINE" = "Offline";
-"OFFLINEPARTY" = "Offline Party";
+"OFFLINE" = "2-Player";
+"OFFLINEPARTY" = "Party";
 "ONLINEPARTY" = "Online Party";
 //MARK: - in TitleScene.swift
-"loadGame" = "LOAD";
+"loadGame" = "CONTINUE";
 "Loading..." = "LOADING...";
 "noGameToLoad.title" = "TT";
 "noGameToLoad.text" = "There is no game to load.";
@@ -83,10 +83,15 @@
 "continueMessage.default" = "Yes, please.";
 "continueMessage.cancel" = "Maybe later, thanks.";
 //MARK: - in purchaseButtons.swift
+"detail" = "NO ADS/UNDO LIMIT";
 "purchase" = "BUY";
 "restore" = "RESTORE";
 "purchased" = "BOUGHT";
 //MAKR: - in AboutOption.swift
 "about" = "ABOUT";
+//MARK: - in TutorialOption.swift
+"tutorial" = "TUTORIAL:";
+"on" = "ON";
+"off" = "OFF";
 
 

@@ -50,11 +50,11 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
     
     override func didMove(to view: SKView) {
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
-        self.size = CGSize(width: view.frame.size.width * UIScreen.main.scale,height: view.frame.size.height * UIScreen.main.scale)
+        self.size = UI.rootSize
         //backgroundColor = UIColor(red: 0, green: 122/255, blue: 255/255, alpha: 1)
         ////m
         //set up background
-        UIGraphicsBeginImageContext(size)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let bgCtx = UIGraphicsGetCurrentContext()
         let bgColorSpace = CGColorSpaceCreateDeviceRGB()
         
@@ -117,7 +117,17 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
             addChild(modeLabel)
             //MARK: set up levelPictures
             let modePictureSize = UI.levelPictureSize
-            let modePicture = SKSpriteNode(color: .red, size: modePictureSize)
+            UIGraphicsBeginImageContextWithOptions(modePictureSize, false, UIScreen.main.scale)
+            let modeContext = UIGraphicsGetCurrentContext()
+            let roundedRect = UIBezierPath(roundedRect: CGRect(origin: .zero, size: modePictureSize), cornerRadius: UI.levelPictureRoundedCornerRadius)
+            modeContext?.saveGState()
+            roundedRect.addClip()
+            let modeImg = UIImage(named: "mode\(i)")
+            modeImg?.draw(in: CGRect(origin: .zero, size: modePictureSize))
+            modeContext?.restoreGState()
+            let modeImage = UIGraphicsGetImageFromCurrentImageContext()!
+            UIGraphicsEndImageContext()
+            let modePicture = SKSpriteNode(texture: SKTexture(image: modeImage), size: modePictureSize)
             modePicture.position = UI.levelPicturePosition(indexFromLeft: i)
             modePictures.append(modePicture)
             addChild(modePicture)
@@ -125,6 +135,15 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         //MARK: - set up logo
         UI.logoSwitch.isUserInteractionEnabled = false
         UI.addLogoSwitch(to: self)
+        
+        
+        //MARK: - set up gameSizeLabel
+        let gameSizeLabel = SKLabelNode(text: "\(gameSize)X\(gameSize)")
+        gameSizeLabel.fontName = UI.fontName.ChalkboardSEBold.rawValue
+        gameSizeLabel.fontSize = UI.levelLabelFontSize
+        gameSizeLabel.verticalAlignmentMode = .center
+        gameSizeLabel.position = CGPoint(x: 0, y: modePictures[0].frame.minY/2 + toTitleNode.frame.maxY/2)
+        addChild(gameSizeLabel)
     }
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else{return}
@@ -229,6 +248,7 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
             scene.scaleMode = .aspectFill
             scene.currentGameSize = TitleScene.gameSize(rawValue: gameSize)!
             //UI.logoSwitch.currentState = .half
+            
             UI.rootViewController?.present(UI.loadingVC, animated: true){
                 view.presentScene(scene)
                 scene.run(SKAction.wait(forDuration: 0.1)){
@@ -250,7 +270,13 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         scene.canPlayerUseAbility = false
         
         
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        //view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        //UI.rootViewController?.present(UI.loadingVC, animated: true){
+        view.presentScene(scene)
+          //  scene.run(SKAction.wait(forDuration: 0.1)){
+            //    UI.loadingVC.dismiss(animated: false, completion: nil)
+            //}
+        //}
     }
     fileprivate func touchDownOnOfflineParty(){
         guard let view = view else{return}
@@ -263,7 +289,13 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         scene.canPlayerUseAbility = true
         scene.withAbility = .none
         
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        //view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        //UI.rootViewController?.present(UI.loadingVC, animated: true){
+            view.presentScene(scene)
+//            scene.run(SKAction.wait(forDuration: 0.1)){
+//                UI.loadingVC.dismiss(animated: false, completion: nil)
+//            }
+//        }
     }
     fileprivate func touchDownOnOnline(){
         guard let view = view else{return}
@@ -275,7 +307,13 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         //settings
         scene.canPlayerUseAbility = false
         
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        //view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+//        UI.rootViewController?.present(UI.loadingVC, animated: true){
+            view.presentScene(scene)
+//            scene.run(SKAction.wait(forDuration: 0.1)){
+//                UI.loadingVC.dismiss(animated: false, completion: nil)
+//            }
+//        }
     }
     fileprivate func touchDownOnOnlineParty(){
         guard let view = view else{return}
@@ -287,6 +325,12 @@ class ModeSelectScene: SKScene, FetchValueDelegate {
         //settings
         scene.canPlayerUseAbility = true
         scene.withAbility = .none
-        view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+        //view.presentScene(scene, transition: SKTransition.flipVertical(withDuration: 1))
+//        UI.rootViewController?.present(UI.loadingVC, animated: true){
+        view.presentScene(scene)
+//            scene.run(SKAction.wait(forDuration: 0.1)){
+//                UI.loadingVC.dismiss(animated: false, completion: nil)
+//            }
+//        }
     }
 }

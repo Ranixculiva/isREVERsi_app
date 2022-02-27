@@ -86,8 +86,7 @@ class Button: SKSpriteNode{
     fileprivate func buttonTexture() -> SKTexture? {
         let size = CGSize(width: labelNode.frame.width + fontSize, height: labelNode.frame.height + fontSize * 20.0 / 30.0)
         labelNode.position.x = size.width*(0.5-anchorPoint.x)
-        UIGraphicsBeginImageContext(size)
-        
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         guard let context = UIGraphicsGetCurrentContext() else {return nil}
         ///start to draw
         let buttonRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)

@@ -82,7 +82,7 @@ class FlipsIndicator: SKSpriteNode {
         self.size = texture.size()
         self.flips = flips
         flipsLabel.position.x = -texture.size().width/2 + UI.flipsFontSize * 3/4
-        flipsNumberLabel.position.x = flipsLabel.position.x + 10*UIScreen.main.scale + UI.flipsFontSize/2
+        flipsNumberLabel.position.x = flipsLabel.position.x + 10 + UI.flipsFontSize/2
         if withAnimation{
             flipsLabel.run(SKAction.repeatForever(flipAnimation))
         }
@@ -96,9 +96,8 @@ class FlipsIndicator: SKSpriteNode {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         flipsNumberLabel.text = formatter.string(from: NSNumber(integerLiteral: flips))!
-        let size = CGSize(width: UI.flipsFontSize + flipsNumberLabel.frame.width + 10*UIScreen.main.scale + UI.flipsFontSize/2 , height: UI.flipsFontSize)
-        UIGraphicsBeginImageContext(size)
-        
+        let size = CGSize(width: UI.flipsFontSize + flipsNumberLabel.frame.width + 10 + UI.flipsFontSize/2 , height: UI.flipsFontSize)
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         guard let context = UIGraphicsGetCurrentContext() else {
             return nil
         }
@@ -112,7 +111,7 @@ class FlipsIndicator: SKSpriteNode {
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         flipsLabel.position.x = -size.width/2 + UI.flipsFontSize * 3/4
-        flipsNumberLabel.position.x = flipsLabel.position.x + 10*UIScreen.main.scale + UI.flipsFontSize/2
+        flipsNumberLabel.position.x = flipsLabel.position.x + 10 + UI.flipsFontSize/2
         return SKTexture(image: image!)
     }
 }

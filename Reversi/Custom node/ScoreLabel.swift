@@ -43,7 +43,7 @@ class ScoreLabel: SKSpriteNode {
         stringRectSize.height = stringRectSize.height/2
         let upperRect = CGRect(x: 0, y: 0, width: stringRectSize.width, height: stringRectSize.height*(1-CGFloat(currentNumber)/CGFloat(numberOfParts)))
         let lowerRect = CGRect(x: 0, y: upperRect.maxY, width: stringRectSize.width, height: stringRectSize.height*(CGFloat(currentNumber)/CGFloat(numberOfParts)))
-        UIGraphicsBeginImageContext(stringRectSize)
+        UIGraphicsBeginImageContextWithOptions(stringRectSize, false, UIScreen.main.scale)
         let context = UIGraphicsGetCurrentContext()!
         UIColor.red.setStroke()
         

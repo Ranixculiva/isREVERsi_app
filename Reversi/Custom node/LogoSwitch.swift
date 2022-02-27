@@ -10,7 +10,13 @@ import SpriteKit
 protocol logoSwitchDelegate: AnyObject {
     func touch(touches: Set<UITouch>)
 }
-class LogoSwitch: SKCropNode{
+extension LogoSwitch{
+    override var frame: CGRect{
+        let origin = position - CGPoint(x: UI.logoSize.width/2, y: UI.logoSize.height/2)
+        return CGRect(origin: origin, size: UI.logoSize)
+    }
+}
+class LogoSwitch: SKEffectNode{
     enum touchType: Int{
         case began = 0, moved, ended, cancelled
     }
@@ -33,9 +39,11 @@ class LogoSwitch: SKCropNode{
     override init() {
         super.init()
         //MARK: - set up logo
-        guard let logoImage = UIImage(named: "Logo") else{fatalError("cannot find image Logo")}
         let logoSize = UI.logoSize
-        self.maskNode = SKSpriteNode(texture: SKTexture(image: logoImage), size: logoSize)
+        let logoImage = CIImage(image: #imageLiteral(resourceName: "Logo").resize(to: logoSize))!
+        
+        let maskFilter = CIFilter(name: "CISourceInCompositing", parameters: [kCIInputBackgroundImageKey : logoImage])
+        self.filter = maskFilter
         self.position = UI.logoPosition
         self.zPosition = UI.zPosition.logo
         self.isUserInteractionEnabled = true
@@ -43,11 +51,14 @@ class LogoSwitch: SKCropNode{
         logoLeftWhite = SKSpriteNode(color: .white, size: CGSize())
         logoLeftWhite.size = CGSize(width: logoSize.width/2 *  CGFloat(currentState.rawValue), height: logoSize.height)
         logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
+        logoLeftWhite.zPosition = 2
         self.addChild(logoLeftWhite)
         //MARK: set up right-half black
-        logoRightBlack = SKSpriteNode(color: .black, size: CGSize())
-        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
-        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
+        //logoRightBlack = SKSpriteNode(color: .black, size: logoSize)
+        logoRightBlack = SKSpriteNode(color: .black, size: logoSize)
+        //logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
+        //logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
+        logoRightBlack.zPosition = 1
         self.addChild(logoRightBlack)
     }
     //FIXME: sometimes it crashes
@@ -58,8 +69,8 @@ class LogoSwitch: SKCropNode{
         logoLeftWhite.position.x = -logoSize.width / 2 + logoLeftWhite.size.width/2
         //MARK: set up right-half black
 
-        logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
-        logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
+        //logoRightBlack.position.x = logoLeftWhite.position.x + logoSize.width/2
+        //logoRightBlack.size = CGSize(width: logoSize.width - logoLeftWhite.size.width, height: logoSize.height)
     }
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -84,8 +95,8 @@ class LogoSwitch: SKCropNode{
             logoLeftWhite.position.x = currentWhiteSwitchPosition.x + offset/2
             logoLeftWhite.position.x = min(max(logoLeftWhite.position.x,-frame.width/2),0)
             logoLeftWhite.size.width = (logoLeftWhite.position.x + frame.width/2)*2
-            logoRightBlack.position.x = logoLeftWhite.position.x + frame.width/2
-            logoRightBlack.size.width = frame.width - logoLeftWhite.size.width
+            //logoRightBlack.position.x = logoLeftWhite.position.x + frame.width/2
+            //logoRightBlack.size.width = frame.width - logoLeftWhite.size.width
         }
         
         delegate?.touch(touches: touches)
@@ -100,6 +111,7 @@ class LogoSwitch: SKCropNode{
             let pos = touch.location(in: self)
             let offset = pos.x - touchOrigin.x
             var state = floor(2 * logoLeftWhite.size.width / frame.width + 0.5)
+            state = min(max(state,0),2)
             if abs(offset) < 10, !everMoved{
                 switch state{
                 case 0:
@@ -118,8 +130,8 @@ class LogoSwitch: SKCropNode{
             currentState = LogoSwitch.state(rawValue: Int(state))!
             logoLeftWhite.size.width = state * frame.width/2
             logoLeftWhite.position.x = -frame.width / 2 + logoLeftWhite.size.width/2
-            logoRightBlack.position.x = logoLeftWhite.position.x + frame.width/2
-            logoRightBlack.size.width = frame.width - logoLeftWhite.size.width
+            //logoRightBlack.position.x = logoLeftWhite.position.x + frame.width/2
+            //logoRightBlack.size.width = frame.width - logoLeftWhite.size.width
         }
         delegate?.touch(touches: touches)
     }

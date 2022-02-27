@@ -11,20 +11,30 @@ import SpriteKit
 class OptionMenu: SKSpriteNode{
     enum savedVariable: String{
         case originalLanguageOption = "originalLanguageOption"
+        case originalVolumeOption = "originalVolumeOption"
+        case originalNeedToGuide = "originalNeedToGuide"
     }
     var savedVariables: [savedVariable: Any] = [:]
     weak var VC: UIViewController? = nil
     fileprivate var items: [SKNode] = []
     convenience init(VC: UIViewController) {
-        let backgroundTexture = OptionMenu.drawBackground()
-        self.init(texture: backgroundTexture)
-        items = [
+        
+        let items = [
+            MusicVolumeSlider(),
             LanguageOption(),
+            TutorialOption(),
             PurchaseButtons(),
             AboutOption(VCToPresentAboutWebPage: VC)
         ]
+        let backgroundWidth = UI.gridSize
+        let itemsTotalHeight = items.map{$0.frame.height}.reduce(0, +)
+        let backgroundHeight = itemsTotalHeight + UI.closeButtonHeight + UI.optionMenuSpacing * (CGFloat(items.count)+1.5)
+        let backgroundTexture = OptionMenu.drawBackground(size: CGSize(width: backgroundWidth, height: backgroundHeight))
+        self.init(texture: backgroundTexture)
+        self.items = items
+        
         let spacing = UI.optionMenuSpacing
-        var itemOffsetY = spacing/2 - size.height/2
+        var itemOffsetY = spacing - size.height/2
         for item in items.reversed() {
             item.zPosition = 1
             addChild(item)
@@ -32,10 +42,12 @@ class OptionMenu: SKSpriteNode{
             item.position.y = itemOffsetY
             itemOffsetY += item.frame.height/2 + spacing
         }
+        
+        
+        
     }
-    fileprivate class func drawBackground() -> SKTexture{
-        let size = CGSize(width: UI.gridSize, height: UI.gridSize)
-        UIGraphicsBeginImageContext(size)
+    fileprivate class func drawBackground(size: CGSize) -> SKTexture{
+        UIGraphicsBeginImageContextWithOptions(size, false, UIScreen.main.scale)
         let bgCtx = UIGraphicsGetCurrentContext()
         let bgColorSpace = CGColorSpaceCreateDeviceRGB()
 //        let bgStartColor = UIColor(red: 255/255, green: 126/255, blue: 179/255, alpha: 1)
